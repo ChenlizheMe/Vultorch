@@ -46,18 +46,21 @@ PYBIND11_MODULE(_vultorch, m) {
         .def("end_frame",   &vultorch::Engine::end_frame)
 #ifdef VULTORCH_HAS_CUDA
         // ── TensorTexture (zero-copy GPU interop) ──────────────────────
-        .def("allocate_shared_tensor", [](vultorch::Engine& self,
-                                          uint32_t width, uint32_t height,
-                                          uint32_t channels, int device_id) -> uintptr_t {
-            return self.tensor_texture().allocate_shared(width, height, channels, device_id);
-        }, py::arg("width"), py::arg("height"),
-           py::arg("channels") = 4, py::arg("device_id") = 0)
+          .def("allocate_shared_tensor", [](vultorch::Engine& self,
+                                                        const std::string& name,
+                                                        uint32_t width, uint32_t height,
+                                                        uint32_t channels, int device_id) -> uintptr_t {
+                return self.tensor_texture(name).allocate_shared(width, height, channels, device_id);
+          }, py::arg("name") = "tensor",
+              py::arg("width"), py::arg("height"),
+              py::arg("channels") = 4, py::arg("device_id") = 0)
 
         // DLPack capsule for torch.from_dlpack() — true zero-copy shared tensor
         .def("_allocate_shared_dlpack", [](vultorch::Engine& self,
+                                           const std::string& name,
                                            uint32_t width, uint32_t height,
                                            uint32_t channels, int device_id) -> py::object {
-            uintptr_t ptr = self.tensor_texture().allocate_shared(
+            uintptr_t ptr = self.tensor_texture(name).allocate_shared(
                 width, height, channels, device_id);
             if (ptr == 0)
                 throw std::runtime_error("Failed to allocate shared GPU memory");
@@ -90,34 +93,41 @@ PYBIND11_MODULE(_vultorch, m) {
                 });
             if (!capsule) throw py::error_already_set();
             return py::reinterpret_steal<py::object>(capsule);
-        }, py::arg("width"), py::arg("height"),
+        }, py::arg("name") = "tensor",
+           py::arg("width"), py::arg("height"),
            py::arg("channels") = 4, py::arg("device_id") = 0)
 
-        .def("upload_tensor", [](vultorch::Engine& self, uintptr_t data_ptr,
+        .def("upload_tensor", [](vultorch::Engine& self, const std::string& name,
+                                  uintptr_t data_ptr,
                                   uint32_t width, uint32_t height,
                                   uint32_t channels, int device_id) {
-            self.tensor_texture().upload(data_ptr, width, height, channels, device_id);
-        }, py::arg("data_ptr"), py::arg("width"), py::arg("height"),
+            self.tensor_texture(name).upload(data_ptr, width, height, channels, device_id);
+        }, py::arg("name") = "tensor",
+           py::arg("data_ptr"), py::arg("width"), py::arg("height"),
            py::arg("channels") = 4, py::arg("device_id") = 0)
 
-        .def("sync_tensor", [](vultorch::Engine& self) {
-            self.tensor_texture().sync();
-        })
+        .def("sync_tensor", [](vultorch::Engine& self, const std::string& name) {
+            self.tensor_texture(name).sync();
+        }, py::arg("name") = "tensor")
 
-        .def("tensor_texture_id", [](vultorch::Engine& self) -> uintptr_t {
-            return self.tensor_texture().imgui_texture_id();
-        })
-        .def("tensor_width",  [](vultorch::Engine& self) { return self.tensor_texture().width(); })
-        .def("tensor_height", [](vultorch::Engine& self) { return self.tensor_texture().height(); })
+        .def("tensor_texture_id", [](vultorch::Engine& self, const std::string& name) -> uintptr_t {
+            return self.tensor_texture(name).imgui_texture_id();
+        }, py::arg("name") = "tensor")
+        .def("tensor_width",  [](vultorch::Engine& self, const std::string& name) {
+            return self.tensor_texture(name).width();
+        }, py::arg("name") = "tensor")
+        .def("tensor_height", [](vultorch::Engine& self, const std::string& name) {
+            return self.tensor_texture(name).height();
+        }, py::arg("name") = "tensor")
 
-        .def("is_shared_ptr", [](vultorch::Engine& self, uintptr_t ptr) {
-            return self.tensor_texture().is_shared_ptr(ptr);
-        }, py::arg("data_ptr"))
+        .def("is_shared_ptr", [](vultorch::Engine& self, const std::string& name, uintptr_t ptr) {
+            return self.tensor_texture(name).is_shared_ptr(ptr);
+        }, py::arg("name") = "tensor", py::arg("data_ptr"))
 
-        .def("set_tensor_filter", [](vultorch::Engine& self, int mode) {
-            self.tensor_texture().set_filter(
+        .def("set_tensor_filter", [](vultorch::Engine& self, const std::string& name, int mode) {
+            self.tensor_texture(name).set_filter(
                 mode == 0 ? vultorch::FilterMode::Nearest : vultorch::FilterMode::Linear);
-        }, py::arg("mode"))  // 0=nearest, 1=linear
+        }, py::arg("name") = "tensor", py::arg("mode"))  // 0=nearest, 1=linear
 
         // ── SceneRenderer ──────────────────────────────────────────────
         .def("init_scene", [](vultorch::Engine& self,
@@ -132,11 +142,11 @@ PYBIND11_MODULE(_vultorch, m) {
             self.scene_renderer(width, height, samples);
         }, py::arg("width") = 800, py::arg("height") = 600, py::arg("msaa") = 4)
 
-        .def("scene_render", [](vultorch::Engine& self) {
+        .def("scene_render", [](vultorch::Engine& self, const std::string& texture_name) {
             auto& sr = self.scene_renderer();
-            auto& tt = self.tensor_texture();
+            auto& tt = self.tensor_texture(texture_name);
             sr.prepare(tt);
-        })
+        }, py::arg("texture_name") = "scene")
 
         .def("scene_texture_id", [](vultorch::Engine& self) -> uintptr_t {
             return self.scene_renderer().imgui_texture_id();

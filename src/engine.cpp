@@ -7,6 +7,10 @@
 
 namespace vultorch {
 
+namespace {
+int g_sdl_refcount = 0;
+}
+
 // ---------------------------------------------------------------------------
 // Vulkan error-check helper
 // ---------------------------------------------------------------------------
@@ -27,8 +31,11 @@ Engine::~Engine() {
 
 // ==================================================================== init
 void Engine::init(const char* title, int width, int height) {
-    if (!SDL_Init(SDL_INIT_VIDEO))
-        throw std::runtime_error(std::string("SDL_Init: ") + SDL_GetError());
+    if (g_sdl_refcount == 0) {
+        if (!SDL_Init(SDL_INIT_VIDEO))
+            throw std::runtime_error(std::string("SDL_Init: ") + SDL_GetError());
+    }
+    g_sdl_refcount++;
 
     window_ = SDL_CreateWindow(
         title, width, height,
@@ -52,14 +59,16 @@ void Engine::init(const char* title, int width, int height) {
 }
 
 #ifdef VULTORCH_HAS_CUDA
-TensorTexture& Engine::tensor_texture() {
-    if (!tensor_texture_) {
-        tensor_texture_ = std::make_unique<TensorTexture>();
-        tensor_texture_->init(instance_, physical_device_, device_,
-                              graphics_queue_, graphics_family_,
-                              imgui_pool_);
+TensorTexture& Engine::tensor_texture(const std::string& key) {
+    auto it = tensor_textures_.find(key);
+    if (it == tensor_textures_.end()) {
+        auto tex = std::make_unique<TensorTexture>();
+        tex->init(instance_, physical_device_, device_,
+                  graphics_queue_, graphics_family_,
+                  imgui_pool_);
+        it = tensor_textures_.emplace(key, std::move(tex)).first;
     }
-    return *tensor_texture_;
+    return *it->second;
 }
 
 SceneRenderer& Engine::scene_renderer(uint32_t width, uint32_t height,
@@ -92,7 +101,7 @@ void Engine::destroy() {
 
 #ifdef VULTORCH_HAS_CUDA
     scene_renderer_.reset();
-    tensor_texture_.reset();
+    tensor_textures_.clear();
 #endif
 
     ImGui_ImplVulkan_Shutdown();
@@ -114,8 +123,16 @@ void Engine::destroy() {
     vkDestroySurfaceKHR(instance_, surface_, nullptr);
     vkDestroyInstance(instance_, nullptr);
 
-    SDL_DestroyWindow(window_);
-    SDL_Quit();
+    if (window_) {
+        SDL_DestroyWindow(window_);
+        window_ = nullptr;
+    }
+
+    if (g_sdl_refcount > 0) {
+        g_sdl_refcount--;
+        if (g_sdl_refcount == 0)
+            SDL_Quit();
+    }
 
     initialized_ = false;
 }
@@ -179,12 +196,12 @@ void Engine::end_frame() {
     VK_CHECK(vkBeginCommandBuffer(cmd, &begin_info));
 
 #ifdef VULTORCH_HAS_CUDA
-    // Integrate pending tensor copy into the main command buffer.
-    // This avoids a separate vkQueueSubmit; pipeline barriers inside
-    // record_copy() ensure the image is in SHADER_READ_ONLY before
-    // the render pass samples it.
-    if (tensor_texture_) {
-        tensor_texture_->record_copy(cmd);
+    // Integrate pending tensor copies into the main command buffer.
+    // This avoids separate vkQueueSubmit calls; pipeline barriers inside
+    // record_copy() ensure images are in SHADER_READ_ONLY before
+    // the render pass samples them.
+    for (auto& kv : tensor_textures_) {
+        kv.second->record_copy(cmd);
     }
 
     // Record offscreen 3D scene render (if requested this frame).

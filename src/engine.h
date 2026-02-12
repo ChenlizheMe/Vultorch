@@ -20,6 +20,7 @@
 #include <stdexcept>
 #include <cstdint>
 #include <memory>
+#include <unordered_map>
 
 #ifdef VULTORCH_HAS_CUDA
 #include "tensor_texture.h"
@@ -46,8 +47,8 @@ public:
     void end_frame();
 
 #ifdef VULTORCH_HAS_CUDA
-    /// Get or lazily create the tensor texture.
-    TensorTexture& tensor_texture();
+    /// Get or lazily create a tensor texture by name.
+    TensorTexture& tensor_texture(const std::string& key = "tensor");
 
     /// Get or lazily create the scene renderer.
     SceneRenderer& scene_renderer(uint32_t width = 800, uint32_t height = 600,
@@ -108,8 +109,8 @@ private:
     VkDescriptorPool imgui_pool_ = VK_NULL_HANDLE;
 
 #ifdef VULTORCH_HAS_CUDA
-    // ---- Tensor texture (zero-copy) ----
-    std::unique_ptr<TensorTexture> tensor_texture_;
+    // ---- Tensor textures (zero-copy), keyed by name ----
+    std::unordered_map<std::string, std::unique_ptr<TensorTexture>> tensor_textures_;
     // ---- 3D Scene renderer ----
     std::unique_ptr<SceneRenderer> scene_renderer_;
 #endif

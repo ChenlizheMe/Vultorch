@@ -15,7 +15,7 @@ try:
 except ImportError:
     HAS_CUDA = False
 
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -102,7 +102,7 @@ class Window:
     def __init__(self, title: str = "Vultorch", width: int = 1280, height: int = 720):
         self._engine = Engine()
         self._engine.init(title, width, height)
-        self._rgba_buf = None   # cached RGBA buffer for show()
+        self._rgba_bufs = {}   # cached RGBA buffers per name for show()
         Window._current = self
 
     # -- frame loop ----------------------------------------------------------
@@ -119,28 +119,20 @@ class Window:
         """Finish the current frame and present."""
         self._engine.end_frame()
 
+    def activate(self) -> None:
+        """Make this window the current target for module-level helpers."""
+        Window._current = self
+
     # -- tensor display (requires CUDA) --------------------------------------
 
-    def upload_tensor(self, tensor) -> None:
+    def upload_tensor(self, tensor, *, name: str = "tensor") -> None:
         """Upload a CUDA PyTorch tensor for display.
 
         Supports shape ``(H, W)``, ``(H, W, C)`` with C = 1, 3, or 4.
-        dtype must be ``torch.float32``.
+        dtype must be ``torch.float32``, ``torch.float16``, or ``torch.uint8``.
         """
-        if not HAS_CUDA:
-            raise RuntimeError("Vultorch was built without CUDA support")
-        if not tensor.is_cuda:
-            raise ValueError("Tensor must be on a CUDA device")
-        if not tensor.is_contiguous():
-            tensor = tensor.contiguous()
-        if tensor.ndim == 2:
-            h, w = tensor.shape
-            channels = 1
-        elif tensor.ndim == 3:
-            h, w, channels = tensor.shape
-        else:
-            raise ValueError(f"Expected 2D or 3D tensor (H,W) or (H,W,C), got {tensor.shape}")
-        self._engine.upload_tensor(tensor.data_ptr(), w, h, channels,
+        tensor, h, w, channels = _normalize_tensor(tensor)
+        self._engine.upload_tensor(name, tensor.data_ptr(), w, h, channels,
                                    tensor.device.index or 0)
 
     @property
@@ -148,14 +140,26 @@ class Window:
         """ImGui texture ID of the last uploaded tensor (0 if none)."""
         if not HAS_CUDA:
             return 0
-        return self._engine.tensor_texture_id()
+        return self._engine.tensor_texture_id("tensor")
+
+    def get_texture_id(self, name: str = "tensor") -> int:
+        """ImGui texture ID of a named tensor (0 if none)."""
+        if not HAS_CUDA:
+            return 0
+        return self._engine.tensor_texture_id(name)
 
     @property
     def tensor_size(self) -> tuple:
         """(width, height) of the last uploaded tensor."""
         if not HAS_CUDA:
             return (0, 0)
-        return (self._engine.tensor_width(), self._engine.tensor_height())
+        return (self._engine.tensor_width("tensor"), self._engine.tensor_height("tensor"))
+
+    def get_texture_size(self, name: str = "tensor") -> tuple:
+        """(width, height) of a named tensor."""
+        if not HAS_CUDA:
+            return (0, 0)
+        return (self._engine.tensor_width(name), self._engine.tensor_height(name))
 
     # -- lifecycle -----------------------------------------------------------
 
@@ -176,47 +180,34 @@ class Window:
 #  show() — one-line tensor display
 # ═══════════════════════════════════════════════════════════════════════
 def show(tensor, *, name: str = "tensor", width: float = 0,
-         height: float = 0, filter: str = "linear") -> None:
+         height: float = 0, filter: str = "linear", window: "Window | None" = None) -> None:
     """Display a CUDA tensor in the current ImGui context.
 
     Args:
-        tensor:  torch.Tensor on CUDA, float32, shape (H,W) or (H,W,C).
+        tensor:  torch.Tensor on CUDA, float32/float16/uint8, shape (H,W) or (H,W,C).
         name:    Unique label (for caching when showing multiple tensors).
         width:   Display width in pixels (0 = auto-fit to tensor).
         height:  Display height in pixels (0 = auto-fit to tensor).
         filter:  ``"nearest"`` or ``"linear"``.
+        window:  Target window (defaults to the current window).
     """
-    win = Window._current
+    win = window or Window._current
     if win is None:
         raise RuntimeError("No active vultorch.Window — create one first")
     if not HAS_CUDA:
         ui.text("[Vultorch: CUDA not available]")
         return
 
-    if not tensor.is_cuda:
-        raise ValueError("Tensor must be on a CUDA device")
-    if not tensor.is_contiguous():
-        tensor = tensor.contiguous()
-
-    import torch
-
-    if tensor.ndim == 2:
-        h, w = tensor.shape
-        c = 1
-    elif tensor.ndim == 3:
-        h, w, c = tensor.shape
-        if c not in (1, 3, 4):
-            raise ValueError(f"Expected 1, 3, or 4 channels, got {c}")
-    else:
-        raise ValueError(f"Expected 2D or 3D tensor, got shape {tensor.shape}")
+    tensor, h, w, c = _normalize_tensor(tensor)
 
     if c != 4:
         # RGBA expansion using a cached buffer (avoids per-frame allocation)
-        rgba = win._rgba_buf
+        import torch
+        rgba = win._rgba_bufs.get(name)
         if (rgba is None or rgba.shape[0] != h or rgba.shape[1] != w
                 or rgba.device != tensor.device):
             rgba = torch.empty(h, w, 4, dtype=torch.float32, device=tensor.device)
-            win._rgba_buf = rgba
+            win._rgba_bufs[name] = rgba
         if c == 1:
             src = tensor.view(h, w, 1) if tensor.ndim == 2 else tensor
             rgba[:, :, 0:3] = src.expand(h, w, 3)
@@ -231,16 +222,16 @@ def show(tensor, *, name: str = "tensor", width: float = 0,
 
     # Set filter mode
     fmode = 0 if filter == "nearest" else 1
-    win._engine.set_tensor_filter(fmode)
+    win._engine.set_tensor_filter(name, fmode)
 
     # Upload (GPU-GPU or zero-copy if shared)
-    win._engine.upload_tensor(tensor.data_ptr(), w, h, c,
+    win._engine.upload_tensor(name, tensor.data_ptr(), w, h, c,
                               tensor.device.index or 0)
 
     # Auto-size
-    tex_id = win._engine.tensor_texture_id()
-    tw = win._engine.tensor_width()
-    th = win._engine.tensor_height()
+    tex_id = win._engine.tensor_texture_id(name)
+    tw = win._engine.tensor_width(name)
+    th = win._engine.tensor_height(name)
     if tex_id:
         dw = width  if width  > 0 else float(tw)
         dh = height if height > 0 else float(th)
@@ -251,7 +242,8 @@ def show(tensor, *, name: str = "tensor", width: float = 0,
 #  create_tensor() — allocate GPU-shared tensor (true zero-copy)
 # ═══════════════════════════════════════════════════════════════════════
 def create_tensor(height: int, width: int, channels: int = 4,
-                  device: str = "cuda:0"):
+                  device: str = "cuda:0", *, name: str = "tensor",
+                  window: "Window | None" = None):
     """Allocate a Vulkan-shared CUDA tensor for true zero-copy display.
 
     The returned object is a standard ``torch.Tensor`` on the given CUDA
@@ -262,17 +254,20 @@ def create_tensor(height: int, width: int, channels: int = 4,
 
         Currently only ``channels=4`` gives true zero-copy.  For 1 or 3
         channels a regular tensor is returned and upload handles expansion.
+        Zero-copy allocation always uses float32.
 
     Args:
         height:    Tensor height.
         width:     Tensor width.
         channels:  1, 3, or 4.
         device:    CUDA device string, e.g. ``"cuda:0"``.
+        name:      Texture slot name (must match ``show(..., name=...)``).
+        window:    Target window (defaults to the current window).
 
     Returns:
         torch.Tensor of shape ``(height, width, channels)`` on CUDA.
     """
-    win = Window._current
+    win = window or Window._current
     if win is None:
         raise RuntimeError("No active vultorch.Window — create one first")
     if not HAS_CUDA:
@@ -288,7 +283,7 @@ def create_tensor(height: int, width: int, channels: int = 4,
         # Allocate Vulkan-shared memory and wrap via __cuda_array_interface__
         # (avoids DLPack capsule-name version-probing bugs in some PyTorch builds)
         ptr = win._engine.allocate_shared_tensor(
-            width, height, channels, dev_idx)
+            name, width, height, channels, dev_idx)
         if ptr == 0:
             raise RuntimeError("Failed to allocate shared GPU memory")
 
@@ -346,6 +341,8 @@ class SceneView:
         self._msaa = msaa
         self._initialized = False
 
+        self._texture_name = f"scene:{id(self)}"
+
         self.camera = Camera()
         self.light = Light()
         self.background: tuple = (0.12, 0.12, 0.14)
@@ -366,27 +363,16 @@ class SceneView:
 
     def set_tensor(self, tensor) -> None:
         """Upload tensor to the scene's texture."""
-        import torch
         win = Window._current
         if win is None:
             raise RuntimeError("No active vultorch.Window")
         self._ensure_init()
 
-        if not tensor.is_cuda:
-            raise ValueError("Tensor must be on a CUDA device")
-        if not tensor.is_contiguous():
-            tensor = tensor.contiguous()
-
-        if tensor.ndim == 2:
-            h, w = tensor.shape
-            c = 1
-        elif tensor.ndim == 3:
-            h, w, c = tensor.shape
-        else:
-            raise ValueError(f"Expected 2D/3D tensor, got shape {tensor.shape}")
+        tensor, h, w, c = _normalize_tensor(tensor)
 
         if c != 4:
             # RGBA expansion using cached buffer (avoids per-frame allocation)
+            import torch
             rgba = self._rgba_buf
             if (rgba is None or rgba.shape[0] != h or rgba.shape[1] != w
                     or rgba.device != tensor.device):
@@ -406,7 +392,7 @@ class SceneView:
             tensor = tensor.contiguous()
         h, w, c = tensor.shape
 
-        win._engine.upload_tensor(tensor.data_ptr(), w, h, c,
+        win._engine.upload_tensor(self._texture_name, tensor.data_ptr(), w, h, c,
                                   tensor.device.index or 0)
 
     def render(self) -> None:
@@ -433,7 +419,7 @@ class SceneView:
                 win._engine.scene_resize(sw, sh)
 
         # Render offscreen
-        win._engine.scene_render()
+        win._engine.scene_render(self._texture_name)
 
         # Display result as ImGui image
         tex_id = win._engine.scene_texture_id()
@@ -475,3 +461,42 @@ class SceneView:
             win = Window._current
             if win:
                 win._engine.scene_set_msaa(value)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  Internal helpers
+# ═══════════════════════════════════════════════════════════════════════
+def _normalize_tensor(tensor):
+    """Normalize tensor dtype/shape for display.
+
+    Accepts float32/float16/uint8 CUDA tensors and returns float32.
+    """
+    if not HAS_CUDA:
+        raise RuntimeError("Vultorch was built without CUDA support")
+
+    import torch
+
+    if not tensor.is_cuda:
+        raise ValueError("Tensor must be on a CUDA device")
+
+    if tensor.dtype == torch.uint8:
+        tensor = tensor.float().div(255.0)
+    elif tensor.dtype == torch.float16:
+        tensor = tensor.float()
+    elif tensor.dtype != torch.float32:
+        raise ValueError("Tensor dtype must be float32, float16, or uint8")
+
+    if not tensor.is_contiguous():
+        tensor = tensor.contiguous()
+
+    if tensor.ndim == 2:
+        h, w = tensor.shape
+        c = 1
+    elif tensor.ndim == 3:
+        h, w, c = tensor.shape
+        if c not in (1, 3, 4):
+            raise ValueError(f"Expected 1, 3, or 4 channels, got {c}")
+    else:
+        raise ValueError(f"Expected 2D or 3D tensor, got shape {tensor.shape}")
+
+    return tensor, h, w, c
