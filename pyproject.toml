@@ -1,7 +1,7 @@
 [project]
 name = "vultorch"
 version = "0.2.0"
-description = "Vulkan + PyTorch zero-copy tensor display with ImGui — one line to visualize any CUDA tensor"
+description = "Real-time Torch visualization window with Vulkan zero-copy — built for neural textures and GPU-intensive research"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"

@@ -123,4 +123,15 @@ install(TARGETS _vultorch
     RUNTIME DESTINATION vultorch
 )
 
+# ============================================================================
+# Post-build: copy module → vultorch/ and package wheel → dist/
+# ============================================================================
 
+set(VULTORCH_PKG_DIR "${CMAKE_SOURCE_DIR}/vultorch")
+
+add_custom_command(TARGET _vultorch POST_BUILD
+    COMMENT "=== Copying module + packaging wheel ==="
+    COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:_vultorch>" "${VULTORCH_PKG_DIR}/"
+    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/make_wheel.py"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+)

@@ -2,82 +2,83 @@
 
 # 🔥 Vultorch
 
-**One line to visualize any CUDA tensor.**
+**Real-time Torch Visualization Window · Vulkan Zero-Copy**
 
-Vulkan-based real-time GPU tensor viewer for PyTorch with built-in ImGui UI.
+Visualize CUDA tensors at GPU speed — zero CPU readback, zero staging buffers.  
+Built for **neural textures**, **NeRF**, **3D Gaussian Splatting**, and any GPU-intensive research that needs fast visual feedback.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://python.org)
+[![Vulkan](https://img.shields.io/badge/Vulkan-1.2%2B-red.svg)](https://vulkan.org)
 
-[🇨🇳 中文文档](README_CN.md)
+**[🇨🇳 中文](README_CN.md) · [🌐 Website](https://vultorch.github.io/vultorch/)**
 
 </div>
 
 ---
 
-## What is Vultorch?
+## Why Vultorch?
 
-Vultorch renders CUDA tensors directly on screen through Vulkan — the data **never leaves the GPU**. No CPU readback, no staging buffers, no OpenGL. Just one Python call:
+Training neural textures or generative models? You need to **see** what's happening on the GPU — **now**, not after a slow CPU readback.
+
+Vultorch opens a native Vulkan window and renders your CUDA tensors **directly from GPU memory**:
 
 ```python
-vultorch.show(tensor)
+vultorch.show(tensor)   # that's it — zero-copy, submillisecond
 ```
 
-It also bundles [Dear ImGui](https://github.com/ocornut/imgui) (docking branch), so you get sliders, plots, buttons, and dockable window layouts for free.
+| Traditional approach | Vultorch |
+|---------------------|----------|
+| `tensor.cpu().numpy()` → matplotlib | **GPU → GPU** via Vulkan external memory |
+| 10–50 ms per frame | **< 0.1 ms** per frame |
+| Blocks training | Non-blocking, zero-copy |
+| No interactivity | Built-in ImGui: sliders, plots, docking |
 
-## Features
+## Key Features
 
-| Feature | Description |
-|---------|-------------|
-| **One-line display** | `vultorch.show(tensor)` — that's it |
-| **GPU → GPU** | Vulkan external memory interop, zero CPU involvement |
-| **True zero-copy** | `vultorch.create_tensor()` shares memory between CUDA and Vulkan |
-| **ImGui built-in** | Sliders, buttons, color pickers, plots — all from Python |
-| **Docking layout** | Drag-and-drop window arrangement (ImGui docking branch) |
-| **3D scene view** | Map a tensor onto a lit 3D plane with orbit camera + MSAA |
-| **DLPack interop** | Standard `torch.from_dlpack()` for shared tensor creation |
+- **Zero-copy display** — Vulkan external memory interop, data never leaves the GPU
+- **True shared memory** — `vultorch.create_tensor()` returns a torch.Tensor backed by Vulkan memory (DLPack)
+- **One-line API** — `vultorch.show(tensor)` handles format conversion, upload, and display
+- **Built-in ImGui** — Sliders, buttons, color pickers, plots, docking layout — all from Python
+- **3D scene view** — Map textures onto lit 3D planes with orbit camera, MSAA, Blinn-Phong shading
+- **Docking windows** — Drag-and-drop window arrangement (ImGui docking branch)
 
 ## Quick Start
-
-### Install
 
 ```bash
 pip install vultorch
 ```
 
-### Hello Tensor
-
 ```python
-import torch
-import vultorch
+import torch, vultorch
 from vultorch import ui
 
-tensor = torch.rand(256, 256, 4, device="cuda")
+# Your neural texture output (or any CUDA tensor)
+texture = torch.rand(512, 512, 4, device="cuda")
 
-win = vultorch.Window("Hello", 512, 512)
+win = vultorch.Window("Neural Texture Viewer", 800, 600)
 while win.poll():
-    if not win.begin_frame():
-        continue
-    ui.begin("Viewer")
-    vultorch.show(tensor)
+    if not win.begin_frame(): continue
+    ui.begin("Output")
+    vultorch.show(texture)  # zero-copy GPU → screen
     ui.end()
     win.end_frame()
 win.destroy()
 ```
 
-### Zero-Copy Tensor
+### True Zero-Copy
 
 ```python
-# Memory is shared between CUDA and Vulkan — writes are instant
-tensor = vultorch.create_tensor(256, 256, channels=4)
-tensor[:, :, 0] = torch.linspace(0, 1, 256, device="cuda")  # visible immediately
+# Shared GPU memory — writes are instantly visible on screen
+tensor = vultorch.create_tensor(512, 512, channels=4)
+tensor[:] = model(input)   # write directly, no copy needed
 ```
 
 ### 3D Scene
 
 ```python
 scene = vultorch.SceneView("3D", 800, 600, msaa=4)
-scene.set_tensor(tensor)
+scene.set_tensor(texture)
 scene.render()  # orbit camera, Blinn-Phong lighting
 ```
 
@@ -86,12 +87,11 @@ scene.render()  # orbit camera, Blinn-Phong lighting
 | Example | Description |
 |---------|-------------|
 | [`01_hello_tensor.py`](examples/01_hello_tensor.py) | Minimal tensor display |
-| [`02_imgui_controls.py`](examples/02_imgui_controls.py) | ImGui widgets showcase |
-| [`03_scene_3d.py`](examples/03_scene_3d.py) | 3D scene with lighting and orbit camera |
-| [`04_docking_layout.py`](examples/04_docking_layout.py) | Dockable window layout with DockBuilder |
+| [`02_imgui_controls.py`](examples/02_imgui_controls.py) | ImGui widgets: sliders, plots, colors |
+| [`03_scene_3d.py`](examples/03_scene_3d.py) | 3D scene with lighting + orbit camera |
+| [`04_docking_layout.py`](examples/04_docking_layout.py) | Drag-and-drop dockable window layout |
 | [`05_zero_copy.py`](examples/05_zero_copy.py) | True zero-copy shared tensor |
 
-Run any example:
 ```bash
 python examples/01_hello_tensor.py
 ```
@@ -100,39 +100,47 @@ python examples/01_hello_tensor.py
 
 ### Prerequisites
 
-- **GPU** with Vulkan support (any modern NVIDIA / AMD / Intel)
-- **Vulkan SDK** — [lunarg.com/vulkan-sdk](https://vulkan.lunarg.com/sdk/home)
-- **CUDA Toolkit** (optional, for tensor display)
-- **Python 3.9+** with pip
-- **CMake 3.25+** and **Ninja**
+| Component | Required | Notes |
+|-----------|----------|-------|
+| **GPU** | ✅ | Any Vulkan-capable GPU |
+| **Vulkan SDK** | Build time | [lunarg.com/vulkan-sdk](https://vulkan.lunarg.com/sdk/home) |
+| **CUDA Toolkit** | Optional | For `show()` and `create_tensor()` |
+| **Python 3.9+** | ✅ | |
+| **CMake 3.25+** | ✅ | + Ninja |
 
-### Clone
+### Clone & Build
 
 ```bash
 git clone --recursive https://github.com/vultorch/vultorch.git
 cd vultorch
 ```
 
-### Build & Install
-
-```powershell
-# Build a wheel for your current Python and install it
-.\build.ps1
-
-# Or: fast dev iteration (cmake only, no wheel)
-.\build.ps1 -Dev
-```
-
-Or manually:
+**One command** — configure, compile, and produce a wheel in `dist/`:
 
 ```bash
-pip install .
+# Windows
+cmake --preset release-windows
+cmake --build --preset release-windows
+
+# Linux
+cmake --preset release-linux
+cmake --build --preset release-linux
 ```
 
-### Multi-version wheels (CI)
+The wheel appears in `dist/`. Install it:
 
-```powershell
-.\build_wheels.ps1 -Versions "3.9","3.10","3.11","3.12"
+```bash
+pip install dist/vultorch-*.whl
+```
+
+Or use the convenience scripts:
+
+```bash
+# Windows
+build.bat
+
+# Linux / macOS
+./build.sh
 ```
 
 ## Architecture
@@ -143,26 +151,25 @@ vultorch/
 │   ├── engine.cpp/h        # Vulkan + SDL3 + ImGui engine
 │   ├── tensor_texture.*    # CUDA ↔ Vulkan zero-copy interop
 │   ├── scene_renderer.*    # Offscreen 3D renderer (MSAA, Blinn-Phong)
-│   ├── bindings.cpp        # pybind11 bindings
-│   └── shaders/            # GLSL vertex/fragment shaders
+│   ├── bindings.cpp        # pybind11 Python bindings
+│   └── shaders/            # GLSL shaders → SPIR-V
 ├── vultorch/               # Python package
 │   └── __init__.py         # High-level API (Window, show, SceneView)
 ├── external/               # Git submodules
-│   ├── pybind11/           # C++ ↔ Python bindings
-│   ├── SDL/                # Window + input (SDL3)
+│   ├── pybind11/           # C++ ↔ Python binding
+│   ├── SDL/                # Window / input (SDL3)
 │   └── imgui/              # Dear ImGui (docking branch)
-└── examples/               # Ready-to-run demos
+├── examples/               # Ready-to-run demos
+├── tools/                  # Build utilities
+└── docs/                   # GitHub Pages website
 ```
 
-## Requirements
+## Use Cases
 
-| Component | Required | Notes |
-|-----------|----------|-------|
-| GPU | ✅ | Any Vulkan-capable GPU |
-| Vulkan SDK | Build only | Not needed at runtime |
-| CUDA Toolkit | Optional | Required for `show()` and `create_tensor()` |
-| Python | 3.9+ | |
-| PyTorch | Optional | Required for tensor operations |
+- **Neural texture training** — see texture outputs evolve in real-time
+- **NeRF / 3DGS** — visualize novel views during optimization
+- **Diffusion models** — watch denoising steps live
+- **Any GPU research** — instant visual feedback without leaving Python
 
 ## License
 
@@ -172,6 +179,6 @@ vultorch/
 
 <div align="center">
 
-**[Examples](examples/) · [API Reference](vultorch/__init__.py) · [中文文档](README_CN.md)**
+**[Examples](examples/) · [Website](https://vultorch.github.io/vultorch/) · [中文文档](README_CN.md)**
 
 </div>
