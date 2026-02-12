@@ -22,16 +22,18 @@ Visualize CUDA tensors at GPU speed — zero CPU readback, zero staging buffers.
 
 ## Overview
 
-Vultorch displays CUDA tensors in a native window by sharing GPU memory between PyTorch and Vulkan. Data stays on the GPU — there is no `tensor.cpu()` readback and no staging buffer copy.
+Vultorch displays CUDA tensors in a native window — data never leaves the GPU.
+`show()` performs a fast GPU-GPU copy; `create_tensor()` eliminates even that via Vulkan shared memory.
 
 ```python
-vultorch.show(tensor)   # zero-copy, submillisecond
+vultorch.show(tensor)           # GPU-only, no CPU readback
+tensor = vultorch.create_tensor(...)  # true zero-copy, no memcpy at all
 ```
 
 ## Key Features
 
-- **Zero-copy display** — Vulkan external memory interop, data never leaves the GPU
-- **True shared memory** — `vultorch.create_tensor()` returns a torch.Tensor backed by Vulkan memory (DLPack)
+- **GPU-only display** — `vultorch.show(tensor)` does a fast GPU-GPU copy to Vulkan, no CPU readback ever
+- **True zero-copy** — `vultorch.create_tensor()` returns a torch.Tensor backed by Vulkan shared memory — zero memcpy
 - **One-line API** — `vultorch.show(tensor)` handles format conversion, upload, and display
 - **Built-in ImGui** — Sliders, buttons, color pickers, plots, docking layout — all from Python
 - **3D scene view** — Map textures onto lit 3D planes with orbit camera, MSAA, Blinn-Phong shading
@@ -54,7 +56,7 @@ win = vultorch.Window("Neural Texture Viewer", 800, 600)
 while win.poll():
     if not win.begin_frame(): continue
     ui.begin("Output")
-    vultorch.show(texture)  # zero-copy GPU → screen
+    vultorch.show(texture)  # GPU-only, no CPU round-trip
     ui.end()
     win.end_frame()
 win.destroy()

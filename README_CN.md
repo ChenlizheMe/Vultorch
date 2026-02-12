@@ -22,16 +22,18 @@
 
 ## 概述
 
-Vultorch 通过 PyTorch 与 Vulkan 共享 GPU 显存，在原生窗口中显示 CUDA 张量。数据全程留在 GPU 上 — 无需 `tensor.cpu()` 回读，无中转缓冲拷贝。
+Vultorch 在原生窗口中显示 CUDA 张量 — 数据全程不离开 GPU。
+`show()` 执行快速 GPU-GPU 拷贝；`create_tensor()` 通过 Vulkan 共享显存连这一步都省去。
 
 ```python
-vultorch.show(tensor)   # 零拷贝，亚毫秒
+vultorch.show(tensor)           # 纯 GPU，无 CPU 回读
+tensor = vultorch.create_tensor(...)  # 真零拷贝，无任何 memcpy
 ```
 
 ## 核心特性
 
-- **零拷贝显示** — Vulkan 外部内存互操作，数据全程不离开 GPU
-- **真正的共享显存** — `vultorch.create_tensor()` 返回由 Vulkan 内存支持的 torch.Tensor（DLPack）
+- **纯 GPU 显示** — `vultorch.show(tensor)` 执行快速 GPU-GPU 拷贝至 Vulkan，绝不回读 CPU
+- **真零拷贝** — `vultorch.create_tensor()` 返回由 Vulkan 共享显存支持的 torch.Tensor — 零 memcpy
 - **一行 API** — `vultorch.show(tensor)` 自动处理格式转换、上传和显示
 - **内置 ImGui** — 滑条、按钮、颜色选择器、折线图、停靠布局 — 全部用 Python 调用
 - **3D 场景** — 将纹理映射到带光照的 3D 平面，支持轨道相机 + MSAA + Blinn-Phong
@@ -54,7 +56,7 @@ win = vultorch.Window("查看器", 800, 600)
 while win.poll():
     if not win.begin_frame(): continue
     ui.begin("输出")
-    vultorch.show(texture)  # 零拷贝 GPU → 屏幕
+    vultorch.show(texture)  # 纯 GPU，无 CPU 回传
     ui.end()
     win.end_frame()
 win.destroy()
