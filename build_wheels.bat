@@ -6,7 +6,7 @@ REM  Requires conda.  Usage:  build_wheels.bat [3.9 3.10 3.11 3.12]
 REM ═══════════════════════════════════════════════════════════
 
 if "%~1"=="" (
-    set VERSIONS=3.9 3.10 3.11 3.12
+    set VERSIONS=3.8 3.9 3.10 3.11 3.12
 ) else (
     set VERSIONS=%*
 )
