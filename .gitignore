@@ -49,3 +49,6 @@ imgui.ini
 venv/
 .env/
 *.log
+
+# —— Others ——
+pypi_token.txt
