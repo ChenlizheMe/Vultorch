@@ -10,7 +10,7 @@ Visualize CUDA tensors at GPU speed — zero CPU readback, zero staging buffers.
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
 [![Vulkan](https://img.shields.io/badge/Vulkan-1.2-red.svg)](https://vulkan.org)
 
-**[🇨🇳 中文](README_CN.md) · [🌐 Website](https://vultorch.github.io/vultorch/)**
+**[🇨🇳 中文](README_CN.md) · [🌐 Website](https://ChenlizheMe.github.io/Vultorch/)**
 
 </div>
 
@@ -102,7 +102,7 @@ python examples/01_hello_tensor.py
 ### Clone & Build
 
 ```bash
-git clone --recursive https://github.com/vultorch/vultorch.git
+git clone --recursive https://github.com/ChenlizheMe/Vultorch.git
 cd vultorch
 ```
 
@@ -163,6 +163,6 @@ vultorch/
 
 <div align="center">
 
-**[Examples](examples/) · [Website](https://vultorch.github.io/vultorch/) · [中文文档](README_CN.md)**
+**[Examples](examples/) · [Website](https://ChenlizheMe.github.io/Vultorch/) · [中文文档](README_CN.md)**
 
 </div>

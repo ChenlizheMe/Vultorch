@@ -24,10 +24,10 @@ classifiers = [
 keywords = ["vulkan", "pytorch", "tensor", "visualization", "imgui", "gpu", "cuda", "zero-copy"]
 
 [project.urls]
-Homepage = "https://github.com/vultorch/vultorch"
-Documentation = "https://github.com/vultorch/vultorch#readme"
-Repository = "https://github.com/vultorch/vultorch"
-Issues = "https://github.com/vultorch/vultorch/issues"
+Homepage = "https://github.com/ChenlizheMe/Vultorch"
+Documentation = "https://github.com/ChenlizheMe/Vultorch#readme"
+Repository = "https://github.com/ChenlizheMe/Vultorch"
+Issues = "https://github.com/ChenlizheMe/Vultorch/issues"
 
 [build-system]
 requires = ["scikit-build-core>=0.8", "pybind11>=2.11"]

@@ -10,7 +10,7 @@
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
 [![Vulkan](https://img.shields.io/badge/Vulkan-1.2-red.svg)](https://vulkan.org)
 
-**[🇬🇧 English](README.md) · [🌐 网站](https://vultorch.github.io/vultorch/)**
+**[🇬🇧 English](README.md) · [🌐 网站](https://ChenlizheMe.github.io/Vultorch/)**
 
 </div>
 
@@ -102,7 +102,7 @@ python examples/01_hello_tensor.py
 ### 克隆与构建
 
 ```bash
-git clone --recursive https://github.com/vultorch/vultorch.git
+git clone --recursive https://github.com/ChenlizheMe/Vultorch.git
 cd vultorch
 ```
 
@@ -163,6 +163,6 @@ vultorch/
 
 <div align="center">
 
-**[示例](examples/) · [网站](https://vultorch.github.io/vultorch/) · [English](README.md)**
+**[示例](examples/) · [网站](https://ChenlizheMe.github.io/Vultorch/) · [English](README.md)**
 
 </div>
