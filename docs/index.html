@@ -3,129 +3,398 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vultorch — Real-time Torch Visualization</title>
+<title>Vultorch — GPU-Native Visualization for Neural Rendering</title>
 <style>
 :root {
-  --bg:         #0d1117;
-  --bg-card:    #161b22;
-  --bg-code:    #1c2128;
-  --border:     #30363d;
-  --text:       #c9d1d9;
-  --text-dim:   #8b949e;
-  --accent:     #58a6ff;
-  --accent-dim: #1f6feb;
-  --accent-glow:rgba(88,166,255,0.15);
+  --bg:         #08090d;
+  --bg-card:    #12141c;
+  --bg-code:    #151821;
+  --border:     #1e2332;
+  --border-lit: #2a3148;
+  --text:       #c4cde0;
+  --text-dim:   #6b7a96;
+  --accent:     #6e8eff;
+  --accent2:    #a78bfa;
+  --accent3:    #34d399;
+  --accent-dim: #3b4f9e;
+  --accent-glow:rgba(110,142,255,0.12);
+  --grad-start: #6e8eff;
+  --grad-end:   #a78bfa;
 }
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
 html { scroll-behavior:smooth; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.6;
+  line-height: 1.7;
   min-height: 100vh;
+  overflow-x: hidden;
 }
-a { color: var(--accent); text-decoration:none; }
-a:hover { text-decoration:underline; }
+a { color: var(--accent); text-decoration:none; transition: color .2s; }
+a:hover { color: var(--accent2); }
 code {
   background: var(--bg-code);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.9em;
-  font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 0.88em;
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+  border: 1px solid var(--border);
 }
 pre {
   background: var(--bg-code);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px 20px;
+  border-radius: 10px;
+  padding: 20px 24px;
   overflow-x: auto;
-  font-size: 0.88em;
-  line-height: 1.5;
-  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.87em;
+  line-height: 1.6;
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
 }
-pre code { background:none; padding:0; }
+pre code { background:none; padding:0; border:none; font-size:1em; }
 
-.container { max-width:800px; margin:0 auto; padding:0 24px; }
+.container { max-width:920px; margin:0 auto; padding:0 28px; }
 
 /* ── Language toggle ──────────────────────────── */
 .lang-toggle {
-  position: fixed; top:16px; right:20px; z-index:100;
-  display:flex; gap:4px;
-  background: var(--bg-card);
+  position: fixed; top:18px; right:22px; z-index:100;
+  display:flex; gap:2px;
+  background: rgba(18,20,28,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 4px;
 }
 .lang-toggle button {
   background:none; border:none; color:var(--text-dim);
-  padding:6px 14px; border-radius:6px; cursor:pointer;
-  font-size:0.85em; font-weight:500; transition:all .2s;
+  padding:6px 16px; border-radius:8px; cursor:pointer;
+  font-size:0.82em; font-weight:600; transition:all .25s;
+  letter-spacing: 0.03em;
 }
 .lang-toggle button.active {
-  background:var(--accent-dim); color:#fff;
+  background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+  color:#fff;
+  box-shadow: 0 2px 12px rgba(110,142,255,0.3);
 }
 .lang-toggle button:hover:not(.active) {
   background:var(--accent-glow); color:var(--accent);
 }
 
-/* ── Header ───────────────────────────────────── */
+/* ── Background grid ──────────────────────────── */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:-1;
+  background-image:
+    linear-gradient(rgba(110,142,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(110,142,255,0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+/* ── Hero ─────────────────────────────────────── */
 .hero {
   text-align:center;
-  padding: 80px 0 40px;
+  padding: 100px 0 32px;
+  position: relative;
+}
+.hero::before {
+  content:'';
+  position:absolute;
+  top: -120px; left:50%; transform:translateX(-50%);
+  width:700px; height:500px;
+  background: radial-gradient(ellipse, rgba(110,142,255,0.08) 0%, transparent 70%);
+  pointer-events:none;
 }
 .hero h1 {
-  font-size: 2.8em;
+  font-size: 3.4em;
   font-weight: 800;
-  color: #fff;
-  margin-bottom: 12px;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #fff 0%, #c4cde0 50%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+  position: relative;
 }
 .hero .tagline {
-  font-size: 1.1em;
+  font-size: 1.18em;
   color: var(--text-dim);
-  max-width: 620px;
-  margin: 0 auto 24px;
+  max-width: 600px;
+  margin: 0 auto 28px;
+  line-height: 1.7;
 }
-.hero .badges { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:20px; }
+.hero .badges {
+  display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:24px;
+}
 .hero .badges img { height:22px; }
-.hero-links { display:flex; gap:16px; justify-content:center; font-size:0.95em; }
+.hero-links {
+  display:flex; gap:8px; justify-content:center; font-size:0.92em;
+}
+.hero-links a {
+  padding: 8px 22px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: all .25s;
+  font-weight: 500;
+}
+.hero-links a:hover {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+.hero-links a.primary {
+  background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+  border: none;
+  color: #fff;
+  font-weight: 600;
+}
+.hero-links a.primary:hover {
+  box-shadow: 0 4px 20px rgba(110,142,255,0.35);
+  transform: translateY(-1px);
+}
+
+/* ── Screenshot ───────────────────────────────── */
+.screenshot {
+  margin: 48px auto 0;
+  max-width: 860px;
+  padding: 0 28px;
+}
+.screenshot-frame {
+  border-radius: 14px;
+  border: 1px solid var(--border-lit);
+  overflow: hidden;
+  box-shadow:
+    0 4px 24px rgba(0,0,0,0.4),
+    0 0 80px rgba(110,142,255,0.06);
+  position: relative;
+}
+.screenshot-frame::before {
+  content:'';
+  position:absolute;
+  inset:-1px;
+  border-radius:14px;
+  padding:1px;
+  background: linear-gradient(135deg, rgba(110,142,255,0.2), rgba(167,139,250,0.1), transparent 60%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events:none;
+}
+.screenshot-frame img {
+  width: 100%;
+  display: block;
+}
+.screenshot-caption {
+  text-align:center;
+  margin-top:14px;
+  color:var(--text-dim);
+  font-size:0.85em;
+}
+
+/* ── Divider ──────────────────────────────────── */
+.divider {
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--grad-start), var(--grad-end));
+  border: none;
+  margin: 0 auto;
+  border-radius: 2px;
+  opacity: 0.5;
+}
 
 /* ── Sections ─────────────────────────────────── */
-section { padding: 40px 0; }
+section { padding: 56px 0; }
 section h2 {
-  font-size: 1.5em; font-weight:700; margin-bottom:16px;
+  font-size: 1.6em; font-weight:700; margin-bottom:20px;
   color: #fff;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+section h2 .accent-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+  border-radius: 50%;
+  margin-right: 12px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
 }
 
-/* ── Feature list ─────────────────────────────── */
-.features { list-style:none; margin:0; padding:0; }
-.features li { padding:6px 0; color:var(--text); }
-.features li::before { content:"• "; color:var(--accent); }
+/* ── Glass cards ──────────────────────────────── */
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 30px;
+  margin: 20px 0;
+  position: relative;
+  overflow: hidden;
+}
+.glass-card::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, rgba(110,142,255,0.15), transparent);
+}
+
+/* ── Use-case grid ────────────────────────────── */
+.usecase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+.usecase-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 24px;
+  transition: border-color .25s, box-shadow .25s;
+}
+.usecase-item:hover {
+  border-color: var(--accent-dim);
+  box-shadow: 0 0 24px rgba(110,142,255,0.06);
+}
+.usecase-item .uc-icon {
+  font-size: 1.6em;
+  margin-bottom: 10px;
+  display: block;
+}
+.usecase-item h4 {
+  color: #fff;
+  font-size: 0.98em;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.usecase-item p {
+  color: var(--text-dim);
+  font-size: 0.88em;
+  line-height: 1.6;
+}
+
+/* ── Feature pills ────────────────────────────── */
+.feature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+.feature-pill {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.92em;
+  transition: border-color .2s;
+}
+.feature-pill:hover { border-color: var(--border-lit); }
+.feature-pill .fp-icon {
+  flex-shrink:0;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95em;
+  background: var(--accent-glow);
+}
+
+/* ── Install section ──────────────────────────── */
+.install-cmd {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 22px;
+  font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+  font-size: 0.95em;
+  margin: 16px 0;
+}
+.install-cmd .prompt { color: var(--accent3); user-select:none; }
+.install-cmd .cmd { color: var(--text); }
+
+/* ── Requirements ─────────────────────────────── */
+.req-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.req-item {
+  padding: 14px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.req-item .req-label {
+  font-size: 0.78em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.req-item .req-val {
+  font-size: 0.92em;
+  color: var(--text);
+}
 
 /* ── Code section ─────────────────────────────── */
-.code-section { margin:20px 0; }
-.code-section h3 { color:var(--text-dim); margin-bottom:8px; font-size:0.95em; font-weight:600; }
-
-/* ── Requirements table ───────────────────────── */
-.req-table { width:100%; border-collapse:collapse; margin:16px 0; }
-.req-table th, .req-table td { text-align:left; padding:8px 12px; border-bottom:1px solid var(--border); }
-.req-table th { color:var(--text-dim); font-weight:600; font-size:0.85em; }
-
-/* ── Examples list ────────────────────────────── */
-.examples-list { list-style:none; }
-.examples-list li {
-  padding:10px 0; border-bottom:1px solid var(--border);
-  display:flex; gap:12px; align-items:baseline;
+.code-section { margin:24px 0; }
+.code-section h3 {
+  color:var(--text-dim); margin-bottom:10px;
+  font-size:0.88em; font-weight:600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
-.examples-list li:last-child { border-bottom:none; }
-.examples-list .ex-name { font-weight:600; color:var(--accent); min-width:200px; }
-.examples-list .ex-desc { color:var(--text-dim); }
+
+/* ── Examples ─────────────────────────────────── */
+.examples-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.example-card {
+  display: block;
+  padding: 18px 22px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: all .25s;
+}
+.example-card:hover {
+  border-color: var(--accent-dim);
+  box-shadow: 0 0 20px rgba(110,142,255,0.06);
+  transform: translateY(-2px);
+}
+.example-card .ec-num {
+  font-size: 0.75em;
+  color: var(--accent);
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 6px;
+}
+.example-card .ec-name {
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.95em;
+  margin-bottom: 4px;
+}
+.example-card .ec-desc {
+  font-size: 0.85em;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
 
 /* ── Footer ───────────────────────────────────── */
 footer {
-  text-align:center; padding:40px 0;
+  text-align:center; padding:48px 0;
   color:var(--text-dim); font-size:0.85em;
   border-top:1px solid var(--border);
 }
@@ -138,11 +407,16 @@ body.cn .lang-en-inline { display:none; }
 body.cn .lang-cn-inline { display:inline; }
 .lang-cn-inline { display:none; }
 
-@media (max-width:640px) {
-  .hero h1 { font-size:2em; }
-  .hero { padding:60px 0 30px; }
+@media (max-width:700px) {
+  .hero h1 { font-size:2.2em; }
+  .hero { padding:70px 0 24px; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .usecase-grid { grid-template-columns: 1fr; }
+  .examples-grid { grid-template-columns: 1fr; }
 }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -152,29 +426,30 @@ body.cn .lang-cn-inline { display:inline; }
   <button id="btn-cn" onclick="setLang('cn')">中文</button>
 </div>
 
-<!-- ═══════════════════════ HEADER ═══════════════════════ -->
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
 <header class="hero">
   <div class="container">
     <h1>Vultorch</h1>
     <p class="tagline lang-en">
-      Real-time Torch visualization window with Vulkan zero-copy rendering.
+      Real-time tensor visualization for neural rendering research.<br>
+      Zero-copy from CUDA to screen via Vulkan external memory.
     </p>
     <p class="tagline lang-cn">
-      基于 Vulkan 零拷贝渲染的实时 Torch 可视化窗口。
+      面向神经渲染研究的实时张量可视化。<br>
+      通过 Vulkan 外部内存实现 CUDA 到屏幕的零拷贝。
     </p>
     <div class="badges">
       <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT">
       <img src="https://img.shields.io/badge/Python-3.8%2B-blue.svg" alt="Python 3.8+">
       <img src="https://img.shields.io/badge/Vulkan-1.2-red.svg" alt="Vulkan 1.2">
+      <img src="https://img.shields.io/pypi/v/vultorch?color=blue" alt="PyPI">
     </div>
     <div class="hero-links">
-      <a href="https://github.com/ChenlizheMe/Vultorch">GitHub</a>
-      <span style="color:var(--border)">·</span>
-      <a href="#install">
-        <span class="lang-en-inline">Install</span>
-        <span class="lang-cn-inline">安装</span>
+      <a class="primary" href="#install">
+        <span class="lang-en-inline">Get Started</span>
+        <span class="lang-cn-inline">开始使用</span>
       </a>
-      <span style="color:var(--border)">·</span>
+      <a href="https://github.com/ChenlizheMe/Vultorch">GitHub</a>
       <a href="#examples">
         <span class="lang-en-inline">Examples</span>
         <span class="lang-cn-inline">示例</span>
@@ -183,109 +458,213 @@ body.cn .lang-cn-inline { display:inline; }
   </div>
 </header>
 
-<!-- ═══════════════════ OVERVIEW ═══════════════════ -->
+<!-- ═══════════════════ SCREENSHOT ═══════════════════ -->
+<div class="screenshot">
+  <div class="screenshot-frame">
+    <img src="images/example.png" alt="Vultorch visualization window">
+  </div>
+  <p class="screenshot-caption lang-en">Real-time tensor visualization with ImGui docking interface</p>
+  <p class="screenshot-caption lang-cn">基于 ImGui 停靠界面的实时张量可视化</p>
+</div>
+
+<!-- ═══════════════════ USE CASES ═══════════════════ -->
 <section>
   <div class="container">
     <h2>
-      <span class="lang-en">Overview</span>
-      <span class="lang-cn">概述</span>
+      <span class="accent-dot"></span>
+      <span class="lang-en">Built for Local GPU Training</span>
+      <span class="lang-cn">为本地 GPU 训练而生</span>
     </h2>
-    <p class="lang-en">
-      Vultorch displays CUDA tensors in a native window by sharing GPU memory between PyTorch and Vulkan.
-      Data stays on the GPU — there is no <code>tensor.cpu()</code> readback and no staging buffer copy.
-      It includes a built-in ImGui interface with sliders, plots, dockable windows, and a 3D scene viewer.
+    <p class="lang-en" style="color:var(--text-dim); margin-bottom:8px;">
+      When you're training on your own machine, you can see what your model sees — in real time, with no overhead.
     </p>
-    <p class="lang-cn">
-      Vultorch 通过 PyTorch 与 Vulkan 共享 GPU 显存，在原生窗口中显示 CUDA 张量。
-      数据全程留在 GPU 上 — 无需 <code>tensor.cpu()</code> 回读，无中转缓冲拷贝。
-      内置 ImGui 界面，支持滑条、折线图、停靠窗口和 3D 场景查看器。
+    <p class="lang-cn" style="color:var(--text-dim); margin-bottom:8px;">
+      在自己的机器上训练时，实时看到模型输出 — 无额外开销。
     </p>
+    <div class="usecase-grid">
 
-    <ul class="features" style="margin-top:16px;">
-      <li class="lang-en">Zero-copy display via Vulkan external memory interop</li>
-      <li class="lang-cn">通过 Vulkan 外部内存互操作实现零拷贝显示</li>
-      <li class="lang-en">Shared GPU memory — <code>create_tensor()</code> returns a torch.Tensor backed by Vulkan memory (DLPack)</li>
-      <li class="lang-cn">共享 GPU 显存 — <code>create_tensor()</code> 返回由 Vulkan 内存支持的 torch.Tensor（DLPack）</li>
-      <li class="lang-en">Built-in ImGui: sliders, buttons, color pickers, plots, docking layout</li>
-      <li class="lang-cn">内置 ImGui：滑条、按钮、颜色选择器、折线图、停靠布局</li>
-      <li class="lang-en">3D scene view with orbit camera, MSAA, Blinn-Phong shading</li>
-      <li class="lang-cn">3D 场景查看器，支持轨道相机、MSAA、Blinn-Phong 光照</li>
-      <li class="lang-en">DockBuilder API for programmatic window layout</li>
-      <li class="lang-cn">DockBuilder API 支持代码化窗口布局</li>
-    </ul>
+      <div class="usecase-item">
+        <span class="uc-icon">🧊</span>
+        <h4 class="lang-en">Neural Textures</h4>
+        <h4 class="lang-cn">神经纹理</h4>
+        <p class="lang-en">Watch textures converge and spot artifacts during training without saving intermediate PNGs.</p>
+        <p class="lang-cn">训练过程中实时观察纹理收敛、发现伪影，无需保存中间 PNG。</p>
+      </div>
+
+      <div class="usecase-item">
+        <span class="uc-icon">🌐</span>
+        <h4 class="lang-en">NeRF / 3D Gaussians</h4>
+        <h4 class="lang-cn">NeRF / 3D 高斯</h4>
+        <p class="lang-en">Inspect rendered views frame-by-frame as your radiance field trains. Adjust params with live sliders.</p>
+        <p class="lang-cn">逐帧检查辐射场训练过程中的渲染视图，通过滑条实时调整参数。</p>
+      </div>
+
+      <div class="usecase-item">
+        <span class="uc-icon">🎨</span>
+        <h4 class="lang-en">Differentiable Rendering</h4>
+        <h4 class="lang-cn">可微渲染</h4>
+        <p class="lang-en">Display rendered images and gradient maps side-by-side. Data never leaves the GPU.</p>
+        <p class="lang-cn">并排显示渲染图与梯度图，数据全程不离开 GPU。</p>
+      </div>
+
+      <div class="usecase-item">
+        <span class="uc-icon">🔬</span>
+        <h4 class="lang-en">Material & BRDF Fitting</h4>
+        <h4 class="lang-cn">材质 / BRDF 拟合</h4>
+        <p class="lang-en">Visualize BRDF lobes and material parameters as they optimize, with interactive 3D preview.</p>
+        <p class="lang-cn">在交互式 3D 预览中实时观察 BRDF 和材质参数的优化过程。</p>
+      </div>
+
+      <div class="usecase-item">
+        <span class="uc-icon">🖼️</span>
+        <h4 class="lang-en">Image-to-Image Networks</h4>
+        <h4 class="lang-cn">图像转换网络</h4>
+        <p class="lang-en">Style transfer, super-resolution, inpainting — see outputs refresh every iteration.</p>
+        <p class="lang-cn">风格迁移、超分辨率、修复 — 每个迭代实时刷新输出。</p>
+      </div>
+
+      <div class="usecase-item">
+        <span class="uc-icon">📐</span>
+        <h4 class="lang-en">Geometry Learning</h4>
+        <h4 class="lang-cn">几何学习</h4>
+        <p class="lang-en">SDF fields, mesh deformation, point clouds — use the built-in 3D viewer for orbit inspection.</p>
+        <p class="lang-cn">SDF 场、网格形变、点云 — 使用内置 3D 查看器轨道检视。</p>
+      </div>
+
+    </div>
   </div>
 </section>
+
+<hr class="divider">
+
+<!-- ═══════════════════ HOW IT WORKS ═══════════════════ -->
+<section>
+  <div class="container">
+    <h2>
+      <span class="accent-dot"></span>
+      <span class="lang-en">How It Works</span>
+      <span class="lang-cn">工作原理</span>
+    </h2>
+
+    <div class="feature-grid">
+      <div class="feature-pill">
+        <div class="fp-icon">⚡</div>
+        <div>
+          <div class="lang-en" style="color:#fff; font-weight:600; font-size:0.92em;">Zero-Copy Path</div>
+          <div class="lang-cn" style="color:#fff; font-weight:600; font-size:0.92em;">零拷贝通路</div>
+          <div class="lang-en" style="color:var(--text-dim); font-size:0.85em; margin-top:2px;">Vulkan external memory → CUDA import → <code>torch.Tensor</code>. No staging buffer, no CPU round-trip.</div>
+          <div class="lang-cn" style="color:var(--text-dim); font-size:0.85em; margin-top:2px;">Vulkan 外部内存 → CUDA 导入 → <code>torch.Tensor</code>，无中转缓冲，无 CPU 回传。</div>
+        </div>
+      </div>
+      <div class="feature-pill">
+        <div class="fp-icon">🖥️</div>
+        <div>
+          <div class="lang-en" style="color:#fff; font-weight:600; font-size:0.92em;">Native Window</div>
+          <div class="lang-cn" style="color:#fff; font-weight:600; font-size:0.92em;">原生窗口</div>
+          <div class="lang-en" style="color:var(--text-dim); font-size:0.85em; margin-top:2px;">Real OS window via SDL — not a browser tab or notebook widget. Full keyboard & mouse input.</div>
+          <div class="lang-cn" style="color:var(--text-dim); font-size:0.85em; margin-top:2px;">SDL 原生窗口 — 非浏览器或 notebook 组件，完整键鼠交互。</div>
+        </div>
+      </div>
+      <div class="feature-pill">
+        <div class="fp-icon">🎛️</div>
+        <div>
+          <div class="lang-en" style="color:#fff; font-weight:600; font-size:0.92em;">ImGui Interface</div>
+          <div class="lang-cn" style="color:#fff; font-weight:600; font-size:0.92em;">ImGui 界面</div>
+          <div class="lang-en" style="color:var(--text-dim); font-size:0.85em; margin-top:2px;">Sliders, color pickers, plots, buttons. DockBuilder for programmatic panel layout.</div>
+          <div class="lang-cn" style="color:var(--text-dim); font-size:0.85em; margin-top:2px;">滑条、颜色选择器、折线图、按钮。DockBuilder 支持代码化面板布局。</div>
+        </div>
+      </div>
+      <div class="feature-pill">
+        <div class="fp-icon">🔮</div>
+        <div>
+          <div class="lang-en" style="color:#fff; font-weight:600; font-size:0.92em;">3D Scene Viewer</div>
+          <div class="lang-cn" style="color:#fff; font-weight:600; font-size:0.92em;">3D 场景查看器</div>
+          <div class="lang-en" style="color:var(--text-dim); font-size:0.85em; margin-top:2px;">Orbit camera, MSAA, Blinn-Phong shading. Inspect meshes and point clouds directly.</div>
+          <div class="lang-cn" style="color:var(--text-dim); font-size:0.85em; margin-top:2px;">轨道相机、MSAA、Blinn-Phong 光照。直接检视网格与点云。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
 
 <!-- ═══════════════════ INSTALL ═══════════════════ -->
 <section id="install">
   <div class="container">
     <h2>
+      <span class="accent-dot"></span>
       <span class="lang-en">Install</span>
       <span class="lang-cn">安装</span>
     </h2>
 
-    <div class="code-section">
-      <pre><code>pip install vultorch</code></pre>
+    <div class="install-cmd">
+      <span class="prompt">$</span>
+      <span class="cmd">pip install vultorch</span>
     </div>
 
-    <h3 style="color:var(--text); margin:20px 0 8px; font-size:1em;">
+    <h3 style="color:var(--text); margin:24px 0 12px; font-size:0.88em; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">
       <span class="lang-en">Requirements</span>
       <span class="lang-cn">环境要求</span>
     </h3>
-    <table class="req-table">
-      <tr>
-        <td>Python</td>
-        <td>3.8+</td>
-      </tr>
-      <tr>
-        <td>
+    <div class="req-grid">
+      <div class="req-item">
+        <div class="req-label">Python</div>
+        <div class="req-val">3.8+</div>
+      </div>
+      <div class="req-item">
+        <div class="req-label">
           <span class="lang-en">GPU</span>
           <span class="lang-cn">显卡</span>
-        </td>
-        <td>
-          <span class="lang-en">Any GPU with Vulkan support (NVIDIA, AMD, Intel)</span>
-          <span class="lang-cn">任何支持 Vulkan 的显卡（NVIDIA、AMD、Intel）</span>
-        </td>
-      </tr>
-      <tr>
-        <td>Vulkan</td>
-        <td>
-          <span class="lang-en">Ships with your GPU driver — no separate install needed</span>
-          <span class="lang-cn">随 GPU 驱动自带 — 无需单独安装</span>
-        </td>
-      </tr>
-      <tr>
-        <td>CUDA</td>
-        <td>
-          <span class="lang-en">Optional — needed for <code>show()</code> and <code>create_tensor()</code></span>
-          <span class="lang-cn">可选 — <code>show()</code> 和 <code>create_tensor()</code> 需要</span>
-        </td>
-      </tr>
-      <tr>
-        <td>
+        </div>
+        <div class="req-val">
+          <span class="lang-en">Vulkan-capable (NVIDIA / AMD / Intel)</span>
+          <span class="lang-cn">支持 Vulkan（NVIDIA / AMD / Intel）</span>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="req-label">Vulkan</div>
+        <div class="req-val">
+          <span class="lang-en">Ships with GPU driver</span>
+          <span class="lang-cn">随 GPU 驱动自带</span>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="req-label">CUDA</div>
+        <div class="req-val">
+          <span class="lang-en">For <code>show()</code> / <code>create_tensor()</code></span>
+          <span class="lang-cn"><code>show()</code> / <code>create_tensor()</code> 需要</span>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="req-label">
           <span class="lang-en">Platform</span>
           <span class="lang-cn">平台</span>
-        </td>
-        <td>Windows (Linux planned)</td>
-      </tr>
-    </table>
+        </div>
+        <div class="req-val">Windows (Linux planned)</div>
+      </div>
+    </div>
   </div>
 </section>
+
+<hr class="divider">
 
 <!-- ═══════════════════ USAGE ═══════════════════ -->
 <section>
   <div class="container">
     <h2>
-      <span class="lang-en">Usage</span>
-      <span class="lang-cn">用法</span>
+      <span class="accent-dot"></span>
+      <span class="lang-en">Quick Start</span>
+      <span class="lang-cn">快速开始</span>
     </h2>
 
-    <div class="code-section">
-      <h3>
-        <span class="lang-en">Basic visualization</span>
-        <span class="lang-cn">基本用法</span>
-      </h3>
-      <pre><code><span style="color:#ff7b72">import</span> torch, vultorch
+    <div class="glass-card">
+      <div class="code-section" style="margin:0;">
+        <h3>
+          <span class="lang-en">Display a CUDA tensor</span>
+          <span class="lang-cn">显示 CUDA 张量</span>
+        </h3>
+        <pre><code><span style="color:#ff7b72">import</span> torch, vultorch
 <span style="color:#ff7b72">from</span> vultorch <span style="color:#ff7b72">import</span> ui
 
 texture = torch.rand(<span style="color:#79c0ff">512</span>, <span style="color:#79c0ff">512</span>, <span style="color:#79c0ff">4</span>, device=<span style="color:#a5d6ff">"cuda"</span>)
@@ -298,72 +677,90 @@ win = vultorch.Window(<span style="color:#a5d6ff">"Viewer"</span>, <span style="
     ui.end()
     win.end_frame()
 win.destroy()</code></pre>
+      </div>
     </div>
 
-    <div class="code-section">
-      <h3>
-        <span class="lang-en">Zero-copy shared tensor</span>
-        <span class="lang-cn">零拷贝共享张量</span>
-      </h3>
-      <pre><code>tensor = vultorch.create_tensor(<span style="color:#79c0ff">512</span>, <span style="color:#79c0ff">512</span>, channels=<span style="color:#79c0ff">4</span>)
-tensor[:] = model(input)  <span style="color:#8b949e"># writes are immediately visible on screen</span></code></pre>
+    <div class="glass-card">
+      <div class="code-section" style="margin:0;">
+        <h3>
+          <span class="lang-en">Zero-copy shared tensor — write and display in one buffer</span>
+          <span class="lang-cn">零拷贝共享张量 — 写入即显示</span>
+        </h3>
+        <pre><code><span style="color:#8b949e"># Tensor backed by Vulkan memory, accessible as torch.Tensor</span>
+tensor = vultorch.create_tensor(<span style="color:#79c0ff">512</span>, <span style="color:#79c0ff">512</span>, channels=<span style="color:#79c0ff">4</span>)
+
+<span style="color:#8b949e"># Model writes directly to display buffer — no copy needed</span>
+tensor[:] = model(input)</code></pre>
+      </div>
     </div>
   </div>
 </section>
+
+<hr class="divider">
 
 <!-- ═══════════════════ EXAMPLES ═══════════════════ -->
 <section id="examples">
   <div class="container">
     <h2>
+      <span class="accent-dot"></span>
       <span class="lang-en">Examples</span>
       <span class="lang-cn">示例</span>
     </h2>
-    <ul class="examples-list">
-      <li>
-        <a class="ex-name" href="https://github.com/ChenlizheMe/Vultorch/blob/main/examples/01_hello_tensor.py">01_hello_tensor.py</a>
-        <span class="ex-desc lang-en">Minimal tensor display</span>
-        <span class="ex-desc lang-cn">最简张量显示</span>
-      </li>
-      <li>
-        <a class="ex-name" href="https://github.com/ChenlizheMe/Vultorch/blob/main/examples/02_imgui_controls.py">02_imgui_controls.py</a>
-        <span class="ex-desc lang-en">ImGui widgets with docking layout</span>
-        <span class="ex-desc lang-cn">ImGui 控件 + 停靠布局</span>
-      </li>
-      <li>
-        <a class="ex-name" href="https://github.com/ChenlizheMe/Vultorch/blob/main/examples/03_scene_3d.py">03_scene_3d.py</a>
-        <span class="ex-desc lang-en">3D scene with lighting + orbit camera</span>
-        <span class="ex-desc lang-cn">3D 场景 + 光照 + 轨道相机</span>
-      </li>
-      <li>
-        <a class="ex-name" href="https://github.com/ChenlizheMe/Vultorch/blob/main/examples/04_docking_layout.py">04_docking_layout.py</a>
-        <span class="ex-desc lang-en">Full docking demo with DockBuilder</span>
-        <span class="ex-desc lang-cn">完整停靠窗口 + DockBuilder 布局</span>
-      </li>
-      <li>
-        <a class="ex-name" href="https://github.com/ChenlizheMe/Vultorch/blob/main/examples/05_zero_copy.py">05_zero_copy.py</a>
-        <span class="ex-desc lang-en">True zero-copy shared tensor</span>
-        <span class="ex-desc lang-cn">真零拷贝共享张量</span>
-      </li>
-    </ul>
+
+    <div class="examples-grid">
+      <a class="example-card" href="https://github.com/ChenlizheMe/Vultorch/blob/main/examples/01_hello_tensor.py">
+        <div class="ec-num">01</div>
+        <div class="ec-name">hello_tensor</div>
+        <div class="ec-desc lang-en">Minimal CUDA tensor display</div>
+        <div class="ec-desc lang-cn">最简 CUDA 张量显示</div>
+      </a>
+      <a class="example-card" href="https://github.com/ChenlizheMe/Vultorch/blob/main/examples/02_imgui_controls.py">
+        <div class="ec-num">02</div>
+        <div class="ec-name">imgui_controls</div>
+        <div class="ec-desc lang-en">ImGui widgets with docking layout</div>
+        <div class="ec-desc lang-cn">ImGui 控件 + 停靠布局</div>
+      </a>
+      <a class="example-card" href="https://github.com/ChenlizheMe/Vultorch/blob/main/examples/03_scene_3d.py">
+        <div class="ec-num">03</div>
+        <div class="ec-name">scene_3d</div>
+        <div class="ec-desc lang-en">3D scene with lighting + orbit camera</div>
+        <div class="ec-desc lang-cn">3D 场景 + 光照 + 轨道相机</div>
+      </a>
+      <a class="example-card" href="https://github.com/ChenlizheMe/Vultorch/blob/main/examples/04_docking_layout.py">
+        <div class="ec-num">04</div>
+        <div class="ec-name">docking_layout</div>
+        <div class="ec-desc lang-en">Full DockBuilder layout demo</div>
+        <div class="ec-desc lang-cn">完整 DockBuilder 布局</div>
+      </a>
+      <a class="example-card" href="https://github.com/ChenlizheMe/Vultorch/blob/main/examples/05_zero_copy.py">
+        <div class="ec-num">05</div>
+        <div class="ec-name">zero_copy</div>
+        <div class="ec-desc lang-en">True zero-copy shared tensor</div>
+        <div class="ec-desc lang-cn">真零拷贝共享张量</div>
+      </a>
+    </div>
   </div>
 </section>
+
+<hr class="divider">
 
 <!-- ═══════════════════ BUILD ═══════════════════ -->
 <section>
   <div class="container">
     <h2>
+      <span class="accent-dot"></span>
       <span class="lang-en">Build from Source</span>
       <span class="lang-cn">从源码构建</span>
     </h2>
-    <p class="lang-en" style="margin-bottom:12px;">
-      Building from source requires the <a href="https://vulkan.lunarg.com/sdk/home">Vulkan SDK</a> and CMake 3.25+.
+    <p class="lang-en" style="margin-bottom:14px; color:var(--text-dim);">
+      Requires the <a href="https://vulkan.lunarg.com/sdk/home">Vulkan SDK</a> and CMake 3.25+.
     </p>
-    <p class="lang-cn" style="margin-bottom:12px;">
-      从源码构建需要 <a href="https://vulkan.lunarg.com/sdk/home">Vulkan SDK</a> 和 CMake 3.25+。
+    <p class="lang-cn" style="margin-bottom:14px; color:var(--text-dim);">
+      需要 <a href="https://vulkan.lunarg.com/sdk/home">Vulkan SDK</a> 和 CMake 3.25+。
     </p>
-    <div class="code-section">
-      <pre><code>git clone --recursive https://github.com/ChenlizheMe/Vultorch.git
-cd vultorch
+    <div class="glass-card">
+      <pre style="margin:0;border:none;background:none;"><code>git clone --recursive https://github.com/ChenlizheMe/Vultorch.git
+cd Vultorch
 
 cmake --preset release-windows
 cmake --build --preset release-windows
@@ -376,12 +773,15 @@ pip install dist/vultorch-*.whl</code></pre>
 <!-- ═══════════════════ FOOTER ═══════════════════ -->
 <footer>
   <div class="container">
-    <p>
-      <a href="https://github.com/ChenlizheMe/Vultorch">GitHub</a> ·
+    <p style="margin-bottom:6px;">
+      <a href="https://github.com/ChenlizheMe/Vultorch" style="font-weight:500;">GitHub</a>
+      <span style="color:var(--border); margin:0 10px;">·</span>
+      <a href="https://pypi.org/project/vultorch/" style="font-weight:500;">PyPI</a>
+      <span style="color:var(--border); margin:0 10px;">·</span>
       <span class="lang-en">MIT License</span>
       <span class="lang-cn">MIT 许可证</span>
-      · © 2025 Vultorch
     </p>
+    <p style="font-size:0.8em; color:var(--text-dim);">© 2025 Vultorch</p>
   </div>
 </footer>
 
