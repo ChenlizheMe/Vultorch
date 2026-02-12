@@ -4,12 +4,11 @@
 
 **Real-time Torch Visualization Window · Vulkan Zero-Copy**
 
-Visualize CUDA tensors at GPU speed — zero CPU readback, zero staging buffers.  
-Built for **neural textures**, **NeRF**, **3D Gaussian Splatting**, and any GPU-intensive research that needs fast visual feedback.
+Visualize CUDA tensors at GPU speed — zero CPU readback, zero staging buffers.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://python.org)
-[![Vulkan](https://img.shields.io/badge/Vulkan-1.2%2B-red.svg)](https://vulkan.org)
+[![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
+[![Vulkan](https://img.shields.io/badge/Vulkan-1.2-red.svg)](https://vulkan.org)
 
 **[🇨🇳 中文](README_CN.md) · [🌐 Website](https://vultorch.github.io/vultorch/)**
 
@@ -17,22 +16,13 @@ Built for **neural textures**, **NeRF**, **3D Gaussian Splatting**, and any GPU-
 
 ---
 
-## Why Vultorch?
+## Overview
 
-Training neural textures or generative models? You need to **see** what's happening on the GPU — **now**, not after a slow CPU readback.
-
-Vultorch opens a native Vulkan window and renders your CUDA tensors **directly from GPU memory**:
+Vultorch displays CUDA tensors in a native window by sharing GPU memory between PyTorch and Vulkan. Data stays on the GPU — there is no `tensor.cpu()` readback and no staging buffer copy.
 
 ```python
-vultorch.show(tensor)   # that's it — zero-copy, submillisecond
+vultorch.show(tensor)   # zero-copy, submillisecond
 ```
-
-| Traditional approach | Vultorch |
-|---------------------|----------|
-| `tensor.cpu().numpy()` → matplotlib | **GPU → GPU** via Vulkan external memory |
-| 10–50 ms per frame | **< 0.1 ms** per frame |
-| Blocks training | Non-blocking, zero-copy |
-| No interactivity | Built-in ImGui: sliders, plots, docking |
 
 ## Key Features
 
@@ -102,11 +92,12 @@ python examples/01_hello_tensor.py
 
 | Component | Required | Notes |
 |-----------|----------|-------|
-| **GPU** | ✅ | Any Vulkan-capable GPU |
-| **Vulkan SDK** | Build time | [lunarg.com/vulkan-sdk](https://vulkan.lunarg.com/sdk/home) |
+| **GPU** | ✅ | Any Vulkan-capable GPU (NVIDIA, AMD, Intel) |
+| **Vulkan** | Runtime | Ships with your GPU driver — no separate install needed |
+| **Vulkan SDK** | Build only | [lunarg.com/vulkan-sdk](https://vulkan.lunarg.com/sdk/home) — only for building from source |
 | **CUDA Toolkit** | Optional | For `show()` and `create_tensor()` |
-| **Python 3.9+** | ✅ | |
-| **CMake 3.25+** | ✅ | + Ninja |
+| **Python 3.8+** | ✅ | |
+| **CMake 3.25+** | Build only | + Ninja |
 
 ### Clone & Build
 
@@ -163,13 +154,6 @@ vultorch/
 ├── tools/                  # Build utilities
 └── docs/                   # GitHub Pages website
 ```
-
-## Use Cases
-
-- **Neural texture training** — see texture outputs evolve in real-time
-- **NeRF / 3DGS** — visualize novel views during optimization
-- **Diffusion models** — watch denoising steps live
-- **Any GPU research** — instant visual feedback without leaving Python
 
 ## License
 

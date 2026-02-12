@@ -4,12 +4,13 @@ version = "0.2.0"
 description = "Real-time Torch visualization window with Vulkan zero-copy — built for neural textures and GPU-intensive research"
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.9"
+requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -42,7 +43,7 @@ wheel.packages = ["vultorch"]
 CMAKE_POSITION_INDEPENDENT_CODE = "ON"
 
 [tool.cibuildwheel]
-build = "cp39-win_amd64 cp310-win_amd64 cp311-win_amd64 cp312-win_amd64 cp313-win_amd64"
+build = "cp38-win_amd64 cp39-win_amd64 cp310-win_amd64 cp311-win_amd64 cp312-win_amd64 cp313-win_amd64"
 skip = "*-win32 *-musllinux*"
 test-command = "python -c \"import vultorch; print('vultorch', vultorch.__version__, 'OK')\""
 

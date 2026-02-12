@@ -4,12 +4,11 @@
 
 **实时 Torch 可视化窗口 · Vulkan 零拷贝**
 
-以 GPU 速度可视化 CUDA 张量 — 零 CPU 回读、零中转缓冲。  
-为**神经纹理**、**NeRF**、**3D Gaussian Splatting** 等 GPU 密集型研究打造，提供即时视觉反馈。
+以 GPU 速度可视化 CUDA 张量 — 零 CPU 回读、零中转缓冲。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://python.org)
-[![Vulkan](https://img.shields.io/badge/Vulkan-1.2%2B-red.svg)](https://vulkan.org)
+[![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
+[![Vulkan](https://img.shields.io/badge/Vulkan-1.2-red.svg)](https://vulkan.org)
 
 **[🇬🇧 English](README.md) · [🌐 网站](https://vultorch.github.io/vultorch/)**
 
@@ -17,22 +16,13 @@
 
 ---
 
-## 为什么选择 Vultorch？
+## 概述
 
-训练神经纹理或生成模型时，你需要**实时看到** GPU 上发生了什么 — **立刻**，而不是等 CPU 回读。
-
-Vultorch 打开原生 Vulkan 窗口，**直接从 GPU 显存渲染**你的 CUDA 张量：
+Vultorch 通过 PyTorch 与 Vulkan 共享 GPU 显存，在原生窗口中显示 CUDA 张量。数据全程留在 GPU 上 — 无需 `tensor.cpu()` 回读，无中转缓冲拷贝。
 
 ```python
-vultorch.show(tensor)   # 就这一行 — 零拷贝，亚毫秒
+vultorch.show(tensor)   # 零拷贝，亚毫秒
 ```
-
-| 传统方案 | Vultorch |
-|---------|----------|
-| `tensor.cpu().numpy()` → matplotlib | **GPU → GPU** Vulkan 外部内存互操作 |
-| 每帧 10–50 ms | **每帧 < 0.1 ms** |
-| 阻塞训练 | 非阻塞，零拷贝 |
-| 无交互 | 内置 ImGui：滑条、折线图、停靠布局 |
 
 ## 核心特性
 
@@ -56,7 +46,7 @@ from vultorch import ui
 # 你的神经纹理输出（或任意 CUDA 张量）
 texture = torch.rand(512, 512, 4, device="cuda")
 
-win = vultorch.Window("神经纹理查看器", 800, 600)
+win = vultorch.Window("查看器", 800, 600)
 while win.poll():
     if not win.begin_frame(): continue
     ui.begin("输出")
@@ -102,11 +92,12 @@ python examples/01_hello_tensor.py
 
 | 组件 | 必需 | 备注 |
 |------|------|------|
-| **GPU** | ✅ | 任何支持 Vulkan 的显卡 |
-| **Vulkan SDK** | 构建时 | [lunarg.com/vulkan-sdk](https://vulkan.lunarg.com/sdk/home) |
+| **GPU** | ✅ | 任何支持 Vulkan 的显卡（NVIDIA、AMD、Intel） |
+| **Vulkan** | 运行时 | 随 GPU 驱动自带 — 无需单独安装 |
+| **Vulkan SDK** | 仅构建 | [lunarg.com/vulkan-sdk](https://vulkan.lunarg.com/sdk/home) — 仅从源码构建时需要 |
 | **CUDA Toolkit** | 可选 | `show()` 和 `create_tensor()` 需要 |
-| **Python 3.9+** | ✅ | |
-| **CMake 3.25+** | ✅ | + Ninja |
+| **Python 3.8+** | ✅ | |
+| **CMake 3.25+** | 仅构建 | + Ninja |
 
 ### 克隆与构建
 
@@ -163,13 +154,6 @@ vultorch/
 ├── tools/                  # 构建工具
 └── docs/                   # GitHub Pages 网站
 ```
-
-## 应用场景
-
-- **神经纹理训练** — 实时观察纹理输出的演变过程
-- **NeRF / 3DGS** — 优化过程中可视化新视角
-- **扩散模型** — 实时观看去噪步骤
-- **所有 GPU 研究** — 不离开 Python 即可获得即时视觉反馈
 
 ## 许可证
 

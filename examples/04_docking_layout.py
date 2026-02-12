@@ -110,10 +110,6 @@ while win.poll():
 
     # Set up initial layout on first frame (after DockSpace creates the ID)
     if first_frame:
-        import vultorch._vultorch.ui as _raw_ui
-        print(f"raw ui dock entries: {[x for x in dir(_raw_ui) if 'dock' in x]}")
-        print(f"ui is _raw_ui: {ui is _raw_ui}")
-        print(f"id(ui)={id(ui)}, id(_raw_ui)={id(_raw_ui)}")
         setup_initial_layout(dockspace_id)
         first_frame = False
 

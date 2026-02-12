@@ -1,4 +1,4 @@
-"""02 — ImGui Controls: demonstrate built-in UI widgets.
+"""02 — ImGui Controls: demonstrate built-in UI widgets with docking layout.
 
 Shows sliders, buttons, checkboxes, color pickers, combo boxes,
 plots, and progress bars — all driven from Python.
@@ -9,7 +9,14 @@ import torch
 import vultorch
 from vultorch import ui
 
-win = vultorch.Window("ImGui Controls", 1024, 720)
+WIN_W, WIN_H = 1024, 720
+win = vultorch.Window("ImGui Controls", WIN_W, WIN_H)
+
+# ── Direction constants (ImGuiDir) ──────────────────────────────────
+DIR_LEFT  = 0
+DIR_RIGHT = 1
+DIR_UP    = 2
+DIR_DOWN  = 3
 
 # ── State variables ─────────────────────────────────────────────────
 counter = 0
@@ -22,16 +29,38 @@ combo_idx = 0
 combo_items = ["Viridis", "Plasma", "Inferno", "Magma", "Grayscale"]
 text_input = "Hello Vultorch!"
 loss_history: list = []
+first_frame = True
 
 # ── Animated tensor ─────────────────────────────────────────────────
 H, W = 128, 128
 y = torch.linspace(0, 1, H, device="cuda").unsqueeze(1).expand(H, W)
 x = torch.linspace(0, 1, W, device="cuda").unsqueeze(0).expand(H, W)
 
+
+def setup_initial_layout(dockspace_id: int):
+    """Build initial docked layout: Controls (left) | Tensor Preview (right)."""
+    ui.dock_builder_remove_node(dockspace_id)
+    ui.dock_builder_add_node(dockspace_id, 1 << 10)
+    ui.dock_builder_set_node_size(dockspace_id, float(WIN_W), float(WIN_H))
+
+    id_left, id_right = ui.dock_builder_split_node(
+        dockspace_id, DIR_LEFT, 0.40)
+
+    ui.dock_builder_dock_window("Controls", id_left)
+    ui.dock_builder_dock_window("Tensor Preview", id_right)
+    ui.dock_builder_finish(dockspace_id)
+
+
 while win.poll():
     if not win.begin_frame():
         continue
     t = ui.get_time()
+
+    # ── Full-viewport DockSpace ─────────────────────────────────
+    dockspace_id = ui.dock_space_over_viewport(flags=8)
+    if first_frame:
+        setup_initial_layout(dockspace_id)
+        first_frame = False
 
     # ── Controls panel ──────────────────────────────────────────
     ui.begin("Controls")
