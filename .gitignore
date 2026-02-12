@@ -1,0 +1,51 @@
+# ═══════════════════════════════════════════════════════════
+#  Vultorch .gitignore
+# ═══════════════════════════════════════════════════════════
+
+# ── Build outputs ───────────────────────────────────────────
+build/
+dist/
+*.egg-info/
+_deps/
+
+# ── Python ──────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.dylib
+
+# ── C++ ─────────────────────────────────────────────────────
+*.obj
+*.o
+*.lib
+*.a
+*.exp
+*.dll
+*.ilk
+*.pdb
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+
+# ── IDE / Editor ────────────────────────────────────────────
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.cache/
+
+# ── OS ──────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Runtime / generated ────────────────────────────────────
+imgui.ini
+venv/
+.env/
+*.log
