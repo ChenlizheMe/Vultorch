@@ -15,7 +15,7 @@ try:
 except ImportError:
     HAS_CUDA = False
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -285,10 +285,37 @@ def create_tensor(height: int, width: int, channels: int = 4,
         dev_idx = int(device.split(":")[1])
 
     if channels == 4:
-        # Allocate Vulkan-shared memory and wrap via DLPack (true zero-copy)
-        capsule = win._engine._allocate_shared_dlpack(
+        # Allocate Vulkan-shared memory and wrap via __cuda_array_interface__
+        # (avoids DLPack capsule-name version-probing bugs in some PyTorch builds)
+        ptr = win._engine.allocate_shared_tensor(
             width, height, channels, dev_idx)
-        return torch.from_dlpack(capsule)
+        if ptr == 0:
+            raise RuntimeError("Failed to allocate shared GPU memory")
+
+        class _CUDAMem:
+            """Tiny wrapper exposing __cuda_array_interface__ for torch.as_tensor."""
+            __slots__ = ("__cuda_array_interface__",)
+            def __init__(self, p, shape):
+                self.__cuda_array_interface__ = {
+                    "shape": shape,
+                    "typestr": "<f4",
+                    "data": (p, False),
+                    "version": 3,
+                    "strides": None,
+                }
+
+        result = torch.as_tensor(
+            _CUDAMem(ptr, (height, width, channels)),
+            device=f"cuda:{dev_idx}"
+        )
+        # Workaround for PyTorch <=2.4: _from_dlpack (used internally by
+        # as_tensor for CUDA array interface objects) probes for a versioned
+        # DLPack capsule name first.  When the probe fails it leaves a stale
+        # ValueError on the Python error indicator without clearing it.
+        # We must clear it here so the caller does not see a spurious error.
+        import ctypes
+        ctypes.pythonapi.PyErr_Clear()
+        return result
 
     # Non-4ch: return a regular CUDA tensor.
     # show() / upload_tensor() will pad to RGBA and do GPU-GPU copy.

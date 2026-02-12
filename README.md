@@ -107,19 +107,17 @@ python examples/01_hello_tensor.py
 
 ```bash
 git clone --recursive https://github.com/ChenlizheMe/Vultorch.git
-cd vultorch
+cd Vultorch
 ```
 
 **One command** — configure, compile, and produce a wheel in `dist/`:
 
 ```bash
 # Windows
-cmake --preset release-windows
-cmake --build --preset release-windows
+build.bat
 
 # Linux
-cmake --preset release-linux
-cmake --build --preset release-linux
+./build.sh
 ```
 
 The wheel appears in `dist/`. Install it:
@@ -128,15 +126,8 @@ The wheel appears in `dist/`. Install it:
 pip install dist/vultorch-*.whl
 ```
 
-Or use the convenience scripts:
-
-```bash
-# Windows
-build.bat
-
-# Linux / macOS
-./build.sh
-```
+The build script auto-detects the active Python environment, so the wheel
+matches whichever `python` is on your PATH (conda, venv, system, etc.).
 
 ## Architecture
 

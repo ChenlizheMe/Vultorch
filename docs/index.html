@@ -463,8 +463,8 @@ body.cn .lang-cn-inline { display:inline; }
   <div class="screenshot-frame">
     <img src="images/example.png" alt="Vultorch visualization window">
   </div>
-  <p class="screenshot-caption lang-en">Real-time tensor visualization with ImGui docking interface</p>
-  <p class="screenshot-caption lang-cn">基于 ImGui 停靠界面的实时张量可视化</p>
+  <p class="screenshot-caption lang-en">Real-time tensor visualization with Vultorch</p>
+  <p class="screenshot-caption lang-cn">使用Vultorch进行实时张量可视化</p>
 </div>
 
 <!-- ═══════════════════ USE CASES ═══════════════════ -->
@@ -762,8 +762,8 @@ tensor[:] = model(input)</code></pre>
       <pre style="margin:0;border:none;background:none;"><code>git clone --recursive https://github.com/ChenlizheMe/Vultorch.git
 cd Vultorch
 
-cmake --preset release-windows
-cmake --build --preset release-windows
+build.bat              <span style="color:#6b7a96"># Windows</span>
+./build.sh             <span style="color:#6b7a96"># Linux</span>
 
 pip install dist/vultorch-*.whl</code></pre>
     </div>

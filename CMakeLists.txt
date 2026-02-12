@@ -125,13 +125,21 @@ install(TARGETS _vultorch
 
 # ============================================================================
 # Post-build: copy module → vultorch/ and package wheel → dist/
+# Always re-packages the wheel on every build invocation.
 # ============================================================================
 
 set(VULTORCH_PKG_DIR "${CMAKE_SOURCE_DIR}/vultorch")
 
+# Copy .pyd only when it actually changes
 add_custom_command(TARGET _vultorch POST_BUILD
-    COMMENT "=== Copying module + packaging wheel ==="
+    COMMENT "=== Copying .pyd → vultorch/ ==="
     COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:_vultorch>" "${VULTORCH_PKG_DIR}/"
+)
+
+# Always run make_wheel.py (ALL = every build, even if nothing recompiled)
+add_custom_target(package_wheel ALL
+    COMMENT "=== Packaging wheel → dist/ ==="
     COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/make_wheel.py"
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    DEPENDS _vultorch
 )

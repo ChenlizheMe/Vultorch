@@ -107,19 +107,17 @@ python examples/01_hello_tensor.py
 
 ```bash
 git clone --recursive https://github.com/ChenlizheMe/Vultorch.git
-cd vultorch
+cd Vultorch
 ```
 
 **一条命令** — 配置、编译、在 `dist/` 中生成 wheel：
 
 ```bash
 # Windows
-cmake --preset release-windows
-cmake --build --preset release-windows
+build.bat
 
 # Linux
-cmake --preset release-linux
-cmake --build --preset release-linux
+./build.sh
 ```
 
 wheel 自动出现在 `dist/` 目录。安装：
@@ -128,15 +126,8 @@ wheel 自动出现在 `dist/` 目录。安装：
 pip install dist/vultorch-*.whl
 ```
 
-也可以使用便捷脚本：
-
-```bash
-# Windows
-build.bat
-
-# Linux / macOS
-./build.sh
-```
+构建脚本自动检测当前激活的 Python 环境，生成的 wheel
+与 PATH 上的 `python` 一致（conda / venv / 系统均可）。
 
 ## 项目结构
 
