@@ -1,0 +1,58 @@
+[project]
+name = "vultorch"
+version = "0.2.0"
+description = "Vulkan + PyTorch zero-copy tensor display with ImGui — one line to visualize any CUDA tensor"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: C++",
+    "Operating System :: Microsoft :: Windows",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+keywords = ["vulkan", "pytorch", "tensor", "visualization", "imgui", "gpu", "cuda", "zero-copy"]
+
+[project.urls]
+Homepage = "https://github.com/vultorch/vultorch"
+Documentation = "https://github.com/vultorch/vultorch#readme"
+Repository = "https://github.com/vultorch/vultorch"
+Issues = "https://github.com/vultorch/vultorch/issues"
+
+[build-system]
+requires = ["scikit-build-core>=0.8", "pybind11>=2.11"]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+cmake.build-type = "Release"
+cmake.args = ["-DCMAKE_POSITION_INDEPENDENT_CODE=ON"]
+wheel.packages = ["vultorch"]
+
+[tool.scikit-build.cmake.define]
+# These can be overridden: VULTORCH_HAS_CUDA=OFF to build without CUDA
+CMAKE_POSITION_INDEPENDENT_CODE = "ON"
+
+[tool.cibuildwheel]
+build = "cp39-win_amd64 cp310-win_amd64 cp311-win_amd64 cp312-win_amd64 cp313-win_amd64"
+skip = "*-win32 *-musllinux*"
+test-command = "python -c \"import vultorch; print('vultorch', vultorch.__version__, 'OK')\""
+
+[tool.cibuildwheel.windows]
+# Vulkan SDK must be pre-installed on the build machine.
+# CUDA Toolkit is optional — set CUDATOOLKIT_ROOT or it builds without CUDA.
+environment = { VULKAN_SDK = "C:\\VulkanSDK\\1.3.236.0" }
+before-build = "pip install pybind11"
+
+[tool.cibuildwheel.linux]
+# Linux support placeholder
+environment = { VULKAN_SDK = "/usr" }
+before-build = "pip install pybind11 && apt-get install -y libvulkan-dev"

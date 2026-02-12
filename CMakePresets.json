@@ -1,0 +1,46 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+    "configurePresets": [
+        {
+            "name": "release-windows",
+            "displayName": "Release (Windows)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/release-windows",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "release-linux",
+            "displayName": "Release (Linux / WSL2)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/release-linux",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "release-windows",
+            "displayName": "Build Release (Windows)",
+            "configurePreset": "release-windows"
+        },
+        {
+            "name": "release-linux",
+            "displayName": "Build Release (Linux / WSL2)",
+            "configurePreset": "release-linux"
+        }
+    ]
+}
