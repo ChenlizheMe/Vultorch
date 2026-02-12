@@ -12,6 +12,10 @@ Visualize CUDA tensors at GPU speed — zero CPU readback, zero staging buffers.
 
 **[🇨🇳 中文](README_CN.md) · [🌐 Website](https://ChenlizheMe.github.io/Vultorch/)**
 
+<br>
+
+<img src="docs/images/example.png" alt="Vultorch screenshot" width="720">
+
 </div>
 
 ---

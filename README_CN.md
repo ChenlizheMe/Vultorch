@@ -12,6 +12,10 @@
 
 **[🇬🇧 English](README.md) · [🌐 网站](https://ChenlizheMe.github.io/Vultorch/)**
 
+<br>
+
+<img src="docs/images/example.png" alt="Vultorch 截图" width="720">
+
 </div>
 
 ---
