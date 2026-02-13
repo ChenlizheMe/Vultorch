@@ -79,7 +79,7 @@ scene.render()  # 轨道相机，Blinn-Phong 光照
 |------|------|
 | [`01_hello_tensor.py`](examples/01_hello_tensor.py) | 最简张量显示 |
 | [`02_imgui_controls.py`](examples/02_imgui_controls.py) | ImGui 控件：滑条、折线图、颜色 |
-| [`03_scene_3d.py`](examples/03_scene_3d.py) | 3D 场景 + 光照 + 轨道相机 |
+| [`03_scene_3d.py`](examples/03_scene_3d.py) | 轻量网络实时训练（GT vs 预测） |
 | [`04_docking_layout.py`](examples/04_docking_layout.py) | 拖拽式停靠窗口布局 |
 | [`05_zero_copy.py`](examples/05_zero_copy.py) | 真零拷贝共享张量 |
 
