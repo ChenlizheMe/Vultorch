@@ -60,4 +60,4 @@ nav:
   - Home: index.md
   - 01 — Hello Tensor: 01_hello_tensor.md
   - 02 — Multi-Panel: 02_multi_panel.md
-  - 03 — Tiny Net Live Training: 03_tiny_net_training.md
+  - 03 — Training Test: 03_training_test.md

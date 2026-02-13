@@ -22,6 +22,13 @@
         <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/02_multi_panel/"/>
     </url>
     <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/03_training_test/</loc>
+        <lastmod>2026-02-13</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/03_training_test/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/03_training_test/"/>
+    </url>
+    <url>
         <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/</loc>
         <lastmod>2026-02-13</lastmod>
         <changefreq>daily</changefreq>
@@ -41,5 +48,12 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/02_multi_panel/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/02_multi_panel/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/03_training_test/</loc>
+        <lastmod>2026-02-13</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/03_training_test/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/03_training_test/"/>
     </url>
 </urlset>

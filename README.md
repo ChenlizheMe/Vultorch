@@ -79,7 +79,7 @@ scene.render()  # orbit camera, Blinn-Phong lighting
 |---------|-------------|
 | [`01_hello_tensor.py`](examples/01_hello_tensor.py) | Minimal tensor display |
 | [`02_imgui_controls.py`](examples/02_imgui_controls.py) | ImGui widgets: sliders, plots, colors |
-| [`03_scene_3d.py`](examples/03_scene_3d.py) | Tiny network live training (GT vs prediction) |
+| [`03_training_test.py`](examples/03_training_test.py) | Tiny network live training (GT vs prediction + bottom info panel) |
 | [`04_docking_layout.py`](examples/04_docking_layout.py) | Drag-and-drop dockable window layout |
 | [`05_zero_copy.py`](examples/05_zero_copy.py) | True zero-copy shared tensor |
 
