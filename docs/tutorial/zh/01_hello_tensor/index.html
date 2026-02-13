@@ -376,7 +376,7 @@
         <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
-      核心层级
+      你需要记住的东西
     </span>
   </a>
   
@@ -394,7 +394,7 @@
         <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
-      逐步解析
+      刚才发生了什么？
     </span>
   </a>
   
@@ -459,7 +459,7 @@
         <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
-      核心层级
+      你需要记住的东西
     </span>
   </a>
   
@@ -477,7 +477,7 @@
         <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
-      逐步解析
+      刚才发生了什么？
     </span>
   </a>
   
@@ -503,63 +503,84 @@
 <blockquote>
 <p><strong>示例文件：</strong> <code>examples/01_hello_tensor.py</code></p>
 </blockquote>
-<p>Vultorch 的最简用法：创建窗口、添加面板、放一个画布、绑定 CUDA 张量、运行。</p>
-<h2 id="_1">核心层级<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>View          （顶层窗口）
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a> └── Panel    （可停靠的 ImGui 子窗口）
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>      └── Canvas   （用于显示 tensor 的 GPU 图像槽位）
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>           └── bind(tensor)  →  每帧自动渲染
-</span></code></pre></div>
-<p>这就是 Vultorch 的全部心智模型。</p>
+<p>你是否受够了每个仓库都有一套自己实现的可视化方案 —— 这个用 matplotlib 手动刷新，
+那个用 <code>cv2.imshow</code> 然后 <code>waitKey(1)</code>，还有的直接存 PNG 让你开个图片查看器？</p>
+<p>Vultorch 只需 <strong>四行代码</strong> 就把 CUDA tensor 搬到屏幕上。不存图、不过 CPU、
+不需要 <code>plt.pause(0.001)</code> 这种黑魔法。</p>
+<h2 id="_1">你需要记住的东西<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>一共就四个对象：</p>
+<table>
+<thead>
+<tr>
+<th>对象</th>
+<th>是什么</th>
+<th>写法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>View</strong></td>
+<td>操作系统窗口</td>
+<td><code>vultorch.View("title", w, h)</code></td>
+</tr>
+<tr>
+<td><strong>Panel</strong></td>
+<td>View 里可停靠的子窗口</td>
+<td><code>view.panel("name")</code></td>
+</tr>
+<tr>
+<td><strong>Canvas</strong></td>
+<td>Panel 里的 GPU 图像槽位</td>
+<td><code>panel.canvas("name")</code></td>
+</tr>
+<tr>
+<td><strong>bind()</strong></td>
+<td>把 tensor 连到 Canvas 上</td>
+<td><code>canvas.bind(t)</code></td>
+</tr>
+</tbody>
+</table>
+<p>链起来，调 <code>run()</code>，收工。</p>
 <h2 id="_2">完整代码<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">vultorch</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># -- 1. 准备数据 -----------------------------------------------------------</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># 一张 256×256 的 RGB 渐变色。任何 (H, W, C) float32 CUDA tensor 均可。</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>            <span class="c1"># 水平渐变</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>            <span class="c1"># 垂直渐变</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span>                       <span class="c1"># R 通道：左→右</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">y</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span>                       <span class="c1"># G 通道：上→下</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span>            <span class="c1"># B 通道：常量</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>                                             <span class="c1"># shape: (256, 256, 3)</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="c1"># -- 2. 创建 View → Panel → Canvas → 绑定 tensor --------------------------</span>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">view</span>   <span class="o">=</span> <span class="n">vultorch</span><span class="o">.</span><span class="n">View</span><span class="p">(</span><span class="s2">&quot;01 - Hello Tensor&quot;</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>  <span class="c1"># 创建 512×512 窗口</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="n">panel</span>  <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Viewer&quot;</span><span class="p">)</span>                          <span class="c1"># 添加一个面板</span>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="n">canvas</span> <span class="o">=</span> <span class="n">panel</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;gradient&quot;</span><span class="p">)</span>                      <span class="c1"># 面板上添加画布</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="n">canvas</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>                                         <span class="c1"># 把 tensor 绑定到画布</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="c1"># 上面四行也可以链式写成一行：</span>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="c1"># view.panel(&quot;Viewer&quot;).canvas(&quot;gradient&quot;).bind(t)</span>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="c1"># -- 3. 运行 ---------------------------------------------------------------</span>
-</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="c1"># run() 会阻塞，直到用户关闭窗口。</span>
-</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="c1"># 画布会自动铺满面板空间，每帧从绑定的 tensor 读取数据并渲染。</span>
-</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="n">view</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">vultorch</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># 一张 256×256 的 RGB 渐变 — 任何 (H,W,C) float32 CUDA tensor 都行</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">y</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (256, 256, 3)</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="n">view</span>   <span class="o">=</span> <span class="n">vultorch</span><span class="o">.</span><span class="n">View</span><span class="p">(</span><span class="s2">&quot;01 - Hello Tensor&quot;</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="n">panel</span>  <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Viewer&quot;</span><span class="p">)</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">canvas</span> <span class="o">=</span> <span class="n">panel</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;gradient&quot;</span><span class="p">)</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="n">canvas</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="n">view</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>  <span class="c1"># 阻塞，直到你关闭窗口</span>
 </span></code></pre></div>
-<h2 id="_3">逐步解析<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>没了。不需要手写事件循环，不需要 <code>begin_frame()</code> / <code>end_frame()</code>。</p>
+<h2 id="_3">刚才发生了什么？<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
 <ol>
 <li>
-<p><strong>准备数据</strong> — 任何 <code>(H, W)</code>、<code>(H, W, 1)</code>、<code>(H, W, 3)</code> 或 <code>(H, W, 4)</code>，
-   float32 / float16 / uint8 的 CUDA tensor 都可以，Vultorch 会自动处理
-   RGBA 通道扩展。</p>
+<p><strong>数据</strong> — 我们在 CUDA 上造了一张 RGB 渐变。Vultorch 支持
+   <code>(H,W)</code> / <code>(H,W,1)</code> / <code>(H,W,3)</code> / <code>(H,W,4)</code>，
+   float32 / float16 / uint8 都行，RGBA 扩展它自己搞定。</p>
 </li>
 <li>
-<p><strong>构建对象层级</strong> — <code>View</code> 创建操作系统窗口，<code>panel()</code> 添加可停靠的
-   ImGui 子窗口，<code>canvas()</code> 在面板内添加 GPU 图像槽位，<code>bind()</code> 将
-   tensor 连接上去。</p>
+<p><strong>对象树</strong> — <code>View</code> → <code>Panel</code> → <code>Canvas</code> → <code>bind(tensor)</code>。
+   画布默认铺满整个面板（<code>fit=True</code>）。</p>
 </li>
 <li>
-<p><strong>运行</strong> — <code>view.run()</code> 进入阻塞事件循环。每帧画布自动重新上传绑定的
-   tensor 并渲染，默认铺满面板区域（<code>fit=True</code>）。</p>
+<p><strong>运行</strong> — <code>view.run()</code> 进入阻塞事件循环，每帧重新上传 tensor 并渲染。
+   关窗口就退出。</p>
 </li>
 </ol>
 <div class="admonition tip">
 <p class="admonition-title">提示</p>
-<p>上面四行初始化可以链式一行写完：
+<p>四行初始化可以压成一行，如果你喜欢炫技的话：
 <code>view.panel("Viewer").canvas("gradient").bind(t)</code></p>
 </div>
 

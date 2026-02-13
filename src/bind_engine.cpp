@@ -6,27 +6,6 @@
 #include <array>
 #include <string>
 
-// ── Minimal DLPack ABI structs for torch.from_dlpack() interop ───────
-// Layout-compatible with the official DLPack v0.8 specification.
-namespace {
-struct VtDLDevice   { int32_t device_type; int32_t device_id; };
-struct VtDLDataType { uint8_t code; uint8_t bits; uint16_t lanes; };
-struct VtDLTensor {
-    void*        data;
-    VtDLDevice   device;
-    int32_t      ndim;
-    VtDLDataType dtype;
-    int64_t*     shape;
-    int64_t*     strides;
-    uint64_t     byte_offset;
-};
-struct VtDLManagedTensor {
-    VtDLTensor dl_tensor;
-    void*      manager_ctx;
-    void     (*deleter)(VtDLManagedTensor*);
-};
-} // anonymous namespace
-
 void bind_engine(py::module_& m) {
     py::class_<vultorch::Engine>(m, "Engine")
         .def(py::init<>())
@@ -45,46 +24,6 @@ void bind_engine(py::module_& m) {
                                           uint32_t width, uint32_t height,
                                           uint32_t channels, int device_id) -> uintptr_t {
             return self.tensor_texture(name).allocate_shared(width, height, channels, device_id);
-        }, py::arg("name") = "tensor",
-           py::arg("width"), py::arg("height"),
-           py::arg("channels") = 4, py::arg("device_id") = 0)
-
-        // DLPack capsule for torch.from_dlpack() — true zero-copy shared tensor
-        .def("_allocate_shared_dlpack", [](vultorch::Engine& self,
-                                           const std::string& name,
-                                           uint32_t width, uint32_t height,
-                                           uint32_t channels, int device_id) -> py::object {
-            uintptr_t ptr = self.tensor_texture(name).allocate_shared(
-                width, height, channels, device_id);
-            if (ptr == 0)
-                throw std::runtime_error("Failed to allocate shared GPU memory");
-
-            auto* shape   = new int64_t[3]{(int64_t)height, (int64_t)width, (int64_t)channels};
-            auto* managed = new VtDLManagedTensor{};
-            managed->dl_tensor.data        = reinterpret_cast<void*>(ptr);
-            managed->dl_tensor.device      = {2 /*kDLCUDA*/, device_id};
-            managed->dl_tensor.ndim        = 3;
-            managed->dl_tensor.dtype       = {2 /*kDLFloat*/, 32, 1};
-            managed->dl_tensor.shape       = shape;
-            managed->dl_tensor.strides     = nullptr;  // C-contiguous
-            managed->dl_tensor.byte_offset = 0;
-            managed->manager_ctx = nullptr;
-            managed->deleter = [](VtDLManagedTensor* self) {
-                delete[] self->dl_tensor.shape;
-                delete self;
-            };
-
-            PyObject* capsule = PyCapsule_New(
-                static_cast<void*>(managed), "dltensor",
-                [](PyObject* cap) {
-                    void* p = PyCapsule_GetPointer(cap, "dltensor");
-                    if (p) {
-                        auto* m = static_cast<VtDLManagedTensor*>(p);
-                        if (m->deleter) m->deleter(m);
-                    }
-                });
-            if (!capsule) throw py::error_already_set();
-            return py::reinterpret_steal<py::object>(capsule);
         }, py::arg("name") = "tensor",
            py::arg("width"), py::arg("height"),
            py::arg("channels") = 4, py::arg("device_id") = 0)

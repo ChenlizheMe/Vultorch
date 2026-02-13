@@ -394,9 +394,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#layout-diagram" class="md-nav__link">
+  <a href="#layout" class="md-nav__link">
     <span class="md-ellipsis">
-      Layout diagram
+      Layout
     </span>
   </a>
   
@@ -412,9 +412,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#key-points" class="md-nav__link">
+  <a href="#key-takeaways" class="md-nav__link">
     <span class="md-ellipsis">
-      Key points
+      Key takeaways
     </span>
   </a>
   
@@ -455,9 +455,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#layout-diagram" class="md-nav__link">
+  <a href="#layout" class="md-nav__link">
     <span class="md-ellipsis">
-      Layout diagram
+      Layout
     </span>
   </a>
   
@@ -473,9 +473,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#key-points" class="md-nav__link">
+  <a href="#key-takeaways" class="md-nav__link">
     <span class="md-ellipsis">
-      Key points
+      Key takeaways
     </span>
   </a>
   
@@ -501,97 +501,107 @@
 <blockquote>
 <p><strong>Example file:</strong> <code>examples/02_imgui_controls.py</code></p>
 </blockquote>
-<p>A single View can host any number of Panels.  Each Panel is an independent
-dockable window that can be dragged, resized, and rearranged by the user.
-This chapter shows two layout patterns:</p>
+<p>One panel is nice. But in practice you want to see your loss map, gradient field,
+and output side-by-side — without writing a single line of layout code.</p>
+<p>Good news: Vultorch panels are <strong>dockable</strong>. Just create them and they'll
+arrange themselves. Users can drag, resize, and rearrange at will.</p>
+<p>This chapter shows two patterns:</p>
 <ul>
-<li><strong>One canvas per panel</strong> — three panels stacked vertically, each showing a different tensor.</li>
-<li><strong>Multiple canvases in one panel</strong> — a single panel with three canvases that automatically divide the space equally.</li>
+<li><strong>One canvas per panel</strong> — three panels stacked, each with its own tensor.</li>
+<li><strong>Multiple canvases in one panel</strong> — one panel, three canvases, auto-split.</li>
 </ul>
-<h2 id="layout-diagram">Layout diagram<a class="headerlink" href="#layout-diagram" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌──────────────────────────────────────────────────┐
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│  Red (panel)             │                       │
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│    canvas: red_img       │  Combined (panel)     │
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├──────────────────────────┤                       │
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│  Green (panel)           │    canvas: c_red      │
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│    canvas: green_img     │    canvas: c_green    │
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├──────────────────────────┤    canvas: c_blue     │
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│  Blue (panel)            │                       │
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│    canvas: blue_img      │                       │
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>└──────────────────────────────────────────────────┘
-</span></code></pre></div>
+<h2 id="layout">Layout<a class="headerlink" href="#layout" title="Permanent link">&para;</a></h2>
+<p>Here's what the window looks like:</p>
+<table>
+<thead>
+<tr>
+<th>Left side (main area)</th>
+<th>Right side (<code>side="right"</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Red</strong> panel — <code>red_img</code></td>
+<td><strong>Combined</strong> panel</td>
+</tr>
+<tr>
+<td><strong>Green</strong> panel — <code>green_img</code></td>
+<td><code>c_red</code> canvas</td>
+</tr>
+<tr>
+<td><strong>Blue</strong> panel — <code>blue_img</code></td>
+<td><code>c_green</code> canvas</td>
+</tr>
+<tr>
+<td></td>
+<td><code>c_blue</code> canvas</td>
+</tr>
+</tbody>
+</table>
+<p>Left: 3 separate panels, each one canvas. Right: 1 panel, 3 canvases sharing space.</p>
 <h2 id="full-code">Full code<a class="headerlink" href="#full-code" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">vultorch</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># -- 1. Prepare three tensors ----------------------------------------------</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1"># Red horizontal gradient</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">red</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">red</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="c1"># Green vertical gradient</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="n">green</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">green</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="c1"># Blue checkerboard</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="n">blue</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="n">cx</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span> <span class="o">//</span> <span class="mi">32</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="n">cy</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span> <span class="o">//</span> <span class="mi">32</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="n">blue</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">cx</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="n">cy</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="c1"># -- 2. Create View ---------------------------------------------------------</span>
-</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="n">view</span> <span class="o">=</span> <span class="n">vultorch</span><span class="o">.</span><span class="n">View</span><span class="p">(</span><span class="s2">&quot;02 - Multi-Panel&quot;</span><span class="p">,</span> <span class="mi">1200</span><span class="p">,</span> <span class="mi">600</span><span class="p">)</span>
-</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>
-</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="c1"># -- 3. Left side: 3 panels, each with one canvas --------------------------</span>
-</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="n">panel_r</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Red&quot;</span><span class="p">)</span>
-</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="n">panel_g</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Green&quot;</span><span class="p">)</span>
-</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="n">panel_b</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Blue&quot;</span><span class="p">)</span>
-</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>
-</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a><span class="n">panel_r</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;red_img&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">red</span><span class="p">)</span>
-</span><span id="__span-1-33"><a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a><span class="n">panel_g</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;green_img&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">green</span><span class="p">)</span>
-</span><span id="__span-1-34"><a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a><span class="n">panel_b</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;blue_img&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">blue</span><span class="p">)</span>
-</span><span id="__span-1-35"><a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>
-</span><span id="__span-1-36"><a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a><span class="c1"># -- 4. Right side: 1 panel with 3 canvases --------------------------------</span>
-</span><span id="__span-1-37"><a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a><span class="n">combined</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Combined&quot;</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-</span><span id="__span-1-38"><a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a><span class="n">combined</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;c_red&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">red</span><span class="p">)</span>
-</span><span id="__span-1-39"><a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a><span class="n">combined</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;c_green&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">green</span><span class="p">)</span>
-</span><span id="__span-1-40"><a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a><span class="n">combined</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;c_blue&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">blue</span><span class="p">)</span>
-</span><span id="__span-1-41"><a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>
-</span><span id="__span-1-42"><a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a><span class="c1"># -- 5. Run -----------------------------------------------------------------</span>
-</span><span id="__span-1-43"><a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a><span class="n">view</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">vultorch</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Three different tensors</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">red</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="n">red</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">green</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="n">green</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">blue</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="n">cx</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span> <span class="o">//</span> <span class="mi">32</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="n">cy</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span> <span class="o">//</span> <span class="mi">32</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="n">blue</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">cx</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="n">cy</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="n">view</span> <span class="o">=</span> <span class="n">vultorch</span><span class="o">.</span><span class="n">View</span><span class="p">(</span><span class="s2">&quot;02 - Multi-Panel&quot;</span><span class="p">,</span> <span class="mi">1200</span><span class="p">,</span> <span class="mi">600</span><span class="p">)</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="c1"># Left: 3 panels, each with one canvas</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="n">panel_r</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Red&quot;</span><span class="p">)</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="n">panel_g</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Green&quot;</span><span class="p">)</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="n">panel_b</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Blue&quot;</span><span class="p">)</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="n">panel_r</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;red_img&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">red</span><span class="p">)</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="n">panel_g</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;green_img&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">green</span><span class="p">)</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="n">panel_b</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;blue_img&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">blue</span><span class="p">)</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="c1"># Right: 1 panel with 3 canvases (auto-split vertically)</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="n">combined</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Combined&quot;</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a><span class="n">combined</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;c_red&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">red</span><span class="p">)</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="n">combined</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;c_green&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">green</span><span class="p">)</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a><span class="n">combined</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;c_blue&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">blue</span><span class="p">)</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="n">view</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </span></code></pre></div>
-<h2 id="key-points">Key points<a class="headerlink" href="#key-points" title="Permanent link">&para;</a></h2>
+<h2 id="key-takeaways">Key takeaways<a class="headerlink" href="#key-takeaways" title="Permanent link">&para;</a></h2>
 <ol>
 <li>
-<p><strong>Automatic layout</strong> — panels without a <code>side=</code> argument are stacked
-   vertically in the main area.  Use <code>side="left"</code> or <code>side="right"</code> to dock a
-   panel to a specific side, with <code>width</code> setting the ratio (e.g. <code>0.5</code> = 50%).</p>
+<p><strong>Auto-layout</strong> — panels without <code>side=</code> stack vertically.
+   Add <code>side="right"</code> (or <code>"left"</code>) + <code>width=0.5</code> to dock to one side.</p>
 </li>
 <li>
-<p><strong>One canvas per panel vs. many</strong> — each <code>panel.canvas()</code> call creates a new
-   canvas inside that panel.  When there are multiple canvases with <code>fit=True</code>
-   (the default), they automatically share the vertical space equally.</p>
+<p><strong>Multi-canvas</strong> — call <code>panel.canvas()</code> multiple times.
+   When several canvases have <code>fit=True</code> (the default), they split the
+   vertical space equally. No manual height math.</p>
 </li>
 <li>
-<p><strong>No callback needed</strong> — for static data, just <code>bind()</code> and <code>run()</code>.  The
-   <code>@view.on_frame</code> decorator is only required when you need per-frame logic
-   (upcoming in later chapters).</p>
+<p><strong>Still no callback</strong> — static data only needs <code>bind()</code> + <code>run()</code>.
+   Dynamic updates come in a later chapter.</p>
 </li>
 <li>
-<p><strong>User can rearrange</strong> — all panels are dockable.  Users can drag title bars
-   to reorder panels, detach them as floating windows, or resize borders.</p>
+<p><strong>Drag &amp; drop</strong> — all panels are dockable. Users can rearrange,
+   float, or resize them at runtime.</p>
 </li>
 </ol>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The same tensor can be bound to multiple canvases simultaneously.
-In this example, <code>red</code>, <code>green</code>, and <code>blue</code> each appear in both the left
-panels and the right combined panel.</p>
+<p>The same tensor can be bound to multiple canvases at once —
+<code>red</code> appears in both the left panel and the right combined panel.</p>
 </div>
 
 

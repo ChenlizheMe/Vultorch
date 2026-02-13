@@ -374,9 +374,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#core-hierarchy" class="md-nav__link">
+  <a href="#the-mental-model" class="md-nav__link">
     <span class="md-ellipsis">
-      Core hierarchy
+      The mental model
     </span>
   </a>
   
@@ -392,9 +392,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-by-step-breakdown" class="md-nav__link">
+  <a href="#what-just-happened" class="md-nav__link">
     <span class="md-ellipsis">
-      Step-by-step breakdown
+      What just happened?
     </span>
   </a>
   
@@ -457,9 +457,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#core-hierarchy" class="md-nav__link">
+  <a href="#the-mental-model" class="md-nav__link">
     <span class="md-ellipsis">
-      Core hierarchy
+      The mental model
     </span>
   </a>
   
@@ -475,9 +475,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-by-step-breakdown" class="md-nav__link">
+  <a href="#what-just-happened" class="md-nav__link">
     <span class="md-ellipsis">
-      Step-by-step breakdown
+      What just happened?
     </span>
   </a>
   
@@ -503,66 +503,85 @@
 <blockquote>
 <p><strong>Example file:</strong> <code>examples/01_hello_tensor.py</code></p>
 </blockquote>
-<p>The simplest way to use Vultorch: create a window, add a panel, put a canvas
-on it, bind a CUDA tensor, and run.</p>
-<h2 id="core-hierarchy">Core hierarchy<a class="headerlink" href="#core-hierarchy" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>View          (top-level window)
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a> └── Panel    (dockable ImGui sub-window)
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>      └── Canvas   (GPU image slot for a tensor)
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>           └── bind(tensor)  →  auto-rendered every frame
-</span></code></pre></div>
-<p>That's the entire mental model.</p>
+<p>Tired of every research repo inventing its own janky tensor viewer with
+matplotlib hacks and <code>cv2.imshow</code> spaghetti?  Yeah, us too.</p>
+<p>Vultorch gets your CUDA tensor on screen in <strong>four lines</strong> — no saving PNGs,
+no CPU round-trips, no <code>plt.pause(0.001)</code> nonsense.</p>
+<h2 id="the-mental-model">The mental model<a class="headerlink" href="#the-mental-model" title="Permanent link">&para;</a></h2>
+<p>There are exactly four objects you need to know:</p>
+<table>
+<thead>
+<tr>
+<th>Object</th>
+<th>What it is</th>
+<th>One-liner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>View</strong></td>
+<td>The OS window</td>
+<td><code>vultorch.View("title", w, h)</code></td>
+</tr>
+<tr>
+<td><strong>Panel</strong></td>
+<td>A dockable sub-window inside the View</td>
+<td><code>view.panel("name")</code></td>
+</tr>
+<tr>
+<td><strong>Canvas</strong></td>
+<td>A GPU image slot inside a Panel</td>
+<td><code>panel.canvas("name")</code></td>
+</tr>
+<tr>
+<td><strong>bind()</strong></td>
+<td>Connects a tensor to a Canvas</td>
+<td><code>canvas.bind(t)</code></td>
+</tr>
+</tbody>
+</table>
+<p>Chain them together, call <code>run()</code>, done.</p>
 <h2 id="full-code">Full code<a class="headerlink" href="#full-code" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">vultorch</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># -- 1. Prepare data -------------------------------------------------------</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># A 256×256 RGB gradient.  Any (H, W, C) float32 CUDA tensor will work.</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>            <span class="c1"># horizontal ramp</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>            <span class="c1"># vertical ramp</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span>                       <span class="c1"># R channel: left→right</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">y</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span>                       <span class="c1"># G channel: top→bottom</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span>            <span class="c1"># B channel: constant</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>                                             <span class="c1"># shape: (256, 256, 3)</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="c1"># -- 2. Create View → Panel → Canvas → bind tensor -------------------------</span>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">view</span>   <span class="o">=</span> <span class="n">vultorch</span><span class="o">.</span><span class="n">View</span><span class="p">(</span><span class="s2">&quot;01 - Hello Tensor&quot;</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>  <span class="c1"># open a 512×512 window</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="n">panel</span>  <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Viewer&quot;</span><span class="p">)</span>                          <span class="c1"># add one panel</span>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="n">canvas</span> <span class="o">=</span> <span class="n">panel</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;gradient&quot;</span><span class="p">)</span>                      <span class="c1"># add a canvas to it</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="n">canvas</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>                                         <span class="c1"># bind the tensor</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="c1"># The four lines above can also be written as a one-liner:</span>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="c1"># view.panel(&quot;Viewer&quot;).canvas(&quot;gradient&quot;).bind(t)</span>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="c1"># -- 3. Run -----------------------------------------------------------------</span>
-</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="c1"># run() blocks until the user closes the window.</span>
-</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="c1"># The canvas auto-fills the panel and re-uploads from the bound tensor</span>
-</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="c1"># every frame.</span>
-</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="n">view</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">vultorch</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># A 256×256 RGB gradient — any (H,W,C) float32 CUDA tensor works</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">y</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (256, 256, 3)</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="n">view</span>   <span class="o">=</span> <span class="n">vultorch</span><span class="o">.</span><span class="n">View</span><span class="p">(</span><span class="s2">&quot;01 - Hello Tensor&quot;</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="n">panel</span>  <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Viewer&quot;</span><span class="p">)</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">canvas</span> <span class="o">=</span> <span class="n">panel</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;gradient&quot;</span><span class="p">)</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="n">canvas</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="n">view</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>  <span class="c1"># blocks until you close the window</span>
 </span></code></pre></div>
-<h2 id="step-by-step-breakdown">Step-by-step breakdown<a class="headerlink" href="#step-by-step-breakdown" title="Permanent link">&para;</a></h2>
+<p>That's it. No event loop boilerplate, no <code>begin_frame()</code> / <code>end_frame()</code>.</p>
+<h2 id="what-just-happened">What just happened?<a class="headerlink" href="#what-just-happened" title="Permanent link">&para;</a></h2>
 <ol>
 <li>
-<p><strong>Prepare the data</strong> — any <code>(H, W)</code>, <code>(H, W, 1)</code>, <code>(H, W, 3)</code>, or <code>(H, W, 4)</code>
-   float32 / float16 / uint8 tensor on CUDA will work.  Vultorch handles RGBA
-   expansion internally.</p>
+<p><strong>Data</strong> — we made an RGB gradient on CUDA. Vultorch accepts <code>(H,W)</code>,
+   <code>(H,W,1)</code>, <code>(H,W,3)</code>, or <code>(H,W,4)</code>, in float32 / float16 / uint8.
+   It handles RGBA expansion for you.</p>
 </li>
 <li>
-<p><strong>Build the object tree</strong> — <code>View</code> creates the OS window, <code>panel()</code> adds a
-   dockable ImGui window, <code>canvas()</code> adds a GPU image slot inside that panel,
-   and <code>bind()</code> connects the tensor.</p>
+<p><strong>Object tree</strong> — <code>View</code> → <code>Panel</code> → <code>Canvas</code> → <code>bind(tensor)</code>.
+   The canvas auto-fills its panel by default (<code>fit=True</code>).</p>
 </li>
 <li>
-<p><strong>Run</strong> — <code>view.run()</code> enters a blocking event loop.  Every frame, the canvas
-   re-uploads the bound tensor and renders it.  The canvas auto-fills the panel
-   area by default (<code>fit=True</code>).</p>
+<p><strong>Run</strong> — <code>view.run()</code> enters a blocking event loop. Every frame the
+   canvas re-uploads the bound tensor and renders it. Close the window
+   to exit.</p>
 </li>
 </ol>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>The four setup lines can be collapsed into a single chain:
+<p>The four setup lines collapse into a one-liner if you're feeling fancy:
 <code>view.panel("Viewer").canvas("gradient").bind(t)</code></p>
 </div>
 

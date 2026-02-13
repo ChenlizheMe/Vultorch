@@ -2,18 +2,24 @@
 
 > **示例文件：** `examples/01_hello_tensor.py`
 
-Vultorch 的最简用法：创建窗口、添加面板、放一个画布、绑定 CUDA 张量、运行。
+你是否受够了每个仓库都有一套自己实现的可视化方案 —— 这个用 matplotlib 手动刷新，
+那个用 `cv2.imshow` 然后 `waitKey(1)`，还有的直接存 PNG 让你开个图片查看器？
 
-## 核心层级
+Vultorch 只需 **四行代码** 就把 CUDA tensor 搬到屏幕上。不存图、不过 CPU、
+不需要 `plt.pause(0.001)` 这种黑魔法。
 
-```
-View          （顶层窗口）
- └── Panel    （可停靠的 ImGui 子窗口）
-      └── Canvas   （用于显示 tensor 的 GPU 图像槽位）
-           └── bind(tensor)  →  每帧自动渲染
-```
+## 你需要记住的东西
 
-这就是 Vultorch 的全部心智模型。
+一共就四个对象：
+
+| 对象 | 是什么 | 写法 |
+|------|--------|------|
+| **View** | 操作系统窗口 | `vultorch.View("title", w, h)` |
+| **Panel** | View 里可停靠的子窗口 | `view.panel("name")` |
+| **Canvas** | Panel 里的 GPU 图像槽位 | `panel.canvas("name")` |
+| **bind()** | 把 tensor 连到 Canvas 上 | `canvas.bind(t)` |
+
+链起来，调 `run()`，收工。
 
 ## 完整代码
 
@@ -21,45 +27,37 @@ View          （顶层窗口）
 import torch
 import vultorch
 
-# -- 1. 准备数据 -----------------------------------------------------------
-# 一张 256×256 的 RGB 渐变色。任何 (H, W, C) float32 CUDA tensor 均可。
+# 一张 256×256 的 RGB 渐变 — 任何 (H,W,C) float32 CUDA tensor 都行
 H, W = 256, 256
-x = torch.linspace(0, 1, W, device="cuda")            # 水平渐变
-y = torch.linspace(0, 1, H, device="cuda")            # 垂直渐变
+x = torch.linspace(0, 1, W, device="cuda")
+y = torch.linspace(0, 1, H, device="cuda")
 t = torch.stack([
-    x.unsqueeze(0).expand(H, W),                       # R 通道：左→右
-    y.unsqueeze(1).expand(H, W),                       # G 通道：上→下
-    torch.full((H, W), 0.3, device="cuda"),            # B 通道：常量
-], dim=-1)                                             # shape: (256, 256, 3)
+    x.unsqueeze(0).expand(H, W),
+    y.unsqueeze(1).expand(H, W),
+    torch.full((H, W), 0.3, device="cuda"),
+], dim=-1)  # (256, 256, 3)
 
-# -- 2. 创建 View → Panel → Canvas → 绑定 tensor --------------------------
-view   = vultorch.View("01 - Hello Tensor", 512, 512)  # 创建 512×512 窗口
-panel  = view.panel("Viewer")                          # 添加一个面板
-canvas = panel.canvas("gradient")                      # 面板上添加画布
-canvas.bind(t)                                         # 把 tensor 绑定到画布
-
-# 上面四行也可以链式写成一行：
-# view.panel("Viewer").canvas("gradient").bind(t)
-
-# -- 3. 运行 ---------------------------------------------------------------
-# run() 会阻塞，直到用户关闭窗口。
-# 画布会自动铺满面板空间，每帧从绑定的 tensor 读取数据并渲染。
-view.run()
+view   = vultorch.View("01 - Hello Tensor", 512, 512)
+panel  = view.panel("Viewer")
+canvas = panel.canvas("gradient")
+canvas.bind(t)
+view.run()  # 阻塞，直到你关闭窗口
 ```
 
-## 逐步解析
+没了。不需要手写事件循环，不需要 `begin_frame()` / `end_frame()`。
 
-1. **准备数据** — 任何 `(H, W)`、`(H, W, 1)`、`(H, W, 3)` 或 `(H, W, 4)`，
-   float32 / float16 / uint8 的 CUDA tensor 都可以，Vultorch 会自动处理
-   RGBA 通道扩展。
+## 刚才发生了什么？
 
-2. **构建对象层级** — `View` 创建操作系统窗口，`panel()` 添加可停靠的
-   ImGui 子窗口，`canvas()` 在面板内添加 GPU 图像槽位，`bind()` 将
-   tensor 连接上去。
+1. **数据** — 我们在 CUDA 上造了一张 RGB 渐变。Vultorch 支持
+   `(H,W)` / `(H,W,1)` / `(H,W,3)` / `(H,W,4)`，
+   float32 / float16 / uint8 都行，RGBA 扩展它自己搞定。
 
-3. **运行** — `view.run()` 进入阻塞事件循环。每帧画布自动重新上传绑定的
-   tensor 并渲染，默认铺满面板区域（`fit=True`）。
+2. **对象树** — `View` → `Panel` → `Canvas` → `bind(tensor)`。
+   画布默认铺满整个面板（`fit=True`）。
+
+3. **运行** — `view.run()` 进入阻塞事件循环，每帧重新上传 tensor 并渲染。
+   关窗口就退出。
 
 !!! tip "提示"
-    上面四行初始化可以链式一行写完：
+    四行初始化可以压成一行，如果你喜欢炫技的话：
     `view.panel("Viewer").canvas("gradient").bind(t)`

@@ -396,7 +396,7 @@
         <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
-      布局图示
+      布局
     </span>
   </a>
   
@@ -414,7 +414,7 @@
         <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
-      重点解析
+      要点
     </span>
   </a>
   
@@ -457,7 +457,7 @@
         <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
-      布局图示
+      布局
     </span>
   </a>
   
@@ -475,7 +475,7 @@
         <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
-      重点解析
+      要点
     </span>
   </a>
   
@@ -501,94 +501,106 @@
 <blockquote>
 <p><strong>示例文件：</strong> <code>examples/02_imgui_controls.py</code></p>
 </blockquote>
-<p>一个 View 可以拥有任意多个 Panel。每个 Panel 都是独立的可停靠窗口，
-用户可以拖拽、缩放、重新排列。本章展示两种布局模式：</p>
+<p>一个面板挺好的。但实际做研究的时候，你想同时看 loss map、梯度场、
+模型输出 —— 而且最好不用自己写任何布局代码。</p>
+<p>好消息：Vultorch 的面板是<strong>可停靠的</strong>。你只管创建，它们自己排好。
+用户运行时还能随便拖、随便拉。</p>
+<p>本章演示两种模式：</p>
 <ul>
-<li><strong>每个面板一个画布</strong> — 三个面板垂直堆叠，各显示不同的 tensor。</li>
-<li><strong>一个面板多个画布</strong> — 单个面板内放三个画布，自动均分空间。</li>
+<li><strong>每个面板一个画布</strong> — 三个面板垂直堆叠，各自一张图。</li>
+<li><strong>一个面板多个画布</strong> — 一个面板里塞三个画布，自动均分。</li>
 </ul>
-<h2 id="_1">布局图示<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌──────────────────────────────────────────────────┐
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│  Red（面板）             │                       │
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│    canvas: red_img       │  Combined（面板）     │
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├──────────────────────────┤                       │
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│  Green（面板）           │    canvas: c_red      │
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│    canvas: green_img     │    canvas: c_green    │
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├──────────────────────────┤    canvas: c_blue     │
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│  Blue（面板）            │                       │
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│    canvas: blue_img      │                       │
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>└──────────────────────────────────────────────────┘
-</span></code></pre></div>
+<h2 id="_1">布局<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>窗口长这样：</p>
+<table>
+<thead>
+<tr>
+<th>左侧（主区域）</th>
+<th>右侧（<code>side="right"</code>）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Red</strong> 面板 — <code>red_img</code></td>
+<td><strong>Combined</strong> 面板</td>
+</tr>
+<tr>
+<td><strong>Green</strong> 面板 — <code>green_img</code></td>
+<td><code>c_red</code> 画布</td>
+</tr>
+<tr>
+<td><strong>Blue</strong> 面板 — <code>blue_img</code></td>
+<td><code>c_green</code> 画布</td>
+</tr>
+<tr>
+<td></td>
+<td><code>c_blue</code> 画布</td>
+</tr>
+</tbody>
+</table>
+<p>左边：3 个独立面板，各一个画布。右边：1 个面板，3 个画布共享空间。</p>
 <h2 id="_2">完整代码<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">vultorch</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># -- 1. 准备三份 tensor ----------------------------------------------------</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1"># 红色水平渐变</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">red</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">red</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="c1"># 绿色垂直渐变</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="n">green</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">green</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="c1"># 蓝色棋盘格</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="n">blue</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="n">cx</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span> <span class="o">//</span> <span class="mi">32</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="n">cy</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span> <span class="o">//</span> <span class="mi">32</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="n">blue</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">cx</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="n">cy</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="c1"># -- 2. 创建 View ----------------------------------------------------------</span>
-</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="n">view</span> <span class="o">=</span> <span class="n">vultorch</span><span class="o">.</span><span class="n">View</span><span class="p">(</span><span class="s2">&quot;02 - Multi-Panel&quot;</span><span class="p">,</span> <span class="mi">1200</span><span class="p">,</span> <span class="mi">600</span><span class="p">)</span>
-</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>
-</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="c1"># -- 3. 左侧：3 个面板，各自一个画布 --------------------------------------</span>
-</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="n">panel_r</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Red&quot;</span><span class="p">)</span>
-</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="n">panel_g</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Green&quot;</span><span class="p">)</span>
-</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="n">panel_b</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Blue&quot;</span><span class="p">)</span>
-</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>
-</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a><span class="n">panel_r</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;red_img&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">red</span><span class="p">)</span>
-</span><span id="__span-1-33"><a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a><span class="n">panel_g</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;green_img&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">green</span><span class="p">)</span>
-</span><span id="__span-1-34"><a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a><span class="n">panel_b</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;blue_img&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">blue</span><span class="p">)</span>
-</span><span id="__span-1-35"><a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>
-</span><span id="__span-1-36"><a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a><span class="c1"># -- 4. 右侧：1 个面板，内含 3 个画布 ------------------------------------</span>
-</span><span id="__span-1-37"><a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a><span class="n">combined</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Combined&quot;</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-</span><span id="__span-1-38"><a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a><span class="n">combined</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;c_red&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">red</span><span class="p">)</span>
-</span><span id="__span-1-39"><a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a><span class="n">combined</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;c_green&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">green</span><span class="p">)</span>
-</span><span id="__span-1-40"><a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a><span class="n">combined</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;c_blue&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">blue</span><span class="p">)</span>
-</span><span id="__span-1-41"><a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>
-</span><span id="__span-1-42"><a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a><span class="c1"># -- 5. 运行 ---------------------------------------------------------------</span>
-</span><span id="__span-1-43"><a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a><span class="n">view</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">vultorch</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># 三张不同的 tensor</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">red</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="n">red</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">green</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="n">green</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">blue</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="n">cx</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span> <span class="o">//</span> <span class="mi">32</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="n">cy</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span> <span class="o">//</span> <span class="mi">32</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="n">blue</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">cx</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="n">cy</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="n">view</span> <span class="o">=</span> <span class="n">vultorch</span><span class="o">.</span><span class="n">View</span><span class="p">(</span><span class="s2">&quot;02 - Multi-Panel&quot;</span><span class="p">,</span> <span class="mi">1200</span><span class="p">,</span> <span class="mi">600</span><span class="p">)</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="c1"># 左侧：3 个面板，各一个画布</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="n">panel_r</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Red&quot;</span><span class="p">)</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="n">panel_g</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Green&quot;</span><span class="p">)</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="n">panel_b</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Blue&quot;</span><span class="p">)</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="n">panel_r</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;red_img&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">red</span><span class="p">)</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="n">panel_g</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;green_img&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">green</span><span class="p">)</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="n">panel_b</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;blue_img&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">blue</span><span class="p">)</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="c1"># 右侧：1 个面板，3 个画布（自动垂直均分）</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="n">combined</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Combined&quot;</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a><span class="n">combined</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;c_red&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">red</span><span class="p">)</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="n">combined</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;c_green&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">green</span><span class="p">)</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a><span class="n">combined</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;c_blue&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">blue</span><span class="p">)</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="n">view</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </span></code></pre></div>
-<h2 id="_3">重点解析<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<h2 id="_3">要点<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
 <ol>
 <li>
-<p><strong>自动布局</strong> — 不带 <code>side=</code> 参数的面板会在主区域垂直堆叠。
-   使用 <code>side="left"</code> 或 <code>side="right"</code> 可将面板停靠到指定侧，
-   通过 <code>width</code> 指定宽度比例（如 <code>0.5</code> = 50%）。</p>
+<p><strong>自动布局</strong> — 不写 <code>side=</code> 的面板自动垂直堆叠。
+   加 <code>side="right"</code> + <code>width=0.5</code> 就停靠到右边占一半。</p>
 </li>
 <li>
-<p><strong>单画布 vs. 多画布</strong> — 每次调用 <code>panel.canvas()</code> 都会在该面板内创建新的画布。
-   当多个画布的 <code>fit=True</code>（默认值）时，它们会自动均分面板的垂直空间。</p>
+<p><strong>多画布</strong> — 对同一个面板多次调用 <code>panel.canvas()</code>。
+   多个 <code>fit=True</code>（默认）的画布会自动均分垂直空间，不用手算高度。</p>
 </li>
 <li>
-<p><strong>无需回调</strong> — 对于静态数据，只需 <code>bind()</code> 加 <code>run()</code>。
-   <code>@view.on_frame</code> 装饰器仅在需要逐帧更新逻辑时使用（后续章节会讲到）。</p>
+<p><strong>依然不需要回调</strong> — 静态数据只需 <code>bind()</code> + <code>run()</code>。
+   动态更新后面的章节会讲。</p>
 </li>
 <li>
-<p><strong>用户可以重排</strong> — 所有面板都支持停靠。用户可以拖拽标题栏重新排列、
-   拉出为浮动窗口，或拖拽边框调整大小。</p>
+<p><strong>随便拖</strong> — 所有面板都支持停靠。用户可以拖标题栏重排、
+   拉出来变浮动窗口、或者拖边框调大小。</p>
 </li>
 </ol>
 <div class="admonition note">
 <p class="admonition-title">说明</p>
-<p>同一个 tensor 可以同时绑定到多个画布。
-本示例中 <code>red</code>、<code>green</code>、<code>blue</code> 各自同时出现在
-左侧面板和右侧组合面板中。</p>
+<p>同一个 tensor 可以同时绑定多个画布 ——
+<code>red</code> 同时出现在左边的 Red 面板和右边的 Combined 面板里。</p>
 </div>
 
 

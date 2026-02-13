@@ -2,19 +2,24 @@
 
 > **Example file:** `examples/01_hello_tensor.py`
 
-The simplest way to use Vultorch: create a window, add a panel, put a canvas
-on it, bind a CUDA tensor, and run.
+Tired of every research repo inventing its own janky tensor viewer with
+matplotlib hacks and `cv2.imshow` spaghetti?  Yeah, us too.
 
-## Core hierarchy
+Vultorch gets your CUDA tensor on screen in **four lines** — no saving PNGs,
+no CPU round-trips, no `plt.pause(0.001)` nonsense.
 
-```
-View          (top-level window)
- └── Panel    (dockable ImGui sub-window)
-      └── Canvas   (GPU image slot for a tensor)
-           └── bind(tensor)  →  auto-rendered every frame
-```
+## The mental model
 
-That's the entire mental model.
+There are exactly four objects you need to know:
+
+| Object | What it is | One-liner |
+|--------|------------|-----------|
+| **View** | The OS window | `vultorch.View("title", w, h)` |
+| **Panel** | A dockable sub-window inside the View | `view.panel("name")` |
+| **Canvas** | A GPU image slot inside a Panel | `panel.canvas("name")` |
+| **bind()** | Connects a tensor to a Canvas | `canvas.bind(t)` |
+
+Chain them together, call `run()`, done.
 
 ## Full code
 
@@ -22,47 +27,38 @@ That's the entire mental model.
 import torch
 import vultorch
 
-# -- 1. Prepare data -------------------------------------------------------
-# A 256×256 RGB gradient.  Any (H, W, C) float32 CUDA tensor will work.
+# A 256×256 RGB gradient — any (H,W,C) float32 CUDA tensor works
 H, W = 256, 256
-x = torch.linspace(0, 1, W, device="cuda")            # horizontal ramp
-y = torch.linspace(0, 1, H, device="cuda")            # vertical ramp
+x = torch.linspace(0, 1, W, device="cuda")
+y = torch.linspace(0, 1, H, device="cuda")
 t = torch.stack([
-    x.unsqueeze(0).expand(H, W),                       # R channel: left→right
-    y.unsqueeze(1).expand(H, W),                       # G channel: top→bottom
-    torch.full((H, W), 0.3, device="cuda"),            # B channel: constant
-], dim=-1)                                             # shape: (256, 256, 3)
+    x.unsqueeze(0).expand(H, W),
+    y.unsqueeze(1).expand(H, W),
+    torch.full((H, W), 0.3, device="cuda"),
+], dim=-1)  # (256, 256, 3)
 
-# -- 2. Create View → Panel → Canvas → bind tensor -------------------------
-view   = vultorch.View("01 - Hello Tensor", 512, 512)  # open a 512×512 window
-panel  = view.panel("Viewer")                          # add one panel
-canvas = panel.canvas("gradient")                      # add a canvas to it
-canvas.bind(t)                                         # bind the tensor
-
-# The four lines above can also be written as a one-liner:
-# view.panel("Viewer").canvas("gradient").bind(t)
-
-# -- 3. Run -----------------------------------------------------------------
-# run() blocks until the user closes the window.
-# The canvas auto-fills the panel and re-uploads from the bound tensor
-# every frame.
-view.run()
+view   = vultorch.View("01 - Hello Tensor", 512, 512)
+panel  = view.panel("Viewer")
+canvas = panel.canvas("gradient")
+canvas.bind(t)
+view.run()  # blocks until you close the window
 ```
 
-## Step-by-step breakdown
+That's it. No event loop boilerplate, no `begin_frame()` / `end_frame()`.
 
-1. **Prepare the data** — any `(H, W)`, `(H, W, 1)`, `(H, W, 3)`, or `(H, W, 4)`
-   float32 / float16 / uint8 tensor on CUDA will work.  Vultorch handles RGBA
-   expansion internally.
+## What just happened?
 
-2. **Build the object tree** — `View` creates the OS window, `panel()` adds a
-   dockable ImGui window, `canvas()` adds a GPU image slot inside that panel,
-   and `bind()` connects the tensor.
+1. **Data** — we made an RGB gradient on CUDA. Vultorch accepts `(H,W)`,
+   `(H,W,1)`, `(H,W,3)`, or `(H,W,4)`, in float32 / float16 / uint8.
+   It handles RGBA expansion for you.
 
-3. **Run** — `view.run()` enters a blocking event loop.  Every frame, the canvas
-   re-uploads the bound tensor and renders it.  The canvas auto-fills the panel
-   area by default (`fit=True`).
+2. **Object tree** — `View` → `Panel` → `Canvas` → `bind(tensor)`.
+   The canvas auto-fills its panel by default (`fit=True`).
+
+3. **Run** — `view.run()` enters a blocking event loop. Every frame the
+   canvas re-uploads the bound tensor and renders it. Close the window
+   to exit.
 
 !!! tip
-    The four setup lines can be collapsed into a single chain:
+    The four setup lines collapse into a one-liner if you're feeling fancy:
     `view.panel("Viewer").canvas("gradient").bind(t)`
