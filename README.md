@@ -34,7 +34,7 @@ tensor = vultorch.create_tensor(...)  # true zero-copy, no memcpy at all
 
 - **GPU-only display** — `vultorch.show(tensor)` does a fast GPU-GPU copy to Vulkan, no CPU readback ever
 - **True zero-copy** — `vultorch.create_tensor()` returns a torch.Tensor backed by Vulkan shared memory — zero memcpy
-- **One-line API** — `vultorch.show(tensor)` handles format conversion, upload, and display
+- **Declarative API** — `View → Panel → Canvas` with auto layout and per-frame callback support
 - **Built-in ImGui** — Sliders, buttons, color pickers, plots, docking layout — all from Python
 - **3D scene view** — Map textures onto lit 3D planes with orbit camera, MSAA, Blinn-Phong shading
 - **Docking windows** — Drag-and-drop window arrangement (ImGui docking branch)
@@ -47,19 +47,14 @@ pip install vultorch
 
 ```python
 import torch, vultorch
-from vultorch import ui
 
 # Your neural texture output (or any CUDA tensor)
 texture = torch.rand(512, 512, 4, device="cuda")
 
-win = vultorch.Window("Neural Texture Viewer", 800, 600)
-while win.poll():
-    if not win.begin_frame(): continue
-    ui.begin("Output")
-    vultorch.show(texture)  # GPU-only, no CPU round-trip
-    ui.end()
-    win.end_frame()
-win.destroy()
+view = vultorch.View("Neural Texture Viewer", 800, 600)
+panel = view.panel("Output")
+panel.canvas("main").bind(texture)
+view.run()
 ```
 
 ### True Zero-Copy

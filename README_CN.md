@@ -34,7 +34,7 @@ tensor = vultorch.create_tensor(...)  # 真零拷贝，无任何 memcpy
 
 - **纯 GPU 显示** — `vultorch.show(tensor)` 执行快速 GPU-GPU 拷贝至 Vulkan，绝不回读 CPU
 - **真零拷贝** — `vultorch.create_tensor()` 返回由 Vulkan 共享显存支持的 torch.Tensor — 零 memcpy
-- **一行 API** — `vultorch.show(tensor)` 自动处理格式转换、上传和显示
+- **声明式 API** — `View → Panel → Canvas`，自动布局并支持逐帧回调
 - **内置 ImGui** — 滑条、按钮、颜色选择器、折线图、停靠布局 — 全部用 Python 调用
 - **3D 场景** — 将纹理映射到带光照的 3D 平面，支持轨道相机 + MSAA + Blinn-Phong
 - **停靠窗口** — 拖拽排列窗口（ImGui docking 分支）
@@ -47,19 +47,14 @@ pip install vultorch
 
 ```python
 import torch, vultorch
-from vultorch import ui
 
 # 你的神经纹理输出（或任意 CUDA 张量）
 texture = torch.rand(512, 512, 4, device="cuda")
 
-win = vultorch.Window("查看器", 800, 600)
-while win.poll():
-    if not win.begin_frame(): continue
-    ui.begin("输出")
-    vultorch.show(texture)  # 纯 GPU，无 CPU 回传
-    ui.end()
-    win.end_frame()
-win.destroy()
+view = vultorch.View("查看器", 800, 600)
+panel = view.panel("输出")
+panel.canvas("main").bind(texture)
+view.run()
 ```
 
 ### 真正的零拷贝
