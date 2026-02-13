@@ -1,0 +1,62 @@
+site_name: Vultorch Tutorial
+site_description: Step-by-step guide to Vultorch
+site_url: https://chenlizheme.github.io/Vultorch/tutorial/
+
+docs_dir: tutorial
+site_dir: docs/tutorial
+
+theme:
+  name: material
+  language: en
+  palette:
+    scheme: slate
+    primary: indigo
+    accent: deep purple
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - toc.follow
+  icon:
+    logo: material/cube-outline
+
+extra_css:
+  - assets/extra.css
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      languages:
+        - locale: en
+          name: English
+          default: true
+          build: true
+        - locale: zh
+          name: 中文
+          build: true
+
+nav:
+  - Home: index.md
+  - 01 — Hello Tensor: 01_hello_tensor.md
+  - 02 — Multi-Panel: 02_multi_panel.md

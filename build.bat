@@ -31,6 +31,17 @@ if errorlevel 1 exit /b 1
 echo [vultorch] Building + packaging wheel ...
 cmake --build --preset release-windows --clean-first
 if errorlevel 1 exit /b 1
+
+REM Build tutorial docs (mkdocs)
+where mkdocs >nul 2>&1
+if not errorlevel 1 (
+    echo [vultorch] Building tutorial docs ...
+    mkdocs build
+) else (
+    echo [vultorch] mkdocs not found, skipping tutorial build.
+    echo            Install with: pip install mkdocs-material mkdocs-static-i18n
+)
+
 echo [vultorch] Done.  Wheel in dist\
 goto :eof
 

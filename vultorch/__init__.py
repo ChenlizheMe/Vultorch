@@ -500,3 +500,9 @@ def _normalize_tensor(tensor):
         raise ValueError(f"Expected 2D or 3D tensor, got shape {tensor.shape}")
 
     return tensor, h, w, c
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  Declarative API  (import last to avoid circular deps)
+# ═══════════════════════════════════════════════════════════════════════
+from .app import View, Canvas, Panel  # noqa: E402, F401

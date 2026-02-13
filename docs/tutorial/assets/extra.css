@@ -1,0 +1,30 @@
+/* Extra styles to better match the Vultorch landing page palette */
+
+:root,
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #6e8eff;
+  --md-accent-fg-color:  #a78bfa;
+  --md-default-bg-color: #08090d;
+  --md-code-bg-color:    #151821;
+}
+
+/* Slightly muted body text for comfort */
+.md-typeset {
+  color: #c4cde0;
+}
+
+/* Code block border */
+.md-typeset pre > code {
+  border: 1px solid #1e2332;
+  border-radius: 10px;
+}
+
+/* Admonition accent */
+.md-typeset .admonition.tip,
+.md-typeset details.tip {
+  border-color: #6e8eff;
+}
+.md-typeset .admonition.note,
+.md-typeset details.note {
+  border-color: #a78bfa;
+}

@@ -35,6 +35,10 @@ add_subdirectory(external)
 pybind11_add_module(_vultorch
     src/engine.cpp
     src/bindings.cpp
+    src/bind_engine.cpp
+    src/bind_imgui_widgets.cpp
+    src/bind_imgui_layout.cpp
+    src/bind_imgui_draw.cpp
 )
 target_include_directories(_vultorch PRIVATE src)
 target_link_libraries(_vultorch PRIVATE imgui Vulkan::Vulkan SDL3-static)
