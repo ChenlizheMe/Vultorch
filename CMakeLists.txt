@@ -146,7 +146,9 @@ install(TARGETS _vultorch
 set(VULTORCH_PKG_DIR "${CMAKE_SOURCE_DIR}/vultorch")
 
 add_custom_command(TARGET _vultorch POST_BUILD
-    COMMENT "[vultorch] Copying extension module → vultorch/"
+    COMMENT "[vultorch] Cleaning old extensions & copying new module → vultorch/"
+    COMMAND "${Python3_EXECUTABLE}" -c
+            "import pathlib; [f.unlink() for f in pathlib.Path(r'${VULTORCH_PKG_DIR}').glob('_vultorch*')]"
     COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:_vultorch>" "${VULTORCH_PKG_DIR}/"
 )
 

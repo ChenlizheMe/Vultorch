@@ -37,8 +37,13 @@ def find_pyd():
     if not candidates:
         raise RuntimeError("No _vultorch.*.pyd/.so found in vultorch/")
 
-    # Prefer the platform-matching extension
-    candidates.sort(key=lambda f: (f.suffix != preferred_suffix, f.name))
+    # Prefer the extension matching the *current* Python version, then platform
+    current_tag = f"cp{sys.version_info.major}{sys.version_info.minor}"
+    candidates.sort(key=lambda f: (
+        current_tag not in f.name,   # exact Python version first
+        f.suffix != preferred_suffix,
+        f.name,
+    ))
     chosen = candidates[0]
 
     # Windows: _vultorch.cp310-win_amd64.pyd   → cp310-cp310-win_amd64

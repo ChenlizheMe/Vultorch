@@ -13,7 +13,6 @@
             "name": "release-windows",
             "displayName": "Release (Windows)",
             "inherits": "base",
-            "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/release-windows",
             "condition": {
                 "type": "equals",
@@ -24,18 +23,6 @@
         {
             "name": "release-linux",
             "displayName": "Release (Linux / WSL2)",
-            "inherits": "base",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/release-linux",
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
-        },
-        {
-            "name": "release-linux-make",
-            "displayName": "Release (Linux — Unix Makefiles, no Ninja)",
             "inherits": "base",
             "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/build/release-linux",
@@ -50,17 +37,13 @@
         {
             "name": "release-windows",
             "displayName": "Build Release (Windows)",
-            "configurePreset": "release-windows"
+            "configurePreset": "release-windows",
+            "configuration": "Release"
         },
         {
             "name": "release-linux",
             "displayName": "Build Release (Linux / WSL2)",
             "configurePreset": "release-linux"
-        },
-        {
-            "name": "release-linux-make",
-            "displayName": "Build Release (Linux — Makefiles)",
-            "configurePreset": "release-linux-make"
         }
     ]
 }

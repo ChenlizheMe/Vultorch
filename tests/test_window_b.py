@@ -10,14 +10,10 @@ def _require_gpu():
 
 
 @pytest.mark.gpu
-def test_window_b_single():
+def test_window_b_single(gpu_window):
     _require_gpu()
 
-    win = vultorch.Window("pytest-win-b", 256, 256)
-    try:
-        if win.poll() and win.begin_frame():
-            t = torch.rand(32, 32, 4, device="cuda")
-            vultorch.show(t, name="b", window=win)
-            win.end_frame()
-    finally:
-        win.destroy()
+    if gpu_window.poll() and gpu_window.begin_frame():
+        t = torch.rand(32, 32, 4, device="cuda")
+        vultorch.show(t, name="b", window=gpu_window)
+        gpu_window.end_frame()

@@ -122,13 +122,11 @@ def test_repeated_alloc_stress():
     return n_stale
 
 
-def test_vultorch_create_tensor():
+def test_vultorch_create_tensor(gpu_window):
     """End-to-end test via vultorch.create_tensor()."""
     print("\n=== Test 3: vultorch.create_tensor() end-to-end ===")
     import warnings
     import vultorch
-
-    win = vultorch.Window("capsule-bug-test", 256, 256)
 
     ctypes.pythonapi.PyErr_Clear()
     n_warnings = 0
@@ -141,7 +139,7 @@ def test_vultorch_create_tensor():
                 t = vultorch.create_tensor(64, 64, channels=4,
                                            device="cuda:0",
                                            name=f"test_{i % 4}",
-                                           window=win)
+                                           window=gpu_window)
                 for warning in w:
                     if "shared GPU memory" in str(warning.message):
                         n_warnings += 1
@@ -160,7 +158,6 @@ def test_vultorch_create_tensor():
             ctypes.pythonapi.PyErr_Clear()
             n_errors += 1
 
-    win.destroy()
     print(f"  Result: {n_warnings} fallback warnings, {n_errors} stale errors/exceptions")
     return n_errors
 
@@ -185,7 +182,10 @@ def main():
     total_issues += test_repeated_alloc_stress()
 
     try:
-        total_issues += test_vultorch_create_tensor()
+        import vultorch
+        win = vultorch.Window("capsule-bug-standalone", 256, 256)
+        total_issues += test_vultorch_create_tensor(win)
+        win.destroy()
     except Exception as e:
         print(f"\n  Skipped test 3 (vultorch import/window failed): {e}")
 

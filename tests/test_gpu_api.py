@@ -16,36 +16,30 @@ def test_import_and_cuda():
 
 
 @pytest.mark.gpu
-def test_show_uint8_float16_multi_tensor():
+def test_show_uint8_float16_multi_tensor(gpu_window):
     _require_gpu()
 
-    win = vultorch.Window("pytest-multi-tensor", 256, 256)
-    try:
-        if win.poll() and win.begin_frame():
-            h, w = 64, 64
-            t_u8 = (torch.rand(h, w, 3, device="cuda") * 255).to(torch.uint8)
-            t_f16 = torch.rand(h, w, 3, device="cuda", dtype=torch.float16)
+    if gpu_window.poll() and gpu_window.begin_frame():
+        h, w = 64, 64
+        t_u8 = (torch.rand(h, w, 3, device="cuda") * 255).to(torch.uint8)
+        t_f16 = torch.rand(h, w, 3, device="cuda", dtype=torch.float16)
 
-            vultorch.show(t_u8, name="u8", window=win)
-            vultorch.show(t_f16, name="f16", window=win)
+        vultorch.show(t_u8, name="u8", window=gpu_window)
+        vultorch.show(t_f16, name="f16", window=gpu_window)
 
-            win.end_frame()
-    finally:
-        win.destroy()
+        gpu_window.end_frame()
 
 
 @pytest.mark.gpu
 @pytest.mark.slow
-def test_scene_view_basic():
+def test_scene_view_basic(gpu_window):
     _require_gpu()
 
-    win = vultorch.Window("pytest-scene", 512, 512)
     scene = vultorch.SceneView("Scene", 256, 256, msaa=2)
-    try:
-        if win.poll() and win.begin_frame():
-            t = torch.rand(64, 64, 4, device="cuda")
-            scene.set_tensor(t)
-            scene.render()
-            win.end_frame()
-    finally:
-        win.destroy()
+    if gpu_window.poll() and gpu_window.begin_frame():
+        t = torch.rand(64, 64, 4, device="cuda")
+        vultorch.ui.begin("ScenePanel", True, 0)
+        scene.set_tensor(t)
+        scene.render()
+        vultorch.ui.end()
+        gpu_window.end_frame()

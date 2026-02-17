@@ -1,0 +1,2490 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Step-by-step guide to Vultorch">
+      
+      
+      
+        <link rel="canonical" href="https://chenlizheme.github.io/Vultorch/tutorial/api/">
+      
+      
+        <link rel="prev" href="../03_training_test/">
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.17">
+    
+    
+      
+        <title>API Reference - Vultorch Tutorial</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.7e37652d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#api-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Vultorch Tutorial" class="md-header__button md-logo" aria-label="Vultorch Tutorial" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18s-.41-.06-.57-.18l-7.9-4.44A.99.99 0 0 1 3 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18s.41.06.57.18l7.9 4.44c.32.17.53.5.53.88zM12 4.15 6.04 7.5 12 10.85l5.96-3.35zM5 15.91l6 3.38v-6.71L5 9.21zm14 0v-6.7l-6 3.37v6.71z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Vultorch Tutorial
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API Reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../zh/api/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../01_hello_tensor/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  01 — Hello Tensor
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../02_multi_panel/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  02 — Multi-Panel
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../03_training_test/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  03 — Training Test
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Vultorch Tutorial" class="md-nav__button md-logo" aria-label="Vultorch Tutorial" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18s-.41-.06-.57-.18l-7.9-4.44A.99.99 0 0 1 3 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18s.41.06.57.18l7.9 4.44c.32.17.53.5.53.88zM12 4.15 6.04 7.5 12 10.85l5.96-3.35zM5 15.91l6 3.38v-6.71L5 9.21zm14 0v-6.7l-6 3.37v6.71z"/></svg>
+
+    </a>
+    Vultorch Tutorial
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_hello_tensor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    01 — Hello Tensor
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02_multi_panel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    02 — Multi-Panel
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03_training_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    03 — Training Test
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#module-level-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Module-level Attributes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Module-level Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vultorch__version__" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.__version__
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vultorchhas_cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.HAS_CUDA
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vultorchshow" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.show()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vultorchcreate_tensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.create_tensor()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Classes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vultorchwindow" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.Window
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vultorch.Window">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Properties
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vultorchcamera" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.Camera
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vultorchlight" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.Light
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vultorchsceneview" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.SceneView
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vultorch.SceneView">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attributes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#declarative-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      Declarative API
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Declarative API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vultorchview" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.View
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vultorch.View">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#methods_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#properties_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Properties
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-blocking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage — Blocking
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-training-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage — Training Loop
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vultorchpanel" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.Panel
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vultorch.Panel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#canvas-factory" class="md-nav__link">
+    <span class="md-ellipsis">
+      Canvas Factory
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layout
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#widgets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Widgets
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vultorchcanvas" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.Canvas
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vultorch.Canvas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#methods_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#properties_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Properties
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#imgui-bindings-vultorchui" class="md-nav__link">
+    <span class="md-ellipsis">
+      ImGui Bindings (vultorch.ui)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ImGui Bindings (vultorch.ui)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Windows
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Text
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#buttons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Buttons
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inputs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Colors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Selection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tabs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tabs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#display" class="md-nav__link">
+    <span class="md-ellipsis">
+      Display
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layout_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layout
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#menus" class="md-nav__link">
+    <span class="md-ellipsis">
+      Menus
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#popups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Popups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tooltips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tooltips
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      ID Stack
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#style" class="md-nav__link">
+    <span class="md-ellipsis">
+      Style
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cursor-window-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cursor &amp; Window Info
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docking
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#drawing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Drawing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#input-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      Input State
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Utility
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#internal-helpers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internal Helpers
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Internal Helpers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vultorch_normalize_tensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch._normalize_tensor()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#module-level-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Module-level Attributes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Module-level Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vultorch__version__" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.__version__
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vultorchhas_cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.HAS_CUDA
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vultorchshow" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.show()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vultorchcreate_tensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.create_tensor()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Classes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vultorchwindow" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.Window
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vultorch.Window">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Properties
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vultorchcamera" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.Camera
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vultorchlight" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.Light
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vultorchsceneview" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.SceneView
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vultorch.SceneView">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attributes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#declarative-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      Declarative API
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Declarative API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vultorchview" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.View
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vultorch.View">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#methods_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#properties_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Properties
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-blocking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage — Blocking
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-training-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage — Training Loop
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vultorchpanel" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.Panel
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vultorch.Panel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#canvas-factory" class="md-nav__link">
+    <span class="md-ellipsis">
+      Canvas Factory
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layout
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#widgets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Widgets
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vultorchcanvas" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch.Canvas
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vultorch.Canvas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#methods_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#properties_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Properties
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#imgui-bindings-vultorchui" class="md-nav__link">
+    <span class="md-ellipsis">
+      ImGui Bindings (vultorch.ui)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ImGui Bindings (vultorch.ui)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Windows
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Text
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#buttons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Buttons
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inputs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Colors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Selection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tabs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tabs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#display" class="md-nav__link">
+    <span class="md-ellipsis">
+      Display
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layout_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layout
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#menus" class="md-nav__link">
+    <span class="md-ellipsis">
+      Menus
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#popups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Popups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tooltips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tooltips
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      ID Stack
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#style" class="md-nav__link">
+    <span class="md-ellipsis">
+      Style
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cursor-window-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cursor &amp; Window Info
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docking
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#drawing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Drawing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#input-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      Input State
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Utility
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#internal-helpers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internal Helpers
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Internal Helpers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vultorch_normalize_tensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      vultorch._normalize_tensor()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
+<p>Complete reference for all public classes and functions in the <code>vultorch</code> package.</p>
+<hr />
+<h2 id="module-level-attributes">Module-level Attributes<a class="headerlink" href="#module-level-attributes" title="Permanent link">&para;</a></h2>
+<h3 id="vultorch__version__"><code>vultorch.__version__</code><a class="headerlink" href="#vultorch__version__" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">__version__</span><span class="p">:</span> <span class="nb">str</span>
+</span></code></pre></div>
+<p>Package version string (e.g. <code>"0.5.0"</code>).</p>
+<h3 id="vultorchhas_cuda"><code>vultorch.HAS_CUDA</code><a class="headerlink" href="#vultorchhas_cuda" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">HAS_CUDA</span><span class="p">:</span> <span class="nb">bool</span>
+</span></code></pre></div>
+<p><code>True</code> if the native extension was compiled with CUDA support. When <code>False</code>, all tensor display falls back to CPU staging (host-visible <code>memcpy</code>).</p>
+<hr />
+<h2 id="core-functions">Core Functions<a class="headerlink" href="#core-functions" title="Permanent link">&para;</a></h2>
+<h3 id="vultorchshow"><code>vultorch.show()</code><a class="headerlink" href="#vultorchshow" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">show</span><span class="p">(</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="o">*</span><span class="p">,</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tensor&quot;</span><span class="p">,</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;linear&quot;</span><span class="p">,</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">window</span><span class="p">:</span> <span class="n">Window</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+<p>Display a tensor in the current ImGui context.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tensor</code></td>
+<td><code>torch.Tensor</code></td>
+<td><em>(required)</em></td>
+<td>CUDA or CPU tensor. dtype: <code>float32</code>, <code>float16</code>, or <code>uint8</code>. Shape: <code>(H, W)</code> or <code>(H, W, C)</code> with C ∈ {1, 3, 4}.</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>str</code></td>
+<td><code>"tensor"</code></td>
+<td>Unique label for caching when showing multiple tensors.</td>
+</tr>
+<tr>
+<td><code>width</code></td>
+<td><code>float</code></td>
+<td><code>0</code></td>
+<td>Display width in pixels. <code>0</code> = auto-fit to tensor.</td>
+</tr>
+<tr>
+<td><code>height</code></td>
+<td><code>float</code></td>
+<td><code>0</code></td>
+<td>Display height in pixels. <code>0</code> = auto-fit to tensor.</td>
+</tr>
+<tr>
+<td><code>filter</code></td>
+<td><code>str</code></td>
+<td><code>"linear"</code></td>
+<td>Sampling filter: <code>"nearest"</code> or <code>"linear"</code>.</td>
+</tr>
+<tr>
+<td><code>window</code></td>
+<td><code>Window \| None</code></td>
+<td><code>None</code></td>
+<td>Target window. Defaults to <code>Window._current</code>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>1-channel and 3-channel tensors are automatically expanded to RGBA.</li>
+<li>RGBA expansion buffers are cached per <code>name</code> to avoid per-frame allocation.</li>
+<li>On CUDA: uses zero-copy GPU→GPU path. On CPU: uses host-visible staging buffer.</li>
+<li><code>uint8</code> tensors are divided by 255; <code>float16</code> tensors are converted to <code>float32</code>.</li>
+</ul>
+<p><strong>Raises:</strong> <code>RuntimeError</code> if no active <code>Window</code> exists.</p>
+<hr />
+<h3 id="vultorchcreate_tensor"><code>vultorch.create_tensor()</code><a class="headerlink" href="#vultorchcreate_tensor" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">create_tensor</span><span class="p">(</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cuda:0&quot;</span><span class="p">,</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="o">*</span><span class="p">,</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tensor&quot;</span><span class="p">,</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">window</span><span class="p">:</span> <span class="n">Window</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+</span></code></pre></div>
+<p>Allocate a Vulkan-shared CUDA tensor for true zero-copy display.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>height</code></td>
+<td><code>int</code></td>
+<td><em>(required)</em></td>
+<td>Tensor height in pixels.</td>
+</tr>
+<tr>
+<td><code>width</code></td>
+<td><code>int</code></td>
+<td><em>(required)</em></td>
+<td>Tensor width in pixels.</td>
+</tr>
+<tr>
+<td><code>channels</code></td>
+<td><code>int</code></td>
+<td><code>4</code></td>
+<td>Number of channels: 1, 3, or 4.</td>
+</tr>
+<tr>
+<td><code>device</code></td>
+<td><code>str</code></td>
+<td><code>"cuda:0"</code></td>
+<td>CUDA device string, or <code>"cpu"</code>.</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>str</code></td>
+<td><code>"tensor"</code></td>
+<td>Texture slot name (must match <code>show(..., name=...)</code>).</td>
+</tr>
+<tr>
+<td><code>window</code></td>
+<td><code>Window \| None</code></td>
+<td><code>None</code></td>
+<td>Target window. Defaults to <code>Window._current</code>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> <code>torch.Tensor</code> of shape <code>(height, width, channels)</code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only <code>channels=4</code> gives true zero-copy via Vulkan external memory. For 1 or 3 channels, a regular CUDA tensor is returned and <code>show()</code> handles RGBA expansion with a GPU→GPU copy.</p>
+</div>
+<p><strong>Raises:</strong> <code>RuntimeError</code> if no active <code>Window</code> exists.</p>
+<hr />
+<h2 id="classes">Classes<a class="headerlink" href="#classes" title="Permanent link">&para;</a></h2>
+<h3 id="vultorchwindow"><code>vultorch.Window</code><a class="headerlink" href="#vultorchwindow" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Window</span><span class="p">:</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">_current</span><span class="p">:</span> <span class="n">Window</span> <span class="o">|</span> <span class="kc">None</span>   <span class="c1"># singleton reference</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Vultorch&quot;</span><span class="p">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>                 <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1280</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">720</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+</span></code></pre></div>
+<p>High-level wrapper around the Vulkan + SDL3 + ImGui engine. Creating a <code>Window</code> automatically makes it the current target for <code>show()</code> and <code>create_tensor()</code>.</p>
+<h4 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Signature</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>poll()</code></td>
+<td><code>→ bool</code></td>
+<td>Process OS events. Returns <code>False</code> when the window should close.</td>
+</tr>
+<tr>
+<td><code>begin_frame()</code></td>
+<td><code>→ bool</code></td>
+<td>Begin a new ImGui frame. Returns <code>False</code> if the frame was skipped (minimized).</td>
+</tr>
+<tr>
+<td><code>end_frame()</code></td>
+<td><code>→ None</code></td>
+<td>Submit the frame to the GPU and present.</td>
+</tr>
+<tr>
+<td><code>activate()</code></td>
+<td><code>→ None</code></td>
+<td>Make this window the current target for module-level helpers.</td>
+</tr>
+<tr>
+<td><code>upload_tensor(tensor, *, name)</code></td>
+<td><code>→ None</code></td>
+<td>Upload a tensor for display (CUDA or CPU).</td>
+</tr>
+<tr>
+<td><code>get_texture_id(name)</code></td>
+<td><code>→ int</code></td>
+<td>ImGui texture ID for a named tensor.</td>
+</tr>
+<tr>
+<td><code>get_texture_size(name)</code></td>
+<td><code>→ (int, int)</code></td>
+<td><code>(width, height)</code> for a named tensor.</td>
+</tr>
+<tr>
+<td><code>destroy()</code></td>
+<td><code>→ None</code></td>
+<td>Release all GPU / window resources. Safe to call multiple times.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tensor_texture_id</code></td>
+<td><code>int</code></td>
+<td>ImGui texture ID of the default <code>"tensor"</code> slot.</td>
+</tr>
+<tr>
+<td><code>tensor_size</code></td>
+<td><code>(int, int)</code></td>
+<td><code>(width, height)</code> of the default <code>"tensor"</code> slot.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">vultorch</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vultorch</span><span class="w"> </span><span class="kn">import</span> <span class="n">ui</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">win</span> <span class="o">=</span> <span class="n">vultorch</span><span class="o">.</span><span class="n">Window</span><span class="p">(</span><span class="s2">&quot;Demo&quot;</span><span class="p">,</span> <span class="mi">1280</span><span class="p">,</span> <span class="mi">720</span><span class="p">)</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">while</span> <span class="n">win</span><span class="o">.</span><span class="n">poll</span><span class="p">():</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">win</span><span class="o">.</span><span class="n">begin_frame</span><span class="p">():</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        <span class="k">continue</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">ui</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="s2">&quot;Panel&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">vultorch</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="n">ui</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="n">win</span><span class="o">.</span><span class="n">end_frame</span><span class="p">()</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="n">win</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<h3 id="vultorchcamera"><code>vultorch.Camera</code><a class="headerlink" href="#vultorchcamera" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Camera</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">azimuth</span><span class="p">:</span> <span class="nb">float</span>     <span class="c1"># horizontal angle (radians), default 0.0</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">elevation</span><span class="p">:</span> <span class="nb">float</span>   <span class="c1"># vertical angle (radians), default 0.6</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span>    <span class="c1"># distance from target, default 3.0</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">target</span><span class="p">:</span> <span class="nb">tuple</span>      <span class="c1"># (x, y, z) look-at point, default (0, 0, 0)</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">fov</span><span class="p">:</span> <span class="nb">float</span>         <span class="c1"># field of view (degrees), default 45.0</span>
+</span></code></pre></div>
+<p>Orbit camera parameters used by <code>SceneView</code>. Call <code>reset()</code> to restore defaults.</p>
+<hr />
+<h3 id="vultorchlight"><code>vultorch.Light</code><a class="headerlink" href="#vultorchlight" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Light</span><span class="p">:</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="n">direction</span><span class="p">:</span> <span class="nb">tuple</span>   <span class="c1"># (x, y, z), default (0.3, -1.0, 0.5)</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="n">color</span><span class="p">:</span> <span class="nb">tuple</span>       <span class="c1"># (r, g, b), default (1, 1, 1)</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="n">intensity</span><span class="p">:</span> <span class="nb">float</span>   <span class="c1"># default 1.0</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">ambient</span><span class="p">:</span> <span class="nb">float</span>     <span class="c1"># ambient term, default 0.15</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="n">specular</span><span class="p">:</span> <span class="nb">float</span>    <span class="c1"># specular term, default 0.5</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="n">shininess</span><span class="p">:</span> <span class="nb">float</span>   <span class="c1"># Blinn-Phong exponent, default 32.0</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span>      <span class="c1"># default True</span>
+</span></code></pre></div>
+<p>Blinn-Phong directional light parameters used by <code>SceneView</code>.</p>
+<hr />
+<h3 id="vultorchsceneview"><code>vultorch.SceneView</code><a class="headerlink" href="#vultorchsceneview" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">SceneView</span><span class="p">:</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;SceneView&quot;</span><span class="p">,</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>                 <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">800</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">600</span><span class="p">,</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>                 <span class="n">msaa</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+</span></code></pre></div>
+<p>3D tensor viewer — renders a tensor on a lit plane with orbit camera and MSAA.</p>
+<h4 id="attributes">Attributes<a class="headerlink" href="#attributes" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>str</code></td>
+<td><code>"SceneView"</code></td>
+<td>ImGui window label.</td>
+</tr>
+<tr>
+<td><code>camera</code></td>
+<td><code>Camera</code></td>
+<td><em>(auto)</em></td>
+<td>Orbit camera (drag to rotate).</td>
+</tr>
+<tr>
+<td><code>light</code></td>
+<td><code>Light</code></td>
+<td><em>(auto)</em></td>
+<td>Directional light.</td>
+</tr>
+<tr>
+<td><code>background</code></td>
+<td><code>tuple</code></td>
+<td><code>(0.12, 0.12, 0.14)</code></td>
+<td>Background color <code>(r, g, b)</code>.</td>
+</tr>
+<tr>
+<td><code>msaa</code></td>
+<td><code>int</code></td>
+<td><code>4</code></td>
+<td>Multi-sample anti-aliasing level (1/2/4/8).</td>
+</tr>
+</tbody>
+</table>
+<h4 id="methods_1">Methods<a class="headerlink" href="#methods_1" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>set_tensor(tensor)</code></td>
+<td>Upload a tensor to the scene's texture.</td>
+</tr>
+<tr>
+<td><code>render()</code></td>
+<td>Process mouse interaction, render the scene, and display as an ImGui image.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="usage_1">Usage<a class="headerlink" href="#usage_1" title="Permanent link">&para;</a></h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">scene</span> <span class="o">=</span> <span class="n">vultorch</span><span class="o">.</span><span class="n">SceneView</span><span class="p">(</span><span class="s2">&quot;3D View&quot;</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="n">msaa</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="c1"># inside frame loop:</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">scene</span><span class="o">.</span><span class="n">set_tensor</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">scene</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<h2 id="declarative-api">Declarative API<a class="headerlink" href="#declarative-api" title="Permanent link">&para;</a></h2>
+<p>The declarative API provides a higher-level abstraction for building multi-panel visualization apps.</p>
+<h3 id="vultorchview"><code>vultorch.View</code><a class="headerlink" href="#vultorchview" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">View</span><span class="p">:</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Vultorch&quot;</span><span class="p">,</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>                 <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1280</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">720</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+</span></code></pre></div>
+<p>Top-level window with automatic docking layout.</p>
+<h4 id="methods_2">Methods<a class="headerlink" href="#methods_2" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Signature</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>panel(name, *, side, width)</code></td>
+<td><code>→ Panel</code></td>
+<td>Create or retrieve a dockable panel. <code>side</code>: <code>"left"</code> / <code>"right"</code> / <code>None</code>.</td>
+</tr>
+<tr>
+<td><code>on_frame(fn)</code></td>
+<td><code>→ fn</code></td>
+<td>Decorator — register a per-frame callback.</td>
+</tr>
+<tr>
+<td><code>run()</code></td>
+<td><code>→ None</code></td>
+<td>Blocking event loop.</td>
+</tr>
+<tr>
+<td><code>step()</code></td>
+<td><code>→ bool</code></td>
+<td>Non-blocking: process one frame. Returns <code>False</code> on close.</td>
+</tr>
+<tr>
+<td><code>end_step()</code></td>
+<td><code>→ None</code></td>
+<td>Finish the frame started by <code>step()</code>.</td>
+</tr>
+<tr>
+<td><code>close()</code></td>
+<td><code>→ None</code></td>
+<td>Destroy the window.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="properties_1">Properties<a class="headerlink" href="#properties_1" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fps</code></td>
+<td><code>float</code></td>
+<td>Current frames per second.</td>
+</tr>
+<tr>
+<td><code>time</code></td>
+<td><code>float</code></td>
+<td>Elapsed time in seconds.</td>
+</tr>
+<tr>
+<td><code>window</code></td>
+<td><code>Window</code></td>
+<td>Underlying <code>Window</code> instance.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="usage-blocking">Usage — Blocking<a class="headerlink" href="#usage-blocking" title="Permanent link">&para;</a></h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">view</span> <span class="o">=</span> <span class="n">vultorch</span><span class="o">.</span><span class="n">View</span><span class="p">(</span><span class="s2">&quot;Demo&quot;</span><span class="p">,</span> <span class="mi">1280</span><span class="p">,</span> <span class="mi">720</span><span class="p">)</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Viewer&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;img&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="nd">@view</span><span class="o">.</span><span class="n">on_frame</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">():</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="n">speed</span> <span class="o">=</span> <span class="n">controls</span><span class="o">.</span><span class="n">slider</span><span class="p">(</span><span class="s2">&quot;Speed&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="n">tensor</span><span class="p">[:,:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">view</span><span class="o">.</span><span class="n">time</span> <span class="o">*</span> <span class="n">speed</span><span class="p">)</span><span class="o">.</span><span class="n">sin</span><span class="p">()</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="n">view</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</span></code></pre></div>
+<h4 id="usage-training-loop">Usage — Training Loop<a class="headerlink" href="#usage-training-loop" title="Permanent link">&para;</a></h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">view</span> <span class="o">=</span> <span class="n">vultorch</span><span class="o">.</span><span class="n">View</span><span class="p">(</span><span class="s2">&quot;Train&quot;</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">768</span><span class="p">)</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">output</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span><span class="s2">&quot;Output&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">canvas</span><span class="p">(</span><span class="s2">&quot;result&quot;</span><span class="p">)</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">output</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">view</span><span class="o">.</span><span class="n">step</span><span class="p">():</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>        <span class="k">break</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="n">view</span><span class="o">.</span><span class="n">end_step</span><span class="p">()</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="n">view</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<h3 id="vultorchpanel"><code>vultorch.Panel</code><a class="headerlink" href="#vultorchpanel" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Panel</span><span class="p">:</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="c1"># Created via View.panel() — not instantiated directly</span>
+</span></code></pre></div>
+<p>A dockable panel containing canvases and widgets.</p>
+<h4 id="canvas-factory">Canvas Factory<a class="headerlink" href="#canvas-factory" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Signature</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>canvas(name, *, filter, fit)</code></td>
+<td><code>→ Canvas</code></td>
+<td>Create a named canvas. <code>filter</code>: <code>"linear"</code> / <code>"nearest"</code>. <code>fit</code>: auto-fill panel space.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="layout">Layout<a class="headerlink" href="#layout" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>row()</code></td>
+<td>Context manager — place child widgets side-by-side.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="widgets">Widgets<a class="headerlink" href="#widgets" title="Permanent link">&para;</a></h4>
+<p>All widget methods manage state automatically across frames.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Signature</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>text(text)</code></td>
+<td><code>→ None</code></td>
+<td>Static text.</td>
+</tr>
+<tr>
+<td><code>text_colored(r, g, b, a, text)</code></td>
+<td><code>→ None</code></td>
+<td>Colored text.</td>
+</tr>
+<tr>
+<td><code>text_wrapped(text)</code></td>
+<td><code>→ None</code></td>
+<td>Auto-wrapping text.</td>
+</tr>
+<tr>
+<td><code>separator()</code></td>
+<td><code>→ None</code></td>
+<td>Horizontal separator line.</td>
+</tr>
+<tr>
+<td><code>button(label)</code></td>
+<td><code>→ bool</code></td>
+<td>Button. Returns <code>True</code> when clicked.</td>
+</tr>
+<tr>
+<td><code>checkbox(label, *, default)</code></td>
+<td><code>→ bool</code></td>
+<td>Checkbox with stateful toggle.</td>
+</tr>
+<tr>
+<td><code>slider(label, min, max, *, default)</code></td>
+<td><code>→ float</code></td>
+<td>Float slider.</td>
+</tr>
+<tr>
+<td><code>slider_int(label, min, max, *, default)</code></td>
+<td><code>→ int</code></td>
+<td>Integer slider.</td>
+</tr>
+<tr>
+<td><code>color_picker(label, *, default)</code></td>
+<td><code>→ (r, g, b)</code></td>
+<td>Color picker (3-float tuple).</td>
+</tr>
+<tr>
+<td><code>combo(label, items, *, default)</code></td>
+<td><code>→ int</code></td>
+<td>Dropdown combo box. Returns selected index.</td>
+</tr>
+<tr>
+<td><code>input_text(label, *, default, max_length)</code></td>
+<td><code>→ str</code></td>
+<td>Text input field.</td>
+</tr>
+<tr>
+<td><code>plot(values, *, label, overlay, width, height)</code></td>
+<td><code>→ None</code></td>
+<td>Line plot from a list of floats.</td>
+</tr>
+<tr>
+<td><code>progress(fraction, *, overlay)</code></td>
+<td><code>→ None</code></td>
+<td>Progress bar (0.0 – 1.0).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="vultorchcanvas"><code>vultorch.Canvas</code><a class="headerlink" href="#vultorchcanvas" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Canvas</span><span class="p">:</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="c1"># Created via Panel.canvas() — not instantiated directly</span>
+</span></code></pre></div>
+<p>A display surface that renders a bound tensor as an ImGui image.</p>
+<h4 id="methods_3">Methods<a class="headerlink" href="#methods_3" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Signature</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bind(tensor)</code></td>
+<td><code>→ Canvas</code></td>
+<td>Bind a tensor for display. Returns <code>self</code> for chaining.</td>
+</tr>
+<tr>
+<td><code>alloc(height, width, channels, device)</code></td>
+<td><code>→ torch.Tensor</code></td>
+<td>Allocate Vulkan-shared memory and auto-bind. Returns the tensor.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="properties_2">Properties<a class="headerlink" href="#properties_2" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>filter</code></td>
+<td><code>str</code></td>
+<td><code>"linear"</code></td>
+<td><code>"linear"</code> or <code>"nearest"</code>.</td>
+</tr>
+<tr>
+<td><code>fit</code></td>
+<td><code>bool</code></td>
+<td><code>True</code></td>
+<td>Auto-fill available panel space.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="imgui-bindings-vultorchui">ImGui Bindings (<code>vultorch.ui</code>)<a class="headerlink" href="#imgui-bindings-vultorchui" title="Permanent link">&para;</a></h2>
+<p>The <code>vultorch.ui</code> submodule exposes Dear ImGui functions (docking branch). All functions map directly to their ImGui C++ counterparts.</p>
+<h3 id="windows">Windows<a class="headerlink" href="#windows" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">opened</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">end</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">begin_child</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">child_flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">window_flags</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">end_child</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+<h3 id="text">Text<a class="headerlink" href="#text" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">text_colored</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">text_disabled</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">text_wrapped</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="n">ui</span><span class="o">.</span><span class="n">label_text</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="n">ui</span><span class="o">.</span><span class="n">bullet_text</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+<h3 id="buttons">Buttons<a class="headerlink" href="#buttons" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">button</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">small_button</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">invisible_button</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">arrow_button</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="n">ui</span><span class="o">.</span><span class="n">radio_button</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">active</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span></code></pre></div>
+<h3 id="inputs">Inputs<a class="headerlink" href="#inputs" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">checkbox</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">slider_float</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%.3f</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">slider_float2</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="nb">min</span><span class="p">,</span> <span class="nb">max</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">slider_float3</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v3</span><span class="p">,</span> <span class="nb">min</span><span class="p">,</span> <span class="nb">max</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="n">ui</span><span class="o">.</span><span class="n">slider_float4</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v3</span><span class="p">,</span> <span class="n">v4</span><span class="p">,</span> <span class="nb">min</span><span class="p">,</span> <span class="nb">max</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="n">ui</span><span class="o">.</span><span class="n">slider_int</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="n">ui</span><span class="o">.</span><span class="n">slider_angle</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="nb">min</span><span class="o">=-</span><span class="mi">360</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">360</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="n">ui</span><span class="o">.</span><span class="n">drag_float</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span>
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="n">ui</span><span class="o">.</span><span class="n">drag_float2</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span>
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="n">ui</span><span class="o">.</span><span class="n">drag_float3</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v3</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span>
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="n">ui</span><span class="o">.</span><span class="n">drag_int</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="n">ui</span><span class="o">.</span><span class="n">input_float</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span>
+</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="n">ui</span><span class="o">.</span><span class="n">input_float2</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span>
+</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="n">ui</span><span class="o">.</span><span class="n">input_float3</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span>
+</span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a><span class="n">ui</span><span class="o">.</span><span class="n">input_float4</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v3</span><span class="p">,</span> <span class="n">v4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span>
+</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a><span class="n">ui</span><span class="o">.</span><span class="n">input_int</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span><span id="__span-18-17"><a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a><span class="n">ui</span><span class="o">.</span><span class="n">input_text</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</span><span id="__span-18-18"><a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a><span class="n">ui</span><span class="o">.</span><span class="n">input_text_multiline</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</span></code></pre></div>
+<h3 id="colors">Colors<a class="headerlink" href="#colors" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">color_edit3</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">color_edit4</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">color_picker3</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">color_picker4</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span>
+</span></code></pre></div>
+<h3 id="selection">Selection<a class="headerlink" href="#selection" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">combo</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">current</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">listbox</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">current</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">height_items</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">tree_node</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">tree_pop</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="n">ui</span><span class="o">.</span><span class="n">collapsing_header</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="n">ui</span><span class="o">.</span><span class="n">selectable</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">selected</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span></code></pre></div>
+<h3 id="tabs">Tabs<a class="headerlink" href="#tabs" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">begin_tab_bar</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">end_tab_bar</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">begin_tab_item</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">end_tab_item</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+<h3 id="display">Display<a class="headerlink" href="#display" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">progress_bar</span><span class="p">(</span><span class="n">fraction</span><span class="p">,</span> <span class="n">sx</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">sy</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">overlay</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">texture_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">uv0x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">uv0y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">uv1x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">uv1y</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">image_button</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">texture_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">plot_lines</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">overlay</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="n">ui</span><span class="o">.</span><span class="n">plot_histogram</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">overlay</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="layout_1">Layout<a class="headerlink" href="#layout_1" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">separator</span><span class="p">()</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">same_line</span><span class="p">(</span><span class="n">offset</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">)</span>
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">new_line</span><span class="p">()</span>
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">spacing</span><span class="p">()</span>
+</span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="n">ui</span><span class="o">.</span><span class="n">dummy</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+</span><span id="__span-23-6"><a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="n">ui</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+</span><span id="__span-23-7"><a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="n">ui</span><span class="o">.</span><span class="n">unindent</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+</span><span id="__span-23-8"><a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="n">ui</span><span class="o">.</span><span class="n">begin_group</span><span class="p">()</span>
+</span><span id="__span-23-9"><a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="n">ui</span><span class="o">.</span><span class="n">end_group</span><span class="p">()</span>
+</span><span id="__span-23-10"><a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="n">ui</span><span class="o">.</span><span class="n">push_item_width</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+</span><span id="__span-23-11"><a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="n">ui</span><span class="o">.</span><span class="n">pop_item_width</span><span class="p">()</span>
+</span><span id="__span-23-12"><a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a><span class="n">ui</span><span class="o">.</span><span class="n">columns</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">border</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-23-13"><a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a><span class="n">ui</span><span class="o">.</span><span class="n">next_column</span><span class="p">()</span>
+</span></code></pre></div>
+<h3 id="tables">Tables<a class="headerlink" href="#tables" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">begin_table</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">columns</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">end_table</span><span class="p">()</span>
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">table_next_row</span><span class="p">(</span><span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">min_row_height</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">table_next_column</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="n">ui</span><span class="o">.</span><span class="n">table_set_column_index</span><span class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="n">ui</span><span class="o">.</span><span class="n">table_setup_column</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">init_width</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="n">ui</span><span class="o">.</span><span class="n">table_headers_row</span><span class="p">()</span>
+</span></code></pre></div>
+<h3 id="menus">Menus<a class="headerlink" href="#menus" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">begin_main_menu_bar</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">end_main_menu_bar</span><span class="p">()</span>
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">begin_menu_bar</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">end_menu_bar</span><span class="p">()</span>
+</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="n">ui</span><span class="o">.</span><span class="n">begin_menu</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="n">ui</span><span class="o">.</span><span class="n">end_menu</span><span class="p">()</span>
+</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="n">ui</span><span class="o">.</span><span class="n">menu_item</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">shortcut</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">selected</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span></code></pre></div>
+<h3 id="popups">Popups<a class="headerlink" href="#popups" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">open_popup</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">begin_popup</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">begin_popup_modal</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">end_popup</span><span class="p">()</span>
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="n">ui</span><span class="o">.</span><span class="n">close_current_popup</span><span class="p">()</span>
+</span></code></pre></div>
+<h3 id="tooltips">Tooltips<a class="headerlink" href="#tooltips" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">begin_tooltip</span><span class="p">()</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">end_tooltip</span><span class="p">()</span>
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">set_tooltip</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="id-stack">ID Stack<a class="headerlink" href="#id-stack" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">push_id_str</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">push_id_int</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">pop_id</span><span class="p">()</span>
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">get_id</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span></code></pre></div>
+<h3 id="style">Style<a class="headerlink" href="#style" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">push_style_color</span><span class="p">(</span><span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">pop_style_color</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">push_style_var_float</span><span class="p">(</span><span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span>
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">push_style_var_vec2</span><span class="p">(</span><span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span>
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="n">ui</span><span class="o">.</span><span class="n">pop_style_var</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="n">ui</span><span class="o">.</span><span class="n">style_colors_dark</span><span class="p">()</span>
+</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="n">ui</span><span class="o">.</span><span class="n">style_colors_light</span><span class="p">()</span>
+</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a><span class="n">ui</span><span class="o">.</span><span class="n">style_colors_classic</span><span class="p">()</span>
+</span></code></pre></div>
+<h3 id="cursor-window-info">Cursor &amp; Window Info<a class="headerlink" href="#cursor-window-info" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">get_cursor_pos</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">set_cursor_pos</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">get_content_region_avail</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">get_window_size</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="n">ui</span><span class="o">.</span><span class="n">get_window_pos</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+</span><span id="__span-30-6"><a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a><span class="n">ui</span><span class="o">.</span><span class="n">set_next_window_pos</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cond</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="__span-30-7"><a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="n">ui</span><span class="o">.</span><span class="n">set_next_window_size</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">cond</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="docking">Docking<a class="headerlink" href="#docking" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">dock_space_over_viewport</span><span class="p">(</span><span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">dock_space</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">sx</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sy</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">set_next_window_dock_id</span><span class="p">(</span><span class="n">dock_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">cond</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">dock_builder_add_node</span><span class="p">(</span><span class="n">node_id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="n">ui</span><span class="o">.</span><span class="n">dock_builder_remove_node</span><span class="p">(</span><span class="n">node_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="n">ui</span><span class="o">.</span><span class="n">dock_builder_set_node_size</span><span class="p">(</span><span class="n">node_id</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="n">ui</span><span class="o">.</span><span class="n">dock_builder_set_node_pos</span><span class="p">(</span><span class="n">node_id</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</span><span id="__span-31-8"><a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="n">ui</span><span class="o">.</span><span class="n">dock_builder_split_node</span><span class="p">(</span><span class="n">node_id</span><span class="p">,</span> <span class="n">split_dir</span><span class="p">,</span> <span class="n">ratio</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+</span><span id="__span-31-9"><a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a><span class="n">ui</span><span class="o">.</span><span class="n">dock_builder_dock_window</span><span class="p">(</span><span class="n">window_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+</span><span id="__span-31-10"><a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a><span class="n">ui</span><span class="o">.</span><span class="n">dock_builder_finish</span><span class="p">(</span><span class="n">node_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+</span><span id="__span-31-11"><a id="__codelineno-31-11" name="__codelineno-31-11" href="#__codelineno-31-11"></a><span class="n">ui</span><span class="o">.</span><span class="n">dock_builder_get_node</span><span class="p">(</span><span class="n">node_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span></code></pre></div>
+<h3 id="drawing">Drawing<a class="headerlink" href="#drawing" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">draw_line</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mh">0xFFFFFFFF</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">draw_rect</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mh">0xFFFFFFFF</span><span class="p">)</span>
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">draw_rect_filled</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mh">0xFFFFFFFF</span><span class="p">)</span>
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">draw_circle</span><span class="p">(</span><span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mh">0xFFFFFFFF</span><span class="p">)</span>
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a><span class="n">ui</span><span class="o">.</span><span class="n">draw_circle_filled</span><span class="p">(</span><span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mh">0xFFFFFFFF</span><span class="p">)</span>
+</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a><span class="n">ui</span><span class="o">.</span><span class="n">draw_text</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">col</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+</span><span id="__span-32-7"><a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a><span class="n">ui</span><span class="o">.</span><span class="n">bg_draw_image</span><span class="p">(</span><span class="n">texture_id</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="input-state">Input State<a class="headerlink" href="#input-state" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">is_item_hovered</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">is_item_active</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">is_item_clicked</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">is_item_focused</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-33-5"><a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="n">ui</span><span class="o">.</span><span class="n">is_item_edited</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-33-6"><a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a><span class="n">ui</span><span class="o">.</span><span class="n">is_item_deactivated_after_edit</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-33-7"><a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a><span class="n">ui</span><span class="o">.</span><span class="n">get_mouse_pos</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+</span><span id="__span-33-8"><a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a><span class="n">ui</span><span class="o">.</span><span class="n">is_mouse_clicked</span><span class="p">(</span><span class="n">button</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-33-9"><a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a><span class="n">ui</span><span class="o">.</span><span class="n">is_mouse_double_clicked</span><span class="p">(</span><span class="n">button</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-33-10"><a id="__codelineno-33-10" name="__codelineno-33-10" href="#__codelineno-33-10"></a><span class="n">ui</span><span class="o">.</span><span class="n">is_mouse_dragging</span><span class="p">(</span><span class="n">button</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">lock_threshold</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-33-11"><a id="__codelineno-33-11" name="__codelineno-33-11" href="#__codelineno-33-11"></a><span class="n">ui</span><span class="o">.</span><span class="n">get_mouse_drag_delta</span><span class="p">(</span><span class="n">button</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lock_threshold</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+</span><span id="__span-33-12"><a id="__codelineno-33-12" name="__codelineno-33-12" href="#__codelineno-33-12"></a><span class="n">ui</span><span class="o">.</span><span class="n">is_key_pressed</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span><span id="__span-33-13"><a id="__codelineno-33-13" name="__codelineno-33-13" href="#__codelineno-33-13"></a><span class="n">ui</span><span class="o">.</span><span class="n">is_key_down</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span></code></pre></div>
+<h3 id="utility">Utility<a class="headerlink" href="#utility" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="n">ui</span><span class="o">.</span><span class="n">get_io_framerate</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">float</span>
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="n">ui</span><span class="o">.</span><span class="n">get_io_delta_time</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">float</span>
+</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="n">ui</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">float</span>
+</span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="n">ui</span><span class="o">.</span><span class="n">get_frame_count</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span><span id="__span-34-5"><a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a><span class="n">ui</span><span class="o">.</span><span class="n">get_display_size</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+</span><span id="__span-34-6"><a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a><span class="n">ui</span><span class="o">.</span><span class="n">col32</span><span class="p">(</span><span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">g</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">255</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span><span id="__span-34-7"><a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a><span class="n">ui</span><span class="o">.</span><span class="n">show_demo_window</span><span class="p">()</span>
+</span><span id="__span-34-8"><a id="__codelineno-34-8" name="__codelineno-34-8" href="#__codelineno-34-8"></a><span class="n">ui</span><span class="o">.</span><span class="n">show_metrics_window</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<h2 id="internal-helpers">Internal Helpers<a class="headerlink" href="#internal-helpers" title="Permanent link">&para;</a></h2>
+<h3 id="vultorch_normalize_tensor"><code>vultorch._normalize_tensor()</code><a class="headerlink" href="#vultorch_normalize_tensor" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">_normalize_tensor</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+</span></code></pre></div>
+<p>Normalize tensor dtype and shape for display. Returns <code>(tensor, height, width, channels)</code>.</p>
+<ul>
+<li>Converts <code>uint8</code> → <code>float32</code> (÷ 255), <code>float16</code> → <code>float32</code>.</li>
+<li>Accepts 2D <code>(H, W)</code> and 3D <code>(H, W, C)</code> with C ∈ {1, 3, 4}.</li>
+<li>Raises <code>ValueError</code> for unsupported dtype, shape, or channel count.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "content.code.copy", "toc.follow"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.92b07e13.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -217,7 +217,23 @@ void SceneRenderer::resize(uint32_t width, uint32_t height) {
 void SceneRenderer::set_msaa(VkSampleCountFlagBits msaa) {
     if (msaa == msaa_samples_) return;
     msaa_samples_ = msaa;
-    resize(width_, height_);  // rebuild everything
+
+    // Rebuild offscreen resources with new sample count.
+    // Cannot reuse resize() because it early-returns when dimensions are unchanged.
+    vkDeviceWaitIdle(device_);
+
+    if (imgui_desc_) { ImGui_ImplVulkan_RemoveTexture(imgui_desc_); imgui_desc_ = VK_NULL_HANDLE; }
+    cleanup_offscreen();
+    create_offscreen_resources();
+    create_render_pass();
+    create_framebuffer();
+
+    // Force pipeline recreation (sample count changed)
+    if (pipeline_)        { vkDestroyPipeline(device_, pipeline_, nullptr);             pipeline_ = VK_NULL_HANDLE; }
+    if (pipeline_layout_) { vkDestroyPipelineLayout(device_, pipeline_layout_, nullptr); pipeline_layout_ = VK_NULL_HANDLE; }
+    if (desc_layout_)     { vkDestroyDescriptorSetLayout(device_, desc_layout_, nullptr); desc_layout_ = VK_NULL_HANDLE; }
+    if (scene_pool_)      { vkDestroyDescriptorPool(device_, scene_pool_, nullptr);       scene_pool_ = VK_NULL_HANDLE; }
+    scene_desc_ = VK_NULL_HANDLE;
 }
 
 // ======================================================================

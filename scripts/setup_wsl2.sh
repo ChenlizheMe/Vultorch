@@ -16,7 +16,7 @@ echo "════════════════════════�
 echo "[1/4] Installing system dependencies ..."
 apt-get update -qq
 apt-get install -y -qq \
-    build-essential cmake ninja-build \
+    build-essential cmake \
     libvulkan-dev vulkan-tools \
     python3-dev python3-pip python3-venv \
     libsdl2-dev libx11-dev libxrandr-dev libxinerama-dev \

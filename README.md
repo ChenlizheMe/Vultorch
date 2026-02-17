@@ -85,6 +85,8 @@ scene.render()  # orbit camera, Blinn-Phong lighting
 python examples/01_hello_tensor.py
 ```
 
+---
+
 ## Building from Source
 
 ### Prerequisites
@@ -92,43 +94,212 @@ python examples/01_hello_tensor.py
 | Component | Required | Notes |
 |-----------|----------|-------|
 | **GPU** | ✅ | Any Vulkan-capable GPU (NVIDIA, AMD, Intel) |
-| **Vulkan** | Runtime | Ships with your GPU driver — no separate install needed |
-| **Vulkan SDK** | Build only | [lunarg.com/vulkan-sdk](https://vulkan.lunarg.com/sdk/home) — only for building from source |
-| **CUDA Toolkit** | Optional | For `show()` and `create_tensor()` |
-| **Python 3.8+** | ✅ | |
-| **CMake 3.25+** | Build only | + Ninja |
+| **Vulkan SDK** | ✅ Build | [lunarg.com/vulkan-sdk](https://vulkan.lunarg.com/sdk/home) — headers + glslangValidator |
+| **Vulkan driver** | ✅ Runtime | Ships with your GPU driver |
+| **CUDA Toolkit** | Optional | Enables GPU zero-copy in `show()` / `create_tensor()` |
+| **Python 3.8+** | ✅ | With development headers (`python3-dev` on Linux) |
+| **CMake 3.25+** | ✅ Build | |
 
-### Clone & Build
+### Step 1 — Clone (with submodules)
 
 ```bash
 git clone --recursive https://github.com/ChenlizheMe/Vultorch.git
 cd Vultorch
 ```
 
-**Two commands** — configure and build (produces a wheel in `dist/`):
+> If you forgot `--recursive`, run: `git submodule update --init --recursive`
+
+### Step 2 — Configure
+
+Choose the preset matching your platform:
 
 ```bash
-# Windows (requires Ninja + Vulkan SDK)
+# Windows (MSVC)
 cmake --preset release-windows
-cmake --build --preset release-windows
 
-# Linux / WSL2 (requires Ninja + Vulkan headers)
+# Linux / WSL2 (GCC + Make)
 cmake --preset release-linux
-cmake --build --preset release-linux
-
-# Linux without Ninja
-cmake --preset release-linux-make
-cmake --build --preset release-linux-make
 ```
 
-The wheel appears in `dist/`. Install it:
+CMake automatically detects your **active Python interpreter** and **CUDA toolkit** (if installed).
+
+### Step 3 — Build
+
+```bash
+cmake --build --preset release-windows    # or release-linux
+```
+
+This executes three targets in order:
+
+1. **`_vultorch`** — Compiles the C++ extension module (`.pyd` / `.so`) and SPIR-V shaders.
+2. **`package_wheel`** — Runs `tools/make_wheel.py` to produce a pip-installable `.whl` in `dist/`.
+3. **`docs`** *(optional)* — If `mkdocs` is installed, builds tutorial + API docs into `docs/tutorial/`.
+
+### Step 4 — Install
 
 ```bash
 pip install dist/vultorch-*.whl
 ```
 
-The build auto-detects your active Python and CUDA installation.
-Tutorial docs are also built automatically if `mkdocs` is installed.
+Verify:
+
+```python
+python -c "import vultorch; print(vultorch.__version__, 'CUDA:', vultorch.HAS_CUDA)"
+```
+
+### WSL2 Quick Setup
+
+A one-command setup script for Ubuntu WSL2:
+
+```bash
+sudo bash scripts/setup_wsl2.sh
+```
+
+This installs all system dependencies (CMake, Vulkan headers, SDL2 dev libs, Python dev).
+
+---
+
+## Packaging
+
+### Single Wheel
+
+The build already produces a wheel in `dist/`. You can also manually run:
+
+```bash
+python tools/make_wheel.py
+```
+
+This reads the compiled `_vultorch.*.pyd` / `.so` from `vultorch/`, bundles it with the Python package files, and outputs a platform-specific `.whl` to `dist/`.
+
+### Multi-Version Wheels
+
+Build wheels for multiple Python versions (requires conda):
+
+```bash
+# All default versions (3.8 – 3.12)
+python scripts/build_wheels.py
+
+# Specific versions
+python scripts/build_wheels.py 3.10 3.11 3.12
+```
+
+Each version gets a separate conda environment; CMake is re-configured and rebuilt for each.
+
+### Upload to PyPI
+
+```bash
+# Interactive token prompt
+python scripts/upload_wheels.py
+
+# Pass token directly
+python scripts/upload_wheels.py --token pypi-YOUR_TOKEN
+```
+
+Requires `twine` (auto-installed if missing).
+
+---
+
+## Testing
+
+Tests use **pytest** with two custom markers:
+
+| Marker | Description |
+|--------|-------------|
+| `gpu` | Requires a Vulkan-capable GPU with CUDA |
+| `slow` | Long-running tests |
+
+### Run All Tests
+
+```bash
+pytest
+```
+
+### Run Only Non-GPU (Pure Python) Tests
+
+```bash
+pytest -m "not gpu"
+```
+
+### Run GPU Tests Only
+
+```bash
+pytest -m gpu
+```
+
+### Run with Verbose Output
+
+```bash
+pytest -ra -v
+```
+
+### Test Structure
+
+| File | Scope |
+|------|-------|
+| `tests/conftest.py` | Shared fixtures + skip decorators |
+| `tests/test_import.py` | Package import, version, module structure |
+| `tests/test_camera_light.py` | Camera / Light data classes |
+| `tests/test_normalize_tensor.py` | `_normalize_tensor()` dtype, shape, contiguity |
+| `tests/test_show.py` | `show()` / `create_tensor()` error paths |
+| `tests/test_declarative_api.py` | Canvas / Panel / View / RowContext (non-GPU) |
+| `tests/test_edge_cases.py` | Edge-case and error-path coverage |
+| `tests/test_ui_bindings.py` | All `vultorch.ui.*` functions exist |
+| `tests/test_project_structure.py` | Type stubs, configs, examples, tutorials |
+| `tests/test_tools_spv_to_header.py` | `tools/spv_to_header.py` |
+| `tests/test_tools_make_wheel.py` | `tools/make_wheel.py` |
+| `tests/test_scripts.py` | `scripts/build_wheels.py` + `upload_wheels.py` |
+| `tests/test_gpu_integration.py` | GPU: Window, show(), create_tensor(), SceneView, ImGui |
+| `tests/test_engine_bindings.py` | GPU: C++ Engine class bindings |
+| `tests/test_panel_widgets_gpu.py` | GPU: Panel widgets + Canvas in real render loop |
+
+---
+
+## Documentation
+
+### Tutorial & API Reference
+
+Documentation is built with **MkDocs Material** and the **i18n** plugin (English + Chinese).
+Source files live in `tutorial/`:
+
+```
+tutorial/
+├── index.md / index.zh.md          # Home page
+├── 01_hello_tensor.md / .zh.md     # Tutorial: Hello Tensor
+├── 02_multi_panel.md / .zh.md      # Tutorial: Multi-Panel
+├── 03_training_test.md / .zh.md    # Tutorial: Training Test
+└── api.md / api.zh.md              # API Reference
+```
+
+### When Are Docs Generated?
+
+Docs are built **automatically** as the last build target (after `package_wheel`), provided:
+
+1. `mkdocs` is installed: `pip install mkdocs-material mkdocs-static-i18n`
+2. `VULTORCH_BUILD_DOCS=ON` (default)
+
+The generated site lands in `docs/tutorial/` (served via GitHub Pages).
+
+### Build Docs Manually
+
+```bash
+mkdocs build --clean
+```
+
+### Preview Docs Locally
+
+```bash
+mkdocs serve
+```
+
+Opens at `http://127.0.0.1:8000/`.
+
+### Disable Doc Build
+
+```bash
+cmake --preset release-windows -DVULTORCH_BUILD_DOCS=OFF
+```
+
+---
 
 ## Architecture
 
@@ -144,16 +315,25 @@ Vultorch/
 │   ├── bindings.cpp         # pybind11 Python bindings
 │   └── shaders/             # GLSL shaders → SPIR-V
 ├── vultorch/                # Python package
-│   └── __init__.py          # High-level API (Window, show, SceneView)
+│   ├── __init__.py          # High-level API (Window, show, SceneView)
+│   ├── app.py               # Declarative API (View, Panel, Canvas)
+│   ├── __init__.pyi         # Type stubs
+│   ├── ui.pyi               # ImGui binding stubs
+│   └── py.typed             # PEP 561 marker
 ├── external/                # Git submodules
 │   ├── pybind11/            # C++ ↔ Python binding
 │   ├── SDL/                 # Window / input (SDL3)
 │   └── imgui/               # Dear ImGui (docking branch)
 ├── examples/                # Ready-to-run demos
-├── tests/                   # pytest GPU tests
-├── tools/                   # Build-time utilities (shader header gen)
-├── scripts/                 # Developer scripts (multi-wheel, upload, WSL2)
-├── tutorial/                # MkDocs source (Markdown)
+├── tests/                   # pytest tests (GPU + non-GPU)
+├── tools/                   # Build-time utilities
+│   ├── make_wheel.py        # Wheel packaging
+│   └── spv_to_header.py     # SPIR-V → C header
+├── scripts/                 # Developer scripts
+│   ├── build_wheels.py      # Multi-Python wheel builder
+│   ├── upload_wheels.py     # PyPI upload via twine
+│   └── setup_wsl2.sh        # WSL2 environment setup
+├── tutorial/                # MkDocs source (Markdown, EN + ZH)
 └── docs/                    # Generated website (GitHub Pages)
 ```
 
@@ -165,6 +345,6 @@ Vultorch/
 
 <div align="center">
 
-**[Examples](examples/) · [Website](https://ChenlizheMe.github.io/Vultorch/) · [中文文档](README_CN.md)**
+**[Examples](examples/) · [API Docs](https://ChenlizheMe.github.io/Vultorch/tutorial/api/) · [Website](https://ChenlizheMe.github.io/Vultorch/) · [中文文档](README_CN.md)**
 
 </div>
