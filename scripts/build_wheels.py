@@ -24,33 +24,66 @@ def run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, check=True, **kwargs)
 
 
+def _env_candidates(ver: str) -> list[str]:
+    compact = ver.replace(".", "")
+    return [f"vultorch-build-{compact}", f"vultorch-build-{ver}"]
+
+
+def _resolve_python_from_env(env_name: str) -> str:
+    result = subprocess.run(
+        ["conda", "run", "-n", env_name, "python", "-c",
+         "import sys; print(sys.executable)"],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        return ""
+
+    lines = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    if not lines:
+        return ""
+    return lines[-1]
+
+
 def main():
     versions = sys.argv[1:] if len(sys.argv) > 1 else DEFAULT_VERSIONS
     DIST.mkdir(exist_ok=True)
     preset = "release-windows" if platform.system() == "Windows" else "release-linux"
 
     for ver in versions:
-        env_name = f"vultorch-build-{ver}"
+        env_candidates = _env_candidates(ver)
+        preferred_env = env_candidates[0]
         print(f"\n{'═' * 48}")
         print(f"  Building wheel for Python {ver}")
         print(f"{'═' * 48}")
 
-        # Create / reuse conda env
-        subprocess.run(
-            ["conda", "create", "-n", env_name, f"python={ver}", "-y", "-q"],
-            capture_output=True,
-        )
+        # First try existing known env-name patterns (e.g. -38 and -3.8)
+        py_exe = ""
+        matched_env = ""
+        for env_name in env_candidates:
+            py_exe = _resolve_python_from_env(env_name)
+            if py_exe:
+                matched_env = env_name
+                break
 
-        # Get the Python executable path
-        result = subprocess.run(
-            ["conda", "run", "-n", env_name, "python", "-c",
-             "import sys; print(sys.executable)"],
-            capture_output=True, text=True,
-        )
-        py_exe = result.stdout.strip()
+        # If none works, create preferred env name then retry once
+        if not py_exe:
+            create = subprocess.run(
+                ["conda", "create", "-n", preferred_env, f"python={ver}", "-y", "-q"],
+                capture_output=True, text=True,
+            )
+            if create.returncode != 0:
+                err = (create.stderr or create.stdout or "").strip()
+                if err:
+                    print("  conda create error:")
+                    print(f"    {err.splitlines()[-1]}")
+
+            py_exe = _resolve_python_from_env(preferred_env)
+            matched_env = preferred_env if py_exe else ""
+
         if not py_exe:
             print(f"  SKIP: could not resolve Python {ver}")
             continue
+        print(f"  Env: {matched_env}")
         print(f"  Python: {py_exe}")
 
         # Remove stale extension modules
