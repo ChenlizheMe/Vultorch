@@ -6,8 +6,6 @@
 /// Renders to an offscreen framebuffer, resolves MSAA, and exposes the
 /// result as an ImGui texture for embedding in UI panels.
 
-#ifdef VULTORCH_HAS_CUDA
-
 #include <vulkan/vulkan.h>
 #include "math_types.h"
 #include "tensor_texture.h"
@@ -217,5 +215,3 @@ private:
 };
 
 } // namespace vultorch
-
-#endif // VULTORCH_HAS_CUDA

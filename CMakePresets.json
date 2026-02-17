@@ -3,13 +3,18 @@
     "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
     "configurePresets": [
         {
-            "name": "release-windows",
-            "displayName": "Release (Windows)",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/release-windows",
+            "name": "base",
+            "hidden": true,
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
-            },
+            }
+        },
+        {
+            "name": "release-windows",
+            "displayName": "Release (Windows)",
+            "inherits": "base",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/release-windows",
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
@@ -19,11 +24,21 @@
         {
             "name": "release-linux",
             "displayName": "Release (Linux / WSL2)",
+            "inherits": "base",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/release-linux",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
-            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "release-linux-make",
+            "displayName": "Release (Linux — Unix Makefiles, no Ninja)",
+            "inherits": "base",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/release-linux",
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
@@ -41,6 +56,11 @@
             "name": "release-linux",
             "displayName": "Build Release (Linux / WSL2)",
             "configurePreset": "release-linux"
+        },
+        {
+            "name": "release-linux-make",
+            "displayName": "Build Release (Linux — Makefiles)",
+            "configurePreset": "release-linux-make"
         }
     ]
 }

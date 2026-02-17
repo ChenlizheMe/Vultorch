@@ -1,5 +1,3 @@
-#ifdef VULTORCH_HAS_CUDA
-
 #include "scene_renderer.h"
 #include <imgui.h>
 #include <imgui_impl_vulkan.h>
@@ -743,5 +741,3 @@ void SceneRenderer::create_image_view(VkImage image, VkFormat format,
 }
 
 } // namespace vultorch
-
-#endif // VULTORCH_HAS_CUDA

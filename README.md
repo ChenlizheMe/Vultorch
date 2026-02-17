@@ -78,10 +78,8 @@ scene.render()  # orbit camera, Blinn-Phong lighting
 | Example | Description |
 |---------|-------------|
 | [`01_hello_tensor.py`](examples/01_hello_tensor.py) | Minimal tensor display |
-| [`02_imgui_controls.py`](examples/02_imgui_controls.py) | ImGui widgets: sliders, plots, colors |
+| [`02_imgui_controls.py`](examples/02_imgui_controls.py) | Multi-panel layout with docking |
 | [`03_training_test.py`](examples/03_training_test.py) | Tiny network live training (GT vs prediction + bottom info panel) |
-| [`04_docking_layout.py`](examples/04_docking_layout.py) | Drag-and-drop dockable window layout |
-| [`05_zero_copy.py`](examples/05_zero_copy.py) | True zero-copy shared tensor |
 
 ```bash
 python examples/01_hello_tensor.py
@@ -107,14 +105,20 @@ git clone --recursive https://github.com/ChenlizheMe/Vultorch.git
 cd Vultorch
 ```
 
-**One command** — configure, compile, and produce a wheel in `dist/`:
+**Two commands** — configure and build (produces a wheel in `dist/`):
 
 ```bash
-# Windows
-build.bat
+# Windows (requires Ninja + Vulkan SDK)
+cmake --preset release-windows
+cmake --build --preset release-windows
 
-# Linux
-./build.sh
+# Linux / WSL2 (requires Ninja + Vulkan headers)
+cmake --preset release-linux
+cmake --build --preset release-linux
+
+# Linux without Ninja
+cmake --preset release-linux-make
+cmake --build --preset release-linux-make
 ```
 
 The wheel appears in `dist/`. Install it:
@@ -123,28 +127,34 @@ The wheel appears in `dist/`. Install it:
 pip install dist/vultorch-*.whl
 ```
 
-The build script auto-detects the active Python environment, so the wheel
-matches whichever `python` is on your PATH (conda, venv, system, etc.).
+The build auto-detects your active Python and CUDA installation.
+Tutorial docs are also built automatically if `mkdocs` is installed.
 
 ## Architecture
 
 ```
-vultorch/
-├── src/                    # C++ core
-│   ├── engine.cpp/h        # Vulkan + SDL3 + ImGui engine
-│   ├── tensor_texture.*    # CUDA ↔ Vulkan zero-copy interop
-│   ├── scene_renderer.*    # Offscreen 3D renderer (MSAA, Blinn-Phong)
-│   ├── bindings.cpp        # pybind11 Python bindings
-│   └── shaders/            # GLSL shaders → SPIR-V
-├── vultorch/               # Python package
-│   └── __init__.py         # High-level API (Window, show, SceneView)
-├── external/               # Git submodules
-│   ├── pybind11/           # C++ ↔ Python binding
-│   ├── SDL/                # Window / input (SDL3)
-│   └── imgui/              # Dear ImGui (docking branch)
-├── examples/               # Ready-to-run demos
-├── tools/                  # Build utilities
-└── docs/                   # GitHub Pages website
+Vultorch/
+├── CMakeLists.txt          # Build system (compile + wheel + docs)
+├── CMakePresets.json        # Cross-platform build presets
+├── pyproject.toml           # Python package metadata
+├── src/                     # C++ core
+│   ├── engine.cpp/h         # Vulkan + SDL3 + ImGui engine
+│   ├── tensor_texture.*     # CUDA ↔ Vulkan zero-copy interop
+│   ├── scene_renderer.*     # Offscreen 3D renderer (MSAA, Blinn-Phong)
+│   ├── bindings.cpp         # pybind11 Python bindings
+│   └── shaders/             # GLSL shaders → SPIR-V
+├── vultorch/                # Python package
+│   └── __init__.py          # High-level API (Window, show, SceneView)
+├── external/                # Git submodules
+│   ├── pybind11/            # C++ ↔ Python binding
+│   ├── SDL/                 # Window / input (SDL3)
+│   └── imgui/               # Dear ImGui (docking branch)
+├── examples/                # Ready-to-run demos
+├── tests/                   # pytest GPU tests
+├── tools/                   # Build-time utilities (shader header gen)
+├── scripts/                 # Developer scripts (multi-wheel, upload, WSL2)
+├── tutorial/                # MkDocs source (Markdown)
+└── docs/                    # Generated website (GitHub Pages)
 ```
 
 ## License

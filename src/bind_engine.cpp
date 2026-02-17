@@ -17,8 +17,35 @@ void bind_engine(py::module_& m) {
         .def("poll",        &vultorch::Engine::poll)
         .def("begin_frame", &vultorch::Engine::begin_frame)
         .def("end_frame",   &vultorch::Engine::end_frame)
+
+        // ── TensorTexture (always available) ───────────────────────────
+        .def("upload_tensor_cpu", [](vultorch::Engine& self, const std::string& name,
+                                      uintptr_t data_ptr,
+                                      uint32_t width, uint32_t height,
+                                      uint32_t channels) {
+            self.tensor_texture(name).upload_cpu(
+                reinterpret_cast<const void*>(data_ptr), width, height, channels);
+        }, py::arg("name") = "tensor",
+           py::arg("data_ptr"), py::arg("width"), py::arg("height"),
+           py::arg("channels") = 4)
+
+        .def("tensor_texture_id", [](vultorch::Engine& self, const std::string& name) -> uintptr_t {
+            return self.tensor_texture(name).imgui_texture_id();
+        }, py::arg("name") = "tensor")
+        .def("tensor_width",  [](vultorch::Engine& self, const std::string& name) {
+            return self.tensor_texture(name).width();
+        }, py::arg("name") = "tensor")
+        .def("tensor_height", [](vultorch::Engine& self, const std::string& name) {
+            return self.tensor_texture(name).height();
+        }, py::arg("name") = "tensor")
+
+        .def("set_tensor_filter", [](vultorch::Engine& self, const std::string& name, int mode) {
+            self.tensor_texture(name).set_filter(
+                mode == 0 ? vultorch::FilterMode::Nearest : vultorch::FilterMode::Linear);
+        }, py::arg("name") = "tensor", py::arg("mode"))
+
 #ifdef VULTORCH_HAS_CUDA
-        // ── TensorTexture (zero-copy GPU interop) ──────────────────────
+        // ── CUDA-specific tensor operations (zero-copy GPU interop) ────
         .def("allocate_shared_tensor", [](vultorch::Engine& self,
                                           const std::string& name,
                                           uint32_t width, uint32_t height,
@@ -41,26 +68,12 @@ void bind_engine(py::module_& m) {
             self.tensor_texture(name).sync();
         }, py::arg("name") = "tensor")
 
-        .def("tensor_texture_id", [](vultorch::Engine& self, const std::string& name) -> uintptr_t {
-            return self.tensor_texture(name).imgui_texture_id();
-        }, py::arg("name") = "tensor")
-        .def("tensor_width",  [](vultorch::Engine& self, const std::string& name) {
-            return self.tensor_texture(name).width();
-        }, py::arg("name") = "tensor")
-        .def("tensor_height", [](vultorch::Engine& self, const std::string& name) {
-            return self.tensor_texture(name).height();
-        }, py::arg("name") = "tensor")
-
         .def("is_shared_ptr", [](vultorch::Engine& self, const std::string& name, uintptr_t ptr) {
             return self.tensor_texture(name).is_shared_ptr(ptr);
         }, py::arg("name") = "tensor", py::arg("data_ptr"))
+#endif
 
-        .def("set_tensor_filter", [](vultorch::Engine& self, const std::string& name, int mode) {
-            self.tensor_texture(name).set_filter(
-                mode == 0 ? vultorch::FilterMode::Nearest : vultorch::FilterMode::Linear);
-        }, py::arg("name") = "tensor", py::arg("mode"))
-
-        // ── SceneRenderer ──────────────────────────────────────────────
+        // ── SceneRenderer (always available) ───────────────────────────
         .def("init_scene", [](vultorch::Engine& self,
                               uint32_t width, uint32_t height, int msaa) {
             VkSampleCountFlagBits samples;
@@ -153,6 +166,5 @@ void bind_engine(py::module_& m) {
         .def("max_msaa", [](vultorch::Engine& self) -> int {
             return static_cast<int>(self.max_msaa_samples());
         })
-#endif
     ;
 }

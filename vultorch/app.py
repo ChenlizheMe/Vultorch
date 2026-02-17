@@ -70,7 +70,7 @@ class Canvas:
         self._fit = True        # auto-fill available region
 
     def bind(self, tensor) -> "Canvas":
-        """Bind a CUDA tensor.  The canvas will display it every frame.
+        """Bind a tensor (CUDA or CPU).  The canvas will display it every frame.
 
         Can be called multiple times to switch the data source.
         Returns *self* for chaining: ``canvas.bind(t)``
@@ -82,7 +82,9 @@ class Canvas:
               device: str = "cuda:0") -> Any:
         """Allocate Vulkan-shared memory and auto-bind.
 
-        Returns a ``torch.Tensor`` with zero-copy Vulkan interop.
+        Returns a ``torch.Tensor``.  On CUDA this uses zero-copy Vulkan
+        interop; on CPU a regular tensor is returned and `show()` uses
+        host staging.
         """
         from . import create_tensor
         win = self._panel._view._win

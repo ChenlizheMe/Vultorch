@@ -78,10 +78,8 @@ scene.render()  # 轨道相机，Blinn-Phong 光照
 | 示例 | 说明 |
 |------|------|
 | [`01_hello_tensor.py`](examples/01_hello_tensor.py) | 最简张量显示 |
-| [`02_imgui_controls.py`](examples/02_imgui_controls.py) | ImGui 控件：滑条、折线图、颜色 |
+| [`02_imgui_controls.py`](examples/02_imgui_controls.py) | 多面板停靠布局 |
 | [`03_training_test.py`](examples/03_training_test.py) | 轻量网络实时训练（GT vs 预测 + 下方面板信息） |
-| [`04_docking_layout.py`](examples/04_docking_layout.py) | 拖拽式停靠窗口布局 |
-| [`05_zero_copy.py`](examples/05_zero_copy.py) | 真零拷贝共享张量 |
 
 ```bash
 python examples/01_hello_tensor.py
@@ -107,14 +105,20 @@ git clone --recursive https://github.com/ChenlizheMe/Vultorch.git
 cd Vultorch
 ```
 
-**一条命令** — 配置、编译、在 `dist/` 中生成 wheel：
+**两条命令** — 配置并构建（在 `dist/` 中生成 wheel）：
 
 ```bash
-# Windows
-build.bat
+# Windows（需要 Ninja + Vulkan SDK）
+cmake --preset release-windows
+cmake --build --preset release-windows
 
-# Linux
-./build.sh
+# Linux / WSL2（需要 Ninja + Vulkan 头文件）
+cmake --preset release-linux
+cmake --build --preset release-linux
+
+# Linux 无 Ninja 环境
+cmake --preset release-linux-make
+cmake --build --preset release-linux-make
 ```
 
 wheel 自动出现在 `dist/` 目录。安装：
@@ -123,28 +127,34 @@ wheel 自动出现在 `dist/` 目录。安装：
 pip install dist/vultorch-*.whl
 ```
 
-构建脚本自动检测当前激活的 Python 环境，生成的 wheel
-与 PATH 上的 `python` 一致（conda / venv / 系统均可）。
+构建过程自动检测当前激活的 Python 和 CUDA 环境。
+如果安装了 `mkdocs`，教程文档也会一并构建。
 
 ## 项目结构
 
 ```
-vultorch/
-├── src/                    # C++ 核心
-│   ├── engine.cpp/h        # Vulkan + SDL3 + ImGui 引擎
-│   ├── tensor_texture.*    # CUDA ↔ Vulkan 零拷贝互操作
-│   ├── scene_renderer.*    # 离屏 3D 渲染器（MSAA、Blinn-Phong）
-│   ├── bindings.cpp        # pybind11 Python 绑定
-│   └── shaders/            # GLSL 着色器 → SPIR-V
-├── vultorch/               # Python 包
-│   └── __init__.py         # 高层 API（Window、show、SceneView）
-├── external/               # Git 子模块
-│   ├── pybind11/           # C++ ↔ Python 绑定库
-│   ├── SDL/                # 窗口与输入（SDL3）
-│   └── imgui/              # Dear ImGui（docking 分支）
-├── examples/               # 可直接运行的示例
-├── tools/                  # 构建工具
-└── docs/                   # GitHub Pages 网站
+Vultorch/
+├── CMakeLists.txt          # 构建系统（编译 + wheel + 文档）
+├── CMakePresets.json        # 跨平台构建预设
+├── pyproject.toml           # Python 包元数据
+├── src/                     # C++ 核心
+│   ├── engine.cpp/h         # Vulkan + SDL3 + ImGui 引擎
+│   ├── tensor_texture.*     # CUDA ↔ Vulkan 零拷贝互操作
+│   ├── scene_renderer.*     # 离屏 3D 渲染器（MSAA、Blinn-Phong）
+│   ├── bindings.cpp         # pybind11 Python 绑定
+│   └── shaders/             # GLSL 着色器 → SPIR-V
+├── vultorch/                # Python 包
+│   └── __init__.py          # 高层 API（Window、show、SceneView）
+├── external/                # Git 子模块
+│   ├── pybind11/            # C++ ↔ Python 绑定库
+│   ├── SDL/                 # 窗口与输入（SDL3）
+│   └── imgui/               # Dear ImGui（docking 分支）
+├── examples/                # 可直接运行的示例
+├── tests/                   # pytest GPU 测试
+├── tools/                   # 编译期工具（着色器头文件生成）
+├── scripts/                 # 开发者脚本（多版本 wheel、上传、WSL2）
+├── tutorial/                # MkDocs 源文件（Markdown）
+└── docs/                    # 生成的网站（GitHub Pages）
 ```
 
 ## 许可证

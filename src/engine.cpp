@@ -9,7 +9,30 @@ namespace vultorch {
 
 namespace {
 int g_sdl_refcount = 0;
+
+/// Human-readable Vulkan result codes for error messages.
+const char* vk_result_string(VkResult r) {
+    switch (r) {
+        case VK_SUCCESS:                        return "VK_SUCCESS";
+        case VK_NOT_READY:                      return "VK_NOT_READY";
+        case VK_TIMEOUT:                        return "VK_TIMEOUT";
+        case VK_ERROR_OUT_OF_HOST_MEMORY:       return "VK_ERROR_OUT_OF_HOST_MEMORY";
+        case VK_ERROR_OUT_OF_DEVICE_MEMORY:     return "VK_ERROR_OUT_OF_DEVICE_MEMORY";
+        case VK_ERROR_INITIALIZATION_FAILED:    return "VK_ERROR_INITIALIZATION_FAILED";
+        case VK_ERROR_DEVICE_LOST:              return "VK_ERROR_DEVICE_LOST";
+        case VK_ERROR_MEMORY_MAP_FAILED:        return "VK_ERROR_MEMORY_MAP_FAILED";
+        case VK_ERROR_LAYER_NOT_PRESENT:        return "VK_ERROR_LAYER_NOT_PRESENT";
+        case VK_ERROR_EXTENSION_NOT_PRESENT:    return "VK_ERROR_EXTENSION_NOT_PRESENT";
+        case VK_ERROR_FEATURE_NOT_PRESENT:      return "VK_ERROR_FEATURE_NOT_PRESENT";
+        case VK_ERROR_TOO_MANY_OBJECTS:         return "VK_ERROR_TOO_MANY_OBJECTS";
+        case VK_ERROR_FORMAT_NOT_SUPPORTED:     return "VK_ERROR_FORMAT_NOT_SUPPORTED";
+        case VK_ERROR_SURFACE_LOST_KHR:         return "VK_ERROR_SURFACE_LOST_KHR";
+        case VK_ERROR_OUT_OF_DATE_KHR:          return "VK_ERROR_OUT_OF_DATE_KHR";
+        case VK_SUBOPTIMAL_KHR:                 return "VK_SUBOPTIMAL_KHR";
+        default:                                return "VK_UNKNOWN_ERROR";
+    }
 }
+} // anonymous namespace
 
 // ---------------------------------------------------------------------------
 // Vulkan error-check helper
@@ -18,10 +41,11 @@ int g_sdl_refcount = 0;
     do {                                                                        \
         VkResult _r = (x);                                                      \
         if (_r != VK_SUCCESS)                                                   \
-            throw std::runtime_error(std::string("Vulkan error ") +             \
-                                     std::to_string(static_cast<int>(_r)) +     \
-                                     " at " + __FILE__ + ":" +                  \
-                                     std::to_string(__LINE__));                 \
+            throw std::runtime_error(                                           \
+                std::string("[vultorch] Vulkan error: ") +                      \
+                vk_result_string(_r) + " (" +                                  \
+                std::to_string(static_cast<int>(_r)) + ") at " +               \
+                __FILE__ + ":" + std::to_string(__LINE__));                     \
     } while (0)
 
 // ===================================================================== dtor
@@ -33,7 +57,8 @@ Engine::~Engine() {
 void Engine::init(const char* title, int width, int height) {
     if (g_sdl_refcount == 0) {
         if (!SDL_Init(SDL_INIT_VIDEO))
-            throw std::runtime_error(std::string("SDL_Init: ") + SDL_GetError());
+            throw std::runtime_error(
+                std::string("[vultorch] SDL_Init failed: ") + SDL_GetError());
     }
     g_sdl_refcount++;
 
@@ -42,7 +67,8 @@ void Engine::init(const char* title, int width, int height) {
         SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
 
     if (!window_)
-        throw std::runtime_error(std::string("SDL_CreateWindow: ") + SDL_GetError());
+        throw std::runtime_error(
+            std::string("[vultorch] SDL_CreateWindow failed: ") + SDL_GetError());
 
     create_instance();
     create_surface();
@@ -58,7 +84,6 @@ void Engine::init(const char* title, int width, int height) {
     initialized_ = true;
 }
 
-#ifdef VULTORCH_HAS_CUDA
 TensorTexture& Engine::tensor_texture(const std::string& key) {
     auto it = tensor_textures_.find(key);
     if (it == tensor_textures_.end()) {
@@ -92,17 +117,14 @@ VkSampleCountFlagBits Engine::max_msaa_samples() const {
     if (counts & VK_SAMPLE_COUNT_2_BIT) return VK_SAMPLE_COUNT_2_BIT;
     return VK_SAMPLE_COUNT_1_BIT;
 }
-#endif
 
 // ================================================================= destroy
 void Engine::destroy() {
     if (!initialized_) return;
     vkDeviceWaitIdle(device_);
 
-#ifdef VULTORCH_HAS_CUDA
     scene_renderer_.reset();
     tensor_textures_.clear();
-#endif
 
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplSDL3_Shutdown();
@@ -168,7 +190,9 @@ bool Engine::begin_frame() {
         return false;
     }
     if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-        throw std::runtime_error("vkAcquireNextImageKHR failed");
+        throw std::runtime_error(
+            std::string("[vultorch] vkAcquireNextImageKHR failed: ") +
+            vk_result_string(result));
 
     VK_CHECK(vkResetFences(device_, 1, &fences_[frame_index_]));
     VK_CHECK(vkResetCommandBuffer(command_buffers_[frame_index_], 0));
@@ -195,7 +219,6 @@ void Engine::end_frame() {
     begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     VK_CHECK(vkBeginCommandBuffer(cmd, &begin_info));
 
-#ifdef VULTORCH_HAS_CUDA
     // Integrate pending tensor copies into the main command buffer.
     // This avoids separate vkQueueSubmit calls; pipeline barriers inside
     // record_copy() ensure images are in SHADER_READ_ONLY before
@@ -220,7 +243,6 @@ void Engine::end_frame() {
             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
             0, 1, &barrier, 0, nullptr, 0, nullptr);
     }
-#endif
 
     VkClearValue clear{};
     clear.color = {{0.08f, 0.08f, 0.10f, 1.0f}};
@@ -301,13 +323,13 @@ void Engine::create_instance() {
 
 void Engine::create_surface() {
     if (!SDL_Vulkan_CreateSurface(window_, instance_, nullptr, &surface_))
-        throw std::runtime_error("SDL_Vulkan_CreateSurface failed");
+        throw std::runtime_error("[vultorch] SDL_Vulkan_CreateSurface failed");
 }
 
 void Engine::pick_physical_device() {
     uint32_t count = 0;
     vkEnumeratePhysicalDevices(instance_, &count, nullptr);
-    if (count == 0) throw std::runtime_error("No Vulkan-capable GPU found");
+    if (count == 0) throw std::runtime_error("[vultorch] No Vulkan-capable GPU found");
 
     std::vector<VkPhysicalDevice> devs(count);
     vkEnumeratePhysicalDevices(instance_, &count, devs.data());
@@ -348,7 +370,8 @@ void Engine::pick_physical_device() {
     }
 
     if (candidates.empty())
-        throw std::runtime_error("No suitable GPU (graphics + present) found");
+        throw std::runtime_error(
+            "[vultorch] No suitable GPU found (need graphics + present support)");
 
     // Pick the highest-scoring device
     auto best = std::max_element(candidates.begin(), candidates.end(),
@@ -357,13 +380,12 @@ void Engine::pick_physical_device() {
     physical_device_ = best->device;
     graphics_family_ = best->queue_family;
 
-    std::cout << "[vultorch] GPU: " << best->name
-              << " (score " << best->score << ")\n";
+    std::cout << "[vultorch] Selected GPU: " << best->name << "\n";
     if (candidates.size() > 1) {
-        std::cout << "[vultorch] Other GPUs:\n";
+        std::cout << "[vultorch] Other available GPUs:\n";
         for (auto& c : candidates) {
             if (&c != &(*best))
-                std::cout << "  - " << c.name << " (score " << c.score << ")\n";
+                std::cout << "[vultorch]   - " << c.name << "\n";
         }
     }
 }
