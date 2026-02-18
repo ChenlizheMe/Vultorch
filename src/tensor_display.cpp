@@ -1,6 +1,8 @@
 #ifdef VULTORCH_HAS_CUDA
 
 #include "tensor_display.h"
+#include "vk_utils.h"
+#include "log.h"
 #include <imgui.h>
 #include <imgui_impl_vulkan.h>
 #include <cuda.h>
@@ -8,31 +10,9 @@
 #include <string>
 #include <cstring>
 #include <vector>
-#include <iostream>
 #include <algorithm>
 
 namespace vultorch {
-
-#define VK_CHECK(x)                                                          \
-    do {                                                                     \
-        VkResult _r = (x);                                                   \
-        if (_r != VK_SUCCESS)                                                \
-            throw std::runtime_error(                                        \
-                std::string("Vulkan error ") + std::to_string((int)_r) +     \
-                " at " + __FILE__ + ":" + std::to_string(__LINE__));         \
-    } while (0)
-
-#define CU_CHECK(x)                                                          \
-    do {                                                                     \
-        CUresult _r = (x);                                                   \
-        if (_r != CUDA_SUCCESS) {                                            \
-            const char* msg = nullptr;                                       \
-            cuGetErrorString(_r, &msg);                                      \
-            throw std::runtime_error(                                        \
-                std::string("CUDA error: ") + (msg ? msg : "unknown") +      \
-                " at " + __FILE__ + ":" + std::to_string(__LINE__));         \
-        }                                                                    \
-    } while (0)
 
 // ======================================================================
 TensorDisplay::~TensorDisplay() {
@@ -177,8 +157,8 @@ void TensorDisplay::allocate_resources(uint32_t w, uint32_t h, uint32_t ch) {
     VkMemoryAllocateInfo mai{};
     mai.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     mai.allocationSize  = memReq.size;
-    mai.memoryTypeIndex = find_memory_type(memReq.memoryTypeBits,
-                                           VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    mai.memoryTypeIndex = vultorch::find_memory_type(phys_device_, memReq.memoryTypeBits,
+                                                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     VK_CHECK(vkAllocateMemory(device_, &mai, nullptr, &memory_));
     VK_CHECK(vkBindImageMemory(device_, image_, memory_, 0));
 
@@ -207,7 +187,7 @@ void TensorDisplay::allocate_resources(uint32_t w, uint32_t h, uint32_t ch) {
     VkMemoryAllocateInfo bmai{};
     bmai.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     bmai.allocationSize  = bufReq.size;
-    bmai.memoryTypeIndex = find_memory_type(bufReq.memoryTypeBits,
+    bmai.memoryTypeIndex = vultorch::find_memory_type(phys_device_, bufReq.memoryTypeBits,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     VK_CHECK(vkAllocateMemory(device_, &bmai, nullptr, &staging_mem_));
     VK_CHECK(vkBindBufferMemory(device_, staging_buf_, staging_mem_, 0));
@@ -244,16 +224,6 @@ void TensorDisplay::free_resources() {
 // ======================================================================
 //  Helpers
 // ======================================================================
-uint32_t TensorDisplay::find_memory_type(uint32_t filter, VkMemoryPropertyFlags props) {
-    VkPhysicalDeviceMemoryProperties mem;
-    vkGetPhysicalDeviceMemoryProperties(phys_device_, &mem);
-    for (uint32_t i = 0; i < mem.memoryTypeCount; i++) {
-        if ((filter & (1u << i)) && (mem.memoryTypes[i].propertyFlags & props) == props)
-            return i;
-    }
-    throw std::runtime_error("Failed to find suitable memory type");
-}
-
 void TensorDisplay::transition_image_layout(VkImage image, VkImageLayout oldL, VkImageLayout newL) {
     VkCommandBufferBeginInfo bi{};
     bi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

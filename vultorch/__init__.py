@@ -17,6 +17,14 @@ try:
 except ImportError:
     HAS_CUDA = False
 
+# Re-export log level control
+try:
+    from ._vultorch import set_log_level
+except ImportError:
+    def set_log_level(level: str) -> None:
+        """Stub for set_log_level when native module unavailable."""
+        pass
+
 __version__ = "0.5.0"
 
 
@@ -101,9 +109,9 @@ class Window:
     # Singleton reference (for module-level show() helper)
     _current: "Window | None" = None
 
-    def __init__(self, title: str = "Vultorch", width: int = 1280, height: int = 720):
+    def __init__(self, title: str = "Vultorch", width: int = 1280, height: int = 720, vsync: bool = True):
         self._engine = Engine()
-        self._engine.init(title, width, height)
+        self._engine.init(title, width, height, vsync)
         self._rgba_bufs = {}   # cached RGBA buffers per name for show()
         Window._current = self
 

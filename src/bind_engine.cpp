@@ -2,6 +2,8 @@
 #include <pybind11/stl.h>
 #include <pybind11/functional.h>
 #include "engine.h"
+#include "vk_utils.h"
+#include "log.h"
 
 #include <array>
 #include <string>
@@ -12,7 +14,8 @@ void bind_engine(py::module_& m) {
         .def("init", &vultorch::Engine::init,
              py::arg("title")  = "Vultorch",
              py::arg("width")  = 1280,
-             py::arg("height") = 720)
+             py::arg("height") = 720,
+             py::arg("vsync")  = true)
         .def("destroy",     &vultorch::Engine::destroy)
         .def("poll",        &vultorch::Engine::poll)
         .def("begin_frame", &vultorch::Engine::begin_frame)
@@ -76,14 +79,7 @@ void bind_engine(py::module_& m) {
         // ── SceneRenderer (always available) ───────────────────────────
         .def("init_scene", [](vultorch::Engine& self,
                               uint32_t width, uint32_t height, int msaa) {
-            VkSampleCountFlagBits samples;
-            switch (msaa) {
-                case 1: samples = VK_SAMPLE_COUNT_1_BIT; break;
-                case 2: samples = VK_SAMPLE_COUNT_2_BIT; break;
-                case 8: samples = VK_SAMPLE_COUNT_8_BIT; break;
-                default: samples = VK_SAMPLE_COUNT_4_BIT; break;
-            }
-            self.scene_renderer(width, height, samples);
+            self.scene_renderer(width, height, vultorch::msaa_from_int(msaa));
         }, py::arg("width") = 800, py::arg("height") = 600, py::arg("msaa") = 4)
 
         .def("scene_render", [](vultorch::Engine& self, const std::string& texture_name) {
@@ -97,18 +93,13 @@ void bind_engine(py::module_& m) {
         })
 
         .def("scene_resize", [](vultorch::Engine& self, uint32_t w, uint32_t h) {
+            self.wait_gpu();  // ensure no inflight frames reference old resources
             self.scene_renderer().resize(w, h);
         }, py::arg("width"), py::arg("height"))
 
         .def("scene_set_msaa", [](vultorch::Engine& self, int msaa) {
-            VkSampleCountFlagBits samples;
-            switch (msaa) {
-                case 1: samples = VK_SAMPLE_COUNT_1_BIT; break;
-                case 2: samples = VK_SAMPLE_COUNT_2_BIT; break;
-                case 8: samples = VK_SAMPLE_COUNT_8_BIT; break;
-                default: samples = VK_SAMPLE_COUNT_4_BIT; break;
-            }
-            self.scene_renderer().set_msaa(samples);
+            self.wait_gpu();  // ensure no inflight frames reference old resources
+            self.scene_renderer().set_msaa(vultorch::msaa_from_int(msaa));
         }, py::arg("msaa"))
 
         .def("scene_process_input", [](vultorch::Engine& self,
@@ -167,4 +158,22 @@ void bind_engine(py::module_& m) {
             return static_cast<int>(self.max_msaa_samples());
         })
     ;
+
+    // ── Module-level log control ───────────────────────────────────
+    m.def("set_log_level", [](const std::string& level) {
+        if (level == "quiet" || level == "off")
+            vultorch::log_level() = vultorch::LogLevel::Quiet;
+        else if (level == "error")
+            vultorch::log_level() = vultorch::LogLevel::Error;
+        else if (level == "warn" || level == "warning")
+            vultorch::log_level() = vultorch::LogLevel::Warn;
+        else if (level == "info")
+            vultorch::log_level() = vultorch::LogLevel::Info;
+        else if (level == "debug")
+            vultorch::log_level() = vultorch::LogLevel::Debug;
+        else
+            throw std::runtime_error("Unknown log level: " + level +
+                " (use quiet/error/warn/info/debug)");
+    }, py::arg("level"),
+       "Set vultorch log verbosity: 'quiet', 'error', 'warn', 'info', 'debug'.");
 }

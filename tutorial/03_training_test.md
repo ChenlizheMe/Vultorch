@@ -26,17 +26,25 @@ Everything on screen, nothing buried in the terminal.
 ## New friends
 
 Chapters 01 and 02 were all static — `bind()` + `run()`, done.
-This time we bring three new toys:
+This time we make things *move*:
 
 | New thing | What it does | How to use |
 |-----------|-------------|------------|
-| **on_frame** | Per-frame callback — train and update here | `@view.on_frame` |
-| **Panel.on_frame** | Per-panel callback — widgets go here | `@info_panel.on_frame` |
-| **create_tensor** | GPU shared-memory tensor | `vultorch.create_tensor(H, W, ...)` |
-| **vultorch.imread** | Load image with zero dependencies | `vultorch.imread(path, channels=3)` |
-| **side="bottom"** | Dock a panel to the bottom edge | `view.panel("Info", side="bottom")` |
+| **@view.on_frame** | A function that runs once per frame — put your training step here | `@view.on_frame` |
+| **@panel.on_frame** | A function that runs inside a specific panel — put interactive controls here | `@info_panel.on_frame` |
+| **create_tensor** | Allocates a CUDA tensor that shares memory with the display, so updates appear on screen instantly | `vultorch.create_tensor(H, W, ...)` |
+| **vultorch.imread** | Load an image file into a CUDA tensor (no PIL needed) | `vultorch.imread(path)` |
+| **side="bottom"** | Place a panel at the bottom of the window | `view.panel("Info", side="bottom")` |
 
-Write any PyTorch code inside the view callback; put widgets inside the
+!!! info "What's a *widget*?"
+    In UI terminology, a **widget** is any interactive element — a button,
+    a slider, a text label, a progress bar.  Things you can see and
+    (sometimes) click on.  In Vultorch, you create widgets by calling
+    methods like `panel.text("hello")`, `panel.slider("x", 0, 1)`, etc.
+    inside a `@panel.on_frame` callback.  No HTML, no CSS, no Qt —
+    just Python method calls.
+
+Write PyTorch code inside the view callback; put widgets inside the
 panel callback.  Vultorch handles the tensor-to-screen dance every frame.
 
 ## Full code
@@ -159,30 +167,45 @@ PyTorch logo in a few seconds.
    `(r, g, b)`. Small enough to run inside a per-frame callback without
    tanking your framerate.
 
-3. **Layout** — `side="bottom"` docks Info at the bottom 28 % of the
-   window.  `side="left"` puts GT on the left half of the remaining
-   space.  Prediction fills whatever is left.  No manual docking code.
+3. **Layout** — `side="bottom", width=0.28` puts the Info panel at the
+   bottom and gives it 28% of the window height.  (Yes, `width=` controls
+   height when the panel is at the bottom — it's the size *along the
+   split direction*.)  `side="left", width=0.5` puts GT on the left
+   half of the remaining space.  Prediction fills whatever is left.
 
-4. **Two callbacks** — `@view.on_frame` runs the training loop.
-   `@info_panel.on_frame` draws widgets (text, slider, progress bar)
-   inside the Info panel.  Vultorch opens / closes the ImGui window
-   for you.
+4. **Two callbacks**:
+
+    - `@view.on_frame` — runs once per frame *before* panels are drawn.
+      This is where you put your training loop, data mutation,
+      model updates — any computation.
+
+    - `@info_panel.on_frame` — runs inside the Info panel's drawing
+      context.  Every `panel.text()`, `panel.slider_int()`,
+      `panel.progress()` call you make here creates a widget (text
+      label, slider, progress bar) inside that specific panel.
+      You don't need to worry about positioning — widgets just
+      stack top-to-bottom, like `print()` statements.
 
 ## Key takeaways
 
-1. **`@view.on_frame`** — you can run arbitrary PyTorch code in the
-   callback. At the end of each frame, Vultorch uploads every bound
-   tensor to the screen automatically.
+1. **`@view.on_frame`** — a plain Python function that runs once per
+   displayed frame (~60 times/second).  Put any PyTorch code in here.
+   At the end of each frame, Vultorch uploads every bound tensor to
+   the screen automatically.
 
 2. **`create_tensor`** — looks and feels like `torch.zeros`, but the
-   underlying memory is Vulkan/CUDA shared. Display is zero-copy.
+   underlying memory is Vulkan/CUDA shared.  When you write into it,
+   the changes appear on screen the next frame with zero copy — no
+   `.cpu()`, no `upload()`, nothing.
 
-3. **Declarative layout** — `side="left"` / `"right"` / `"bottom"` /
-   `"top"` splits the window without manual docking code.
+3. **Layout shorthand** — `side="left"` / `"right"` / `"bottom"` /
+   `"top"` splits the window, and `width=` controls how big that
+   split is (as a 0–1 ratio).  That's it.  No coordinates, no grids.
 
-4. **Panel widgets** — `@panel.on_frame` runs inside the panel's ImGui
-   window.  Use `panel.text()`, `panel.slider_int()`, `panel.progress()`
-   instead of raw `ui.*` calls.
+4. **Panel widgets** — `@panel.on_frame` runs inside a panel.
+   Call `panel.text()`, `panel.slider_int()`, `panel.progress()` —
+   each call creates one interactive element, stacked top-to-bottom
+   like lines of `print()` output.
 
 5. **No terminal spam** — all live stats live in the Info panel.
    Your console stays clean for warnings and tracebacks.

@@ -5,8 +5,16 @@
 One panel is nice. But in practice you want to see your loss map, gradient field,
 and output side-by-side — without writing a single line of layout code.
 
-Good news: Vultorch panels are **dockable**. Just create them and they'll
-arrange themselves. Users can drag, resize, and rearrange at will.
+Good news: Vultorch panels **auto-arrange** themselves. You just
+create them, and they stack up inside the window like slides in a
+presentation. Want a panel on the right? Pass `side="right"` and
+Vultorch splits the window for you — no CSS, no grid coordinates,
+no fighting with subplot indices.
+
+Even better: at runtime you can drag any panel's title bar to
+rearrange, resize by dragging edges, or pull a panel out into its
+own floating window. It's like a tiling window manager that you
+didn't have to configure.
 
 This chapter shows two patterns:
 
@@ -70,18 +78,27 @@ view.run()
 
 ## Key takeaways
 
-1. **Auto-layout** — panels without `side=` stack vertically.
-   Add `side="right"` (or `"left"`) + `width=0.5` to dock to one side.
+1. **Auto-layout** — panels you create without `side=` stack vertically
+   in the main area.  Think of it as `plt.subplot(3, 1, ...)` but
+   without counting rows and columns.
 
-2. **Multi-canvas** — call `panel.canvas()` multiple times.
-   When several canvases have `fit=True` (the default), they split the
-   vertical space equally. No manual height math.
+2. **`side="right"` + `width=0.5`** — this tells Vultorch: *"split the
+   window and give this panel the right 50%."*  The value `0.5` is a
+   ratio, not pixels.  `width=0.3` means 30% of the window.
+   You can also use `"left"`, `"top"`, or `"bottom"`.
 
-3. **Still no callback** — static data only needs `bind()` + `run()`.
+3. **Multi-canvas** — call `panel.canvas()` multiple times.
+   When several canvases have `fit=True` (the default), they evenly
+   split the panel's height.  `fit=True` just means *"stretch to fill
+   available space"* — like how a single `imshow` fills the whole axes.
+   No manual height math.
+
+4. **Still no callback** — static data only needs `bind()` + `run()`.
    Dynamic updates come in a later chapter.
 
-4. **Drag & drop** — all panels are dockable. Users can rearrange,
-   float, or resize them at runtime.
+5. **Drag & drop** — try it: grab a panel's title bar and drag it to
+   another edge. Pull it out into a floating window.  Everything is
+   rearrangeable at runtime with your mouse.
 
 !!! note
     The same tensor can be bound to multiple canvases at once —

@@ -8,6 +8,11 @@ HAS_CUDA: bool
 __version__: str
 
 
+def set_log_level(level: str) -> None:
+    """Set vultorch log verbosity: 'quiet', 'error', 'warn', 'info', 'debug'."""
+    ...
+
+
 class Camera:
     azimuth: float
     elevation: float
@@ -31,7 +36,7 @@ class Light:
 class Window:
     _current: Optional["Window"]
 
-    def __init__(self, title: str = "Vultorch", width: int = 1280, height: int = 720) -> None: ...
+    def __init__(self, title: str = "Vultorch", width: int = 1280, height: int = 720, vsync: bool = True) -> None: ...
     def activate(self) -> None: ...
     def poll(self) -> bool: ...
     def begin_frame(self) -> bool: ...

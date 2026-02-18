@@ -28,11 +28,12 @@ zero-copy — the grid never touches the CPU.
 
 | New thing | What it does | Why it matters |
 |-----------|-------------|----------------|
-| `filter="nearest"` | Pixel-perfect display, no interpolation | Cell boundaries stay sharp |
-| `side="left"` sidebar | Dock a panel to the left | Clean control-panel layout |
-| `Panel.on_frame` | Per-panel widget callback | Widgets stay inside their panel |
-| `panel.button`, `panel.row()` | Buttons on the same row | Compact UI without raw `ui.*` calls |
-| `panel.color_picker` | Color picker | Customize alive/dead colors |
+| `filter="nearest"` | Shows each pixel as a sharp square, no blurring | Without it, bilinear interpolation smudges cell boundaries |
+| `side="left"` sidebar | Places a panel on the left, taking 22% of the window | Gives you a permanent control strip next to your visualization |
+| `@panel.on_frame` | Per-panel widget callback | Widget calls (`button`, `slider`, `color_picker`) go inside here |
+| `panel.button(label)` | A clickable button | Returns `True` on the frame it was clicked |
+| `with panel.row():` | Puts the next widgets on the **same line** | Without it, widgets stack vertically (one per line).  Use `row()` to put two buttons side-by-side. It's a Python `with` block — everything inside the block goes on one line |
+| `panel.color_picker` | An RGB color picker widget | Click the colored square to open a palette |
 | Circular padding + conv2d | GPU-parallel neighbour count | The whole simulation is one convolution |
 
 ## The simulation trick
@@ -229,18 +230,24 @@ view.run()
    displayed with zero copy.
 
 2. **`filter="nearest"`** — crucial for pixel-art / grid simulations.
-   Without it, bilinear interpolation blurs cell boundaries into mush.
+   Without it, bilinear interpolation blurs cell boundaries.  Think of
+   it like `plt.imshow(data, interpolation='nearest')` — same idea,
+   you want to see the actual pixels.
 
 3. **Convolution = neighbour counting** — a cute trick that replaces
    nested Python loops with a single GPU kernel.  The game runs at
    hundreds of FPS even at large grid sizes.
 
-4. **Panel widgets** — `@panel.on_frame` + `panel.button()`,
-   `panel.slider_int()`, `panel.color_picker()` keep all UI code inside
-   the panel's window context.  No manual `ui.begin/end` needed.
+4. **Panel widgets** — inside `@panel.on_frame` you call
+   `panel.button()`, `panel.slider_int()`, `panel.color_picker()`.
+   Each call creates one interactive element.  They stack top-to-bottom
+   automatically, like lines of `print()` output.  No positioning
+   code needed.
 
-5. **`panel.row()`** — context manager that places child widgets
-   side-by-side.  Cleaner than calling `ui.same_line()` by hand.
+5. **`with panel.row():`** — by default widgets go one-per-line.
+   Wrap several widget calls in `with panel.row():` to put them on
+   the **same line** instead.  It's just a Python `with` block —
+   nothing exotic.
 
 6. **Pattern presets** — the Glider, Pulsar, and Gosper Gun buttons
    demonstrate how to set initial conditions by writing directly into

@@ -36,6 +36,13 @@
         <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/04_conway/"/>
     </url>
     <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/05_image_viewer/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/05_image_viewer/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/05_image_viewer/"/>
+    </url>
+    <url>
         <loc>https://chenlizheme.github.io/Vultorch/tutorial/api/</loc>
         <lastmod>2026-02-18</lastmod>
         <changefreq>daily</changefreq>
@@ -76,6 +83,13 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/04_conway/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/04_conway/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/05_image_viewer/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/05_image_viewer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/05_image_viewer/"/>
     </url>
     <url>
         <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/api/</loc>

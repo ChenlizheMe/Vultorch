@@ -1,52 +1,16 @@
 #include "engine.h"
+#include "vk_utils.h"
+#include "log.h"
 
 #include <algorithm>
 #include <cstring>
-#include <iostream>
 #include <limits>
 
 namespace vultorch {
 
 namespace {
 int g_sdl_refcount = 0;
-
-/// Human-readable Vulkan result codes for error messages.
-const char* vk_result_string(VkResult r) {
-    switch (r) {
-        case VK_SUCCESS:                        return "VK_SUCCESS";
-        case VK_NOT_READY:                      return "VK_NOT_READY";
-        case VK_TIMEOUT:                        return "VK_TIMEOUT";
-        case VK_ERROR_OUT_OF_HOST_MEMORY:       return "VK_ERROR_OUT_OF_HOST_MEMORY";
-        case VK_ERROR_OUT_OF_DEVICE_MEMORY:     return "VK_ERROR_OUT_OF_DEVICE_MEMORY";
-        case VK_ERROR_INITIALIZATION_FAILED:    return "VK_ERROR_INITIALIZATION_FAILED";
-        case VK_ERROR_DEVICE_LOST:              return "VK_ERROR_DEVICE_LOST";
-        case VK_ERROR_MEMORY_MAP_FAILED:        return "VK_ERROR_MEMORY_MAP_FAILED";
-        case VK_ERROR_LAYER_NOT_PRESENT:        return "VK_ERROR_LAYER_NOT_PRESENT";
-        case VK_ERROR_EXTENSION_NOT_PRESENT:    return "VK_ERROR_EXTENSION_NOT_PRESENT";
-        case VK_ERROR_FEATURE_NOT_PRESENT:      return "VK_ERROR_FEATURE_NOT_PRESENT";
-        case VK_ERROR_TOO_MANY_OBJECTS:         return "VK_ERROR_TOO_MANY_OBJECTS";
-        case VK_ERROR_FORMAT_NOT_SUPPORTED:     return "VK_ERROR_FORMAT_NOT_SUPPORTED";
-        case VK_ERROR_SURFACE_LOST_KHR:         return "VK_ERROR_SURFACE_LOST_KHR";
-        case VK_ERROR_OUT_OF_DATE_KHR:          return "VK_ERROR_OUT_OF_DATE_KHR";
-        case VK_SUBOPTIMAL_KHR:                 return "VK_SUBOPTIMAL_KHR";
-        default:                                return "VK_UNKNOWN_ERROR";
-    }
-}
 } // anonymous namespace
-
-// ---------------------------------------------------------------------------
-// Vulkan error-check helper
-// ---------------------------------------------------------------------------
-#define VK_CHECK(x)                                                             \
-    do {                                                                        \
-        VkResult _r = (x);                                                      \
-        if (_r != VK_SUCCESS)                                                   \
-            throw std::runtime_error(                                           \
-                std::string("[vultorch] Vulkan error: ") +                      \
-                vk_result_string(_r) + " (" +                                  \
-                std::to_string(static_cast<int>(_r)) + ") at " +               \
-                __FILE__ + ":" + std::to_string(__LINE__));                     \
-    } while (0)
 
 // ===================================================================== dtor
 Engine::~Engine() {
@@ -54,7 +18,7 @@ Engine::~Engine() {
 }
 
 // ==================================================================== init
-void Engine::init(const char* title, int width, int height) {
+void Engine::init(const char* title, int width, int height, bool vsync) {
     if (g_sdl_refcount == 0) {
         if (!SDL_Init(SDL_INIT_VIDEO))
             throw std::runtime_error(
@@ -74,6 +38,26 @@ void Engine::init(const char* title, int width, int height) {
     create_surface();
     pick_physical_device();
     create_device();
+
+    // Select present mode based on vsync preference
+    if (vsync) {
+        present_mode_ = VK_PRESENT_MODE_FIFO_KHR;
+    } else {
+        // Prefer MAILBOX (low-latency, no tearing), fallback to IMMEDIATE
+        uint32_t mode_count = 0;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device_, surface_, &mode_count, nullptr);
+        std::vector<VkPresentModeKHR> modes(mode_count);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device_, surface_, &mode_count, modes.data());
+
+        present_mode_ = VK_PRESENT_MODE_IMMEDIATE_KHR;  // fallback
+        for (auto m : modes) {
+            if (m == VK_PRESENT_MODE_MAILBOX_KHR) {
+                present_mode_ = VK_PRESENT_MODE_MAILBOX_KHR;
+                break;
+            }
+        }
+    }
+
     create_swapchain();
     create_render_pass();
     create_framebuffers();
@@ -90,7 +74,7 @@ TensorTexture& Engine::tensor_texture(const std::string& key) {
         auto tex = std::make_unique<TensorTexture>();
         tex->init(instance_, physical_device_, device_,
                   graphics_queue_, graphics_family_,
-                  imgui_pool_);
+                  imgui_pool_, command_pool_);
         it = tensor_textures_.emplace(key, std::move(tex)).first;
     }
     return *it->second;
@@ -116,6 +100,17 @@ VkSampleCountFlagBits Engine::max_msaa_samples() const {
     if (counts & VK_SAMPLE_COUNT_4_BIT) return VK_SAMPLE_COUNT_4_BIT;
     if (counts & VK_SAMPLE_COUNT_2_BIT) return VK_SAMPLE_COUNT_2_BIT;
     return VK_SAMPLE_COUNT_1_BIT;
+}
+
+void Engine::wait_gpu() {
+    if (fences_.empty()) return;
+    // Wait on all inflight fences EXCEPT the current frame's fence.
+    // The current frame's fence has been reset in begin_frame() but not yet
+    // submitted, so waiting on it would deadlock.
+    for (uint32_t i = 0; i < static_cast<uint32_t>(fences_.size()); ++i) {
+        if (i == frame_index_) continue;
+        VK_CHECK(vkWaitForFences(device_, 1, &fences_[i], VK_TRUE, UINT64_MAX));
+    }
 }
 
 // ================================================================= destroy
@@ -380,12 +375,12 @@ void Engine::pick_physical_device() {
     physical_device_ = best->device;
     graphics_family_ = best->queue_family;
 
-    std::cout << "[vultorch] Selected GPU: " << best->name << "\n";
+    VT_INFO("Selected GPU: " << best->name);
     if (candidates.size() > 1) {
-        std::cout << "[vultorch] Other available GPUs:\n";
+        VT_INFO("Other available GPUs:");
         for (auto& c : candidates) {
             if (&c != &(*best))
-                std::cout << "[vultorch]   - " << c.name << "\n";
+                VT_INFO("  - " << c.name);
         }
     }
 }
@@ -474,7 +469,7 @@ void Engine::create_swapchain() {
     ci.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     ci.preTransform     = caps.currentTransform;
     ci.compositeAlpha   = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    ci.presentMode      = VK_PRESENT_MODE_FIFO_KHR;
+    ci.presentMode      = present_mode_;
     ci.clipped          = VK_TRUE;
 
     VK_CHECK(vkCreateSwapchainKHR(device_, &ci, nullptr, &swapchain_));

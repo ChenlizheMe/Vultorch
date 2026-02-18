@@ -24,15 +24,21 @@
 ## 新朋友
 
 前两章都是静态数据 —— `bind()` + `run()`，完事。
-这次我们要引入三个新东西：
+这次我们要让东西“动起来”：
 
 | 新东西 | 干什么用 | 写法 |
 |--------|----------|------|
-| **on_frame** | 每帧回调，训练 + 更新在这里搞 | `@view.on_frame` |
-| **Panel.on_frame** | 面板回调，控件放这里 | `@info_panel.on_frame` |
-| **create_tensor** | 创建 GPU 共享显存 tensor | `vultorch.create_tensor(H, W, ...)` |
-| **vultorch.imread** | 加载图片，零依赖 | `vultorch.imread(path, channels=3)` |
-| **side="bottom"** | 把面板停靠到窗口底部 | `view.panel("Info", side="bottom")` |
+| **@view.on_frame** | 每帧调用一次的函数 —— 训练代码放这里 | `@view.on_frame` |
+| **@panel.on_frame** | 在某个面板内部调用的函数 —— 交互控件放这里 | `@info_panel.on_frame` |
+| **create_tensor** | 创建一个和显示层共享显存的 CUDA tensor，写进去的数据立即出现在屏幕上 | `vultorch.create_tensor(H, W, ...)` |
+| **vultorch.imread** | 加载图片，零依赖（不需要 PIL） | `vultorch.imread(path, channels=3)` |
+| **side="bottom"** | 把面板放到窗口底部 | `view.panel("Info", side="bottom")` |
+
+!!! info "什么是“控件”（widget）？"
+    控件就是屏幕上可以看到的交互元素 —— 按钮、滑条、文字标签、
+    进度条。在 Vultorch 里，你通过 `panel.text("你好")`、
+    `panel.slider("x", 0, 1)` 这样的 Python 方法调用来创建控件。
+    不需要 HTML，不需要 CSS，不需要 Qt —— 就是 Python 函数调用。
 
 View 回调里写 PyTorch 代码，Panel 回调里画控件，
 Vultorch 每帧帮你把 tensor 搬上屏幕。
@@ -153,27 +159,40 @@ view.run()
 2. **模型** — 两层 64 宽的 MLP，输入 `(x, y)`，输出 `(r, g, b)`。
    这个网络小到可以跑在回调里不掉帧。
 
-3. **布局** — `side="bottom"` 把 Info 停靠到底部 28%。
-   `side="left"` 把 GT 放到剩余空间的左半边。
-   Prediction 自动填满剩下的区域。不需要手写任何 docking 代码。
+3. **布局** — `side="bottom", width=0.28` 把 Info 放到底部，
+   占窗口高度的 28%。（是的，`width=` 在面板放在上下方时控制的是高度 ——
+   它实际上是“分割方向上的尺寸比例”。）
+   `side="left", width=0.5` 把 GT 放到剩余空间的左半边。
+   Prediction 自动填满剩下的区域。
 
-4. **两个回调** — `@view.on_frame` 跑训练。
-   `@info_panel.on_frame` 在 Info 面板里画控件（文字、滑条、进度条）。
-   Vultorch 帮你管 ImGui 的 begin / end，不用自己操心。
+4. **两个回调** —
+
+    - `@view.on_frame` — 每帧执行一次，在面板绘制之前跑。
+      训练循环、数据更新、模型计算都放这里。
+
+    - `@info_panel.on_frame` — 在 Info 面板内部执行。
+      每个 `panel.text()`、`panel.slider_int()`、`panel.progress()`
+      调用都会在面板里创建一个控件（文字、滑条、进度条）。
+      不用操心位置 —— 控件跟 `print()` 一样自上而下排列。
 
 ## 要点
 
-1. **`@view.on_frame`** — 回调里可以跑任意 PyTorch 代码。
+1. **`@view.on_frame`** — 一个普通的 Python 函数，每显示一帧调用一次
+   （大约每秒 60 次）。回调里可以跑任意 PyTorch 代码。
    每帧结束时 Vultorch 自动把绑定的 tensor 搬到屏幕，不用你管。
 
 2. **`create_tensor`** — 跟普通 `torch.zeros` 一样用，
-   但底层是 Vulkan/CUDA 共享显存，显示的时候零拷贝。
+   但底层是 Vulkan/CUDA 共享显存。你往里面写数据，
+   下一帧屏幕就自动更新 —— 不用 `.cpu()`，不用 `upload()`，
+   什么都不用。
 
-3. **声明式布局** — `side="left"` / `"right"` / `"bottom"` / `"top"`
-   切窗口，不需要手动写 dock_builder 代码。
+3. **布局简写** — `side="left"` / `"right"` / `"bottom"` / `"top"`
+   切窗口，`width=` 控制切多大（0–1 的比例）。就这么多。
+   不需要坐标，不需要网格。
 
-4. **面板控件** — `@panel.on_frame` 在面板窗口内部运行。
-   用 `panel.text()`、`panel.slider_int()`、`panel.progress()` 代替原始 `ui.*` 调用。
+4. **面板控件** — `@panel.on_frame` 在面板内部运行。
+   调用 `panel.text()`、`panel.slider_int()`、`panel.progress()` ——
+   每个调用创建一个控件，自上而下排列，跟 `print()` 输出一样。
 
 5. **不刷终端** — 所有状态信息都在 Info 面板里，
    你的终端可以留着看 warning 和 traceback，干净多了。

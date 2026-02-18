@@ -9,6 +9,7 @@
 #include <vulkan/vulkan.h>
 #include "math_types.h"
 #include "tensor_texture.h"
+#include "vk_raii.h"
 #include <cstdint>
 #include <vector>
 
@@ -144,52 +145,52 @@ private:
 
     // ── Offscreen framebuffer ──────────────────────────────────────
     // MSAA color attachment
-    VkImage        msaa_color_        = VK_NULL_HANDLE;
-    VkDeviceMemory msaa_color_mem_    = VK_NULL_HANDLE;
-    VkImageView    msaa_color_view_   = VK_NULL_HANDLE;
+    VkUniqueImage        msaa_color_;
+    VkUniqueDeviceMemory msaa_color_mem_;
+    VkUniqueImageView    msaa_color_view_;
 
     // MSAA depth attachment
-    VkImage        msaa_depth_        = VK_NULL_HANDLE;
-    VkDeviceMemory msaa_depth_mem_    = VK_NULL_HANDLE;
-    VkImageView    msaa_depth_view_   = VK_NULL_HANDLE;
+    VkUniqueImage        msaa_depth_;
+    VkUniqueDeviceMemory msaa_depth_mem_;
+    VkUniqueImageView    msaa_depth_view_;
 
     // Resolve target (1x) — sampled by ImGui
-    VkImage        resolve_color_     = VK_NULL_HANDLE;
-    VkDeviceMemory resolve_color_mem_ = VK_NULL_HANDLE;
-    VkImageView    resolve_view_      = VK_NULL_HANDLE;
+    VkUniqueImage        resolve_color_;
+    VkUniqueDeviceMemory resolve_color_mem_;
+    VkUniqueImageView    resolve_view_;
 
-    VkRenderPass  render_pass_  = VK_NULL_HANDLE;
-    VkFramebuffer framebuffer_  = VK_NULL_HANDLE;
+    VkUniqueRenderPass  render_pass_;
+    VkUniqueFramebuffer framebuffer_;
 
     // ImGui texture for resolved result
-    VkSampler       resolve_sampler_ = VK_NULL_HANDLE;
-    VkDescriptorSet imgui_desc_      = VK_NULL_HANDLE;
+    VkUniqueSampler     resolve_sampler_;
+    VkDescriptorSet     imgui_desc_      = VK_NULL_HANDLE;  // managed by ImGui
 
     // ── Pipeline ───────────────────────────────────────────────────
-    VkPipelineLayout      pipeline_layout_ = VK_NULL_HANDLE;
-    VkPipeline            pipeline_        = VK_NULL_HANDLE;
-    VkDescriptorSetLayout desc_layout_     = VK_NULL_HANDLE;
-    VkDescriptorPool      scene_pool_      = VK_NULL_HANDLE;
-    VkDescriptorSet       scene_desc_      = VK_NULL_HANDLE;
+    VkUniquePipelineLayout      pipeline_layout_;
+    VkUniquePipeline            pipeline_;
+    VkUniqueDescriptorSetLayout desc_layout_;
+    VkUniqueDescriptorPool      scene_pool_;
+    VkDescriptorSet             scene_desc_      = VK_NULL_HANDLE;  // owned by pool
 
     // ── Plane mesh ─────────────────────────────────────────────────
-    VkBuffer       vertex_buf_ = VK_NULL_HANDLE;
-    VkDeviceMemory vertex_mem_ = VK_NULL_HANDLE;
-    VkBuffer       index_buf_  = VK_NULL_HANDLE;
-    VkDeviceMemory index_mem_  = VK_NULL_HANDLE;
-    uint32_t       index_count_ = 0;
+    VkUniqueBuffer       vertex_buf_;
+    VkUniqueDeviceMemory vertex_mem_;
+    VkUniqueBuffer       index_buf_;
+    VkUniqueDeviceMemory index_mem_;
+    uint32_t             index_count_ = 0;
 
     // Deferred render flag
     bool needs_render_ = false;
 
     // ── UBOs ───────────────────────────────────────────────────────
-    VkBuffer       ubo_buf_    = VK_NULL_HANDLE;
-    VkDeviceMemory ubo_mem_    = VK_NULL_HANDLE;
-    void*          ubo_mapped_ = nullptr;
+    VkUniqueBuffer       ubo_buf_;
+    VkUniqueDeviceMemory ubo_mem_;
+    void*                ubo_mapped_ = nullptr;
 
-    VkBuffer       light_ubo_buf_    = VK_NULL_HANDLE;
-    VkDeviceMemory light_ubo_mem_    = VK_NULL_HANDLE;
-    void*          light_ubo_mapped_ = nullptr;
+    VkUniqueBuffer       light_ubo_buf_;
+    VkUniqueDeviceMemory light_ubo_mem_;
+    void*                light_ubo_mapped_ = nullptr;
 
     bool initialized_ = false;
 
@@ -205,13 +206,12 @@ private:
     void cleanup_offscreen();
 
     VkShaderModule create_shader_module(const uint32_t* code, size_t size);
-    uint32_t find_memory_type(uint32_t filter, VkMemoryPropertyFlags props);
 
     void create_image(uint32_t w, uint32_t h, VkFormat format,
                       VkSampleCountFlagBits samples, VkImageUsageFlags usage,
-                      VkImage& image, VkDeviceMemory& memory);
+                      VkUniqueImage& image, VkUniqueDeviceMemory& memory);
     void create_image_view(VkImage image, VkFormat format,
-                           VkImageAspectFlags aspect, VkImageView& view);
+                           VkImageAspectFlags aspect, VkUniqueImageView& view);
 };
 
 } // namespace vultorch

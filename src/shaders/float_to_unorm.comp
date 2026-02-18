@@ -1,0 +1,22 @@
+#version 450
+/// float_to_unorm.comp — Convert float32 RGBA staging buffer to R8G8B8A8_UNORM image.
+///
+/// Dispatched as ceil(width/16) x ceil(height/16) workgroups.
+/// Each invocation converts one pixel: clamp [0,1] → imageStore.
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(set = 0, binding = 0) buffer SrcBuf { float data[]; } src;
+layout(set = 0, binding = 1, rgba8) uniform writeonly image2D dst;
+
+layout(push_constant) uniform PC { uint width; uint height; };
+
+void main() {
+    uvec2 pos = gl_GlobalInvocationID.xy;
+    if (pos.x >= width || pos.y >= height) return;
+    uint idx = (pos.y * width + pos.x) * 4;
+    vec4 val = vec4(src.data[idx], src.data[idx + 1],
+                    src.data[idx + 2], src.data[idx + 3]);
+    val = clamp(val, 0.0, 1.0);
+    imageStore(dst, ivec2(pos), val);
+}

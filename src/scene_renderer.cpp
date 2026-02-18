@@ -1,11 +1,12 @@
 #include "scene_renderer.h"
+#include "vk_utils.h"
+#include "log.h"
 #include <imgui.h>
 #include <imgui_impl_vulkan.h>
 #include <stdexcept>
 #include <string>
 #include <cstring>
 #include <vector>
-#include <iostream>
 #include <array>
 #include <algorithm>
 
@@ -14,15 +15,6 @@
 #include "plane_frag_spv.h"
 
 namespace vultorch {
-
-#define VK_CHECK(x)                                                           \
-    do {                                                                      \
-        VkResult _r = (x);                                                    \
-        if (_r != VK_SUCCESS)                                                 \
-            throw std::runtime_error(                                         \
-                std::string("Vulkan error ") + std::to_string((int)_r) +      \
-                " at " + __FILE__ + ":" + std::to_string(__LINE__));          \
-    } while (0)
 
 // ======================================================================
 SceneRenderer::~SceneRenderer() { destroy(); }
@@ -51,40 +43,42 @@ void SceneRenderer::init(VkInstance instance, VkPhysicalDevice physDevice,
     // because we need the TensorTexture's sampler/view
 
     initialized_ = true;
-    std::cout << "[vultorch] SceneRenderer: " << width << "x" << height
-              << " MSAA " << (int)msaa << "x\n";
+    VT_INFO("SceneRenderer: " << width << "x" << height
+              << " MSAA " << (int)msaa << "x");
 }
 
 void SceneRenderer::destroy() {
     if (!initialized_) return;
-    vkDeviceWaitIdle(device_);
+    // No vkDeviceWaitIdle here — Engine::destroy() ensures GPU idle
+    // before destroying sub-systems.
 
-    // ImGui descriptor
+    // ImGui descriptor (managed by ImGui, not RAII)
     if (imgui_desc_) {
         ImGui_ImplVulkan_RemoveTexture(imgui_desc_);
         imgui_desc_ = VK_NULL_HANDLE;
     }
-    if (resolve_sampler_) { vkDestroySampler(device_, resolve_sampler_, nullptr); resolve_sampler_ = VK_NULL_HANDLE; }
+    resolve_sampler_.reset();
 
     // Pipeline
-    if (pipeline_)        { vkDestroyPipeline(device_, pipeline_, nullptr);             pipeline_ = VK_NULL_HANDLE; }
-    if (pipeline_layout_) { vkDestroyPipelineLayout(device_, pipeline_layout_, nullptr); pipeline_layout_ = VK_NULL_HANDLE; }
-    if (desc_layout_)     { vkDestroyDescriptorSetLayout(device_, desc_layout_, nullptr); desc_layout_ = VK_NULL_HANDLE; }
-    if (scene_pool_)      { vkDestroyDescriptorPool(device_, scene_pool_, nullptr);       scene_pool_ = VK_NULL_HANDLE; }
+    pipeline_.reset();
+    pipeline_layout_.reset();
+    scene_desc_ = VK_NULL_HANDLE;  // freed with pool
+    desc_layout_.reset();
+    scene_pool_.reset();
 
-    // UBOs
-    if (ubo_mapped_)      { vkUnmapMemory(device_, ubo_mem_);       ubo_mapped_ = nullptr; }
-    if (ubo_buf_)         { vkDestroyBuffer(device_, ubo_buf_, nullptr);  ubo_buf_ = VK_NULL_HANDLE; }
-    if (ubo_mem_)         { vkFreeMemory(device_, ubo_mem_, nullptr);     ubo_mem_ = VK_NULL_HANDLE; }
-    if (light_ubo_mapped_) { vkUnmapMemory(device_, light_ubo_mem_); light_ubo_mapped_ = nullptr; }
-    if (light_ubo_buf_)   { vkDestroyBuffer(device_, light_ubo_buf_, nullptr); light_ubo_buf_ = VK_NULL_HANDLE; }
-    if (light_ubo_mem_)   { vkFreeMemory(device_, light_ubo_mem_, nullptr);    light_ubo_mem_ = VK_NULL_HANDLE; }
+    // UBOs (unmap before freeing memory)
+    if (ubo_mapped_)       { vkUnmapMemory(device_, ubo_mem_.get());       ubo_mapped_ = nullptr; }
+    ubo_buf_.reset();
+    ubo_mem_.reset();
+    if (light_ubo_mapped_) { vkUnmapMemory(device_, light_ubo_mem_.get()); light_ubo_mapped_ = nullptr; }
+    light_ubo_buf_.reset();
+    light_ubo_mem_.reset();
 
     // Mesh
-    if (vertex_buf_) { vkDestroyBuffer(device_, vertex_buf_, nullptr); vertex_buf_ = VK_NULL_HANDLE; }
-    if (vertex_mem_) { vkFreeMemory(device_, vertex_mem_, nullptr);    vertex_mem_ = VK_NULL_HANDLE; }
-    if (index_buf_)  { vkDestroyBuffer(device_, index_buf_, nullptr);  index_buf_ = VK_NULL_HANDLE; }
-    if (index_mem_)  { vkFreeMemory(device_, index_mem_, nullptr);     index_mem_ = VK_NULL_HANDLE; }
+    vertex_buf_.reset();
+    vertex_mem_.reset();
+    index_buf_.reset();
+    index_mem_.reset();
 
     cleanup_offscreen();
 
@@ -180,7 +174,7 @@ void SceneRenderer::record_render(VkCommandBuffer cmd) {
 
     // Draw plane
     VkDeviceSize offset = 0;
-    vkCmdBindVertexBuffers(cmd, 0, 1, &vertex_buf_, &offset);
+    vkCmdBindVertexBuffers(cmd, 0, 1, vertex_buf_.ptr(), &offset);
     vkCmdBindIndexBuffer(cmd, index_buf_, 0, VK_INDEX_TYPE_UINT16);
     vkCmdDrawIndexed(cmd, index_count_, 1, 0, 0, 0);
 
@@ -196,7 +190,7 @@ uintptr_t SceneRenderer::imgui_texture_id() const {
 // ======================================================================
 void SceneRenderer::resize(uint32_t width, uint32_t height) {
     if (width == width_ && height == height_) return;
-    vkDeviceWaitIdle(device_);
+    // Caller (Engine) must ensure inflight frames are complete
     width_  = width;
     height_ = height;
 
@@ -207,11 +201,11 @@ void SceneRenderer::resize(uint32_t width, uint32_t height) {
     create_framebuffer();
 
     // Force pipeline recreation (MSAA might differ)
-    if (pipeline_) { vkDestroyPipeline(device_, pipeline_, nullptr); pipeline_ = VK_NULL_HANDLE; }
-    if (pipeline_layout_) { vkDestroyPipelineLayout(device_, pipeline_layout_, nullptr); pipeline_layout_ = VK_NULL_HANDLE; }
-    if (desc_layout_) { vkDestroyDescriptorSetLayout(device_, desc_layout_, nullptr); desc_layout_ = VK_NULL_HANDLE; }
-    if (scene_pool_) { vkDestroyDescriptorPool(device_, scene_pool_, nullptr); scene_pool_ = VK_NULL_HANDLE; }
+    pipeline_.reset();
+    pipeline_layout_.reset();
+    desc_layout_.reset();
     scene_desc_ = VK_NULL_HANDLE;
+    scene_pool_.reset();
 }
 
 void SceneRenderer::set_msaa(VkSampleCountFlagBits msaa) {
@@ -220,7 +214,7 @@ void SceneRenderer::set_msaa(VkSampleCountFlagBits msaa) {
 
     // Rebuild offscreen resources with new sample count.
     // Cannot reuse resize() because it early-returns when dimensions are unchanged.
-    vkDeviceWaitIdle(device_);
+    // Caller (Engine) must ensure inflight frames are complete
 
     if (imgui_desc_) { ImGui_ImplVulkan_RemoveTexture(imgui_desc_); imgui_desc_ = VK_NULL_HANDLE; }
     cleanup_offscreen();
@@ -229,11 +223,11 @@ void SceneRenderer::set_msaa(VkSampleCountFlagBits msaa) {
     create_framebuffer();
 
     // Force pipeline recreation (sample count changed)
-    if (pipeline_)        { vkDestroyPipeline(device_, pipeline_, nullptr);             pipeline_ = VK_NULL_HANDLE; }
-    if (pipeline_layout_) { vkDestroyPipelineLayout(device_, pipeline_layout_, nullptr); pipeline_layout_ = VK_NULL_HANDLE; }
-    if (desc_layout_)     { vkDestroyDescriptorSetLayout(device_, desc_layout_, nullptr); desc_layout_ = VK_NULL_HANDLE; }
-    if (scene_pool_)      { vkDestroyDescriptorPool(device_, scene_pool_, nullptr);       scene_pool_ = VK_NULL_HANDLE; }
+    pipeline_.reset();
+    pipeline_layout_.reset();
+    desc_layout_.reset();
     scene_desc_ = VK_NULL_HANDLE;
+    scene_pool_.reset();
 }
 
 // ======================================================================
@@ -270,7 +264,9 @@ void SceneRenderer::create_offscreen_resources() {
         si.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         si.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         si.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        VK_CHECK(vkCreateSampler(device_, &si, nullptr, &resolve_sampler_));
+        VkSampler raw;
+        VK_CHECK(vkCreateSampler(device_, &si, nullptr, &raw));
+        resolve_sampler_.reset(device_, raw);
     }
 
     // Register resolve target with ImGui
@@ -279,20 +275,20 @@ void SceneRenderer::create_offscreen_resources() {
 }
 
 void SceneRenderer::cleanup_offscreen() {
-    if (framebuffer_)      { vkDestroyFramebuffer(device_, framebuffer_, nullptr);    framebuffer_ = VK_NULL_HANDLE; }
-    if (render_pass_)      { vkDestroyRenderPass(device_, render_pass_, nullptr);     render_pass_ = VK_NULL_HANDLE; }
+    framebuffer_.reset();
+    render_pass_.reset();
 
-    if (msaa_color_view_)  { vkDestroyImageView(device_, msaa_color_view_, nullptr);  msaa_color_view_ = VK_NULL_HANDLE; }
-    if (msaa_color_)       { vkDestroyImage(device_, msaa_color_, nullptr);           msaa_color_ = VK_NULL_HANDLE; }
-    if (msaa_color_mem_)   { vkFreeMemory(device_, msaa_color_mem_, nullptr);         msaa_color_mem_ = VK_NULL_HANDLE; }
+    msaa_color_view_.reset();
+    msaa_color_.reset();
+    msaa_color_mem_.reset();
 
-    if (msaa_depth_view_)  { vkDestroyImageView(device_, msaa_depth_view_, nullptr);  msaa_depth_view_ = VK_NULL_HANDLE; }
-    if (msaa_depth_)       { vkDestroyImage(device_, msaa_depth_, nullptr);           msaa_depth_ = VK_NULL_HANDLE; }
-    if (msaa_depth_mem_)   { vkFreeMemory(device_, msaa_depth_mem_, nullptr);         msaa_depth_mem_ = VK_NULL_HANDLE; }
+    msaa_depth_view_.reset();
+    msaa_depth_.reset();
+    msaa_depth_mem_.reset();
 
-    if (resolve_view_)     { vkDestroyImageView(device_, resolve_view_, nullptr);     resolve_view_ = VK_NULL_HANDLE; }
-    if (resolve_color_)    { vkDestroyImage(device_, resolve_color_, nullptr);        resolve_color_ = VK_NULL_HANDLE; }
-    if (resolve_color_mem_) { vkFreeMemory(device_, resolve_color_mem_, nullptr);     resolve_color_mem_ = VK_NULL_HANDLE; }
+    resolve_view_.reset();
+    resolve_color_.reset();
+    resolve_color_mem_.reset();
 }
 
 // ======================================================================
@@ -363,21 +359,26 @@ void SceneRenderer::create_render_pass() {
     ci.dependencyCount = 1;
     ci.pDependencies   = &dep;
 
-    VK_CHECK(vkCreateRenderPass(device_, &ci, nullptr, &render_pass_));
+    VkRenderPass raw_rp;
+    VK_CHECK(vkCreateRenderPass(device_, &ci, nullptr, &raw_rp));
+    render_pass_.reset(device_, raw_rp);
 }
 
 void SceneRenderer::create_framebuffer() {
-    VkImageView views[] = {msaa_color_view_, resolve_view_, msaa_depth_view_};
+    VkImageView views[] = {msaa_color_view_.get(), resolve_view_.get(), msaa_depth_view_.get()};
 
     VkFramebufferCreateInfo ci{};
     ci.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    ci.renderPass      = render_pass_;
+    ci.renderPass      = render_pass_.get();
     ci.attachmentCount = 3;
     ci.pAttachments    = views;
     ci.width           = width_;
     ci.height          = height_;
     ci.layers          = 1;
-    VK_CHECK(vkCreateFramebuffer(device_, &ci, nullptr, &framebuffer_));
+    VkFramebuffer raw_fb;
+    VK_CHECK(vkCreateFramebuffer(device_, &ci, nullptr, &raw_fb));
+    framebuffer_.reset(device_, raw_fb);
+    // See note in create_render_pass about RAII ptr() usage.
 }
 
 // ======================================================================
@@ -408,18 +409,22 @@ void SceneRenderer::create_pipeline() {
     dsl_ci.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     dsl_ci.bindingCount = 3;
     dsl_ci.pBindings    = bindings;
-    VK_CHECK(vkCreateDescriptorSetLayout(device_, &dsl_ci, nullptr, &desc_layout_));
+    VkDescriptorSetLayout raw_dsl;
+    VK_CHECK(vkCreateDescriptorSetLayout(device_, &dsl_ci, nullptr, &raw_dsl));
+    desc_layout_.reset(device_, raw_dsl);
 
     // ── Pipeline layout ───────────────────────────────────────────
     VkPipelineLayoutCreateInfo pl_ci{};
     pl_ci.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pl_ci.setLayoutCount = 1;
-    pl_ci.pSetLayouts    = &desc_layout_;
-    VK_CHECK(vkCreatePipelineLayout(device_, &pl_ci, nullptr, &pipeline_layout_));
+    pl_ci.pSetLayouts    = desc_layout_.ptr();
+    VkPipelineLayout raw_pl;
+    VK_CHECK(vkCreatePipelineLayout(device_, &pl_ci, nullptr, &raw_pl));
+    pipeline_layout_.reset(device_, raw_pl);
 
-    // ── Shader modules ────────────────────────────────────────────
-    VkShaderModule vert_mod = create_shader_module(plane_vert_spv, plane_vert_spv_size);
-    VkShaderModule frag_mod = create_shader_module(plane_frag_spv, plane_frag_spv_size);
+    // ── Shader modules (RAII — auto-destroyed at scope exit) ──────
+    VkUniqueShaderModule vert_mod(device_, create_shader_module(plane_vert_spv, plane_vert_spv_size));
+    VkUniqueShaderModule frag_mod(device_, create_shader_module(plane_frag_spv, plane_frag_spv_size));
 
     VkPipelineShaderStageCreateInfo stages[2]{};
     stages[0].sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -513,10 +518,11 @@ void SceneRenderer::create_pipeline() {
     gp.renderPass          = render_pass_;
     gp.subpass             = 0;
 
-    VK_CHECK(vkCreateGraphicsPipelines(device_, VK_NULL_HANDLE, 1, &gp, nullptr, &pipeline_));
+    VkPipeline raw_pipe;
+    VK_CHECK(vkCreateGraphicsPipelines(device_, VK_NULL_HANDLE, 1, &gp, nullptr, &raw_pipe));
+    pipeline_.reset(device_, raw_pipe);
 
-    vkDestroyShaderModule(device_, vert_mod, nullptr);
-    vkDestroyShaderModule(device_, frag_mod, nullptr);
+    // vert_mod / frag_mod auto-destroyed by VkUniqueShaderModule
 }
 
 // ======================================================================
@@ -539,28 +545,33 @@ void SceneRenderer::create_plane_mesh() {
     index_count_ = 6;
 
     // Create vertex buffer (host-visible for simplicity)
-    auto create_buffer = [&](VkBuffer& buf, VkDeviceMemory& mem,
+    auto create_buffer = [&](VkUniqueBuffer& buf, VkUniqueDeviceMemory& mem,
                              VkBufferUsageFlags usage, const void* data, VkDeviceSize size) {
         VkBufferCreateInfo bci{};
         bci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         bci.size  = size;
         bci.usage = usage;
-        VK_CHECK(vkCreateBuffer(device_, &bci, nullptr, &buf));
+        VkBuffer raw_buf;
+        VK_CHECK(vkCreateBuffer(device_, &bci, nullptr, &raw_buf));
 
         VkMemoryRequirements req;
-        vkGetBufferMemoryRequirements(device_, buf, &req);
+        vkGetBufferMemoryRequirements(device_, raw_buf, &req);
         VkMemoryAllocateInfo ai{};
         ai.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         ai.allocationSize  = req.size;
-        ai.memoryTypeIndex = find_memory_type(req.memoryTypeBits,
+        ai.memoryTypeIndex = vultorch::find_memory_type(phys_device_, req.memoryTypeBits,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        VK_CHECK(vkAllocateMemory(device_, &ai, nullptr, &mem));
-        VK_CHECK(vkBindBufferMemory(device_, buf, mem, 0));
+        VkDeviceMemory raw_mem;
+        VK_CHECK(vkAllocateMemory(device_, &ai, nullptr, &raw_mem));
+        VK_CHECK(vkBindBufferMemory(device_, raw_buf, raw_mem, 0));
 
         void* mapped;
-        VK_CHECK(vkMapMemory(device_, mem, 0, size, 0, &mapped));
+        VK_CHECK(vkMapMemory(device_, raw_mem, 0, size, 0, &mapped));
         std::memcpy(mapped, data, size);
-        vkUnmapMemory(device_, mem);
+        vkUnmapMemory(device_, raw_mem);
+
+        buf.reset(device_, raw_buf);
+        mem.reset(device_, raw_mem);
     };
 
     create_buffer(vertex_buf_, vertex_mem_, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -573,23 +584,29 @@ void SceneRenderer::create_plane_mesh() {
 //  UBOs
 // ======================================================================
 void SceneRenderer::create_ubos() {
-    auto create_ubo = [&](VkBuffer& buf, VkDeviceMemory& mem, void** mapped, VkDeviceSize size) {
+    auto create_ubo = [&](VkUniqueBuffer& buf, VkUniqueDeviceMemory& mem,
+                          void** mapped, VkDeviceSize size) {
         VkBufferCreateInfo bci{};
         bci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         bci.size  = size;
         bci.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-        VK_CHECK(vkCreateBuffer(device_, &bci, nullptr, &buf));
+        VkBuffer raw_buf;
+        VK_CHECK(vkCreateBuffer(device_, &bci, nullptr, &raw_buf));
 
         VkMemoryRequirements req;
-        vkGetBufferMemoryRequirements(device_, buf, &req);
+        vkGetBufferMemoryRequirements(device_, raw_buf, &req);
         VkMemoryAllocateInfo ai{};
         ai.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         ai.allocationSize  = req.size;
-        ai.memoryTypeIndex = find_memory_type(req.memoryTypeBits,
+        ai.memoryTypeIndex = vultorch::find_memory_type(phys_device_, req.memoryTypeBits,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        VK_CHECK(vkAllocateMemory(device_, &ai, nullptr, &mem));
-        VK_CHECK(vkBindBufferMemory(device_, buf, mem, 0));
-        VK_CHECK(vkMapMemory(device_, mem, 0, size, 0, mapped));
+        VkDeviceMemory raw_mem;
+        VK_CHECK(vkAllocateMemory(device_, &ai, nullptr, &raw_mem));
+        VK_CHECK(vkBindBufferMemory(device_, raw_buf, raw_mem, 0));
+        VK_CHECK(vkMapMemory(device_, raw_mem, 0, size, 0, mapped));
+
+        buf.reset(device_, raw_buf);
+        mem.reset(device_, raw_mem);
     };
 
     create_ubo(ubo_buf_, ubo_mem_, &ubo_mapped_, sizeof(SceneUBO));
@@ -646,7 +663,9 @@ void SceneRenderer::create_descriptor_set(TensorTexture& texture) {
         pi.maxSets       = 1;
         pi.poolSizeCount = 2;
         pi.pPoolSizes    = sizes;
-        VK_CHECK(vkCreateDescriptorPool(device_, &pi, nullptr, &scene_pool_));
+        VkDescriptorPool raw_pool;
+        VK_CHECK(vkCreateDescriptorPool(device_, &pi, nullptr, &raw_pool));
+        scene_pool_.reset(device_, raw_pool);
     }
 
     if (!scene_desc_) {
@@ -654,13 +673,13 @@ void SceneRenderer::create_descriptor_set(TensorTexture& texture) {
         ai.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         ai.descriptorPool     = scene_pool_;
         ai.descriptorSetCount = 1;
-        ai.pSetLayouts        = &desc_layout_;
+        ai.pSetLayouts        = desc_layout_.ptr();
         VK_CHECK(vkAllocateDescriptorSets(device_, &ai, &scene_desc_));
     }
 
     // Update descriptors
-    VkDescriptorBufferInfo scene_ubo_info{ubo_buf_, 0, sizeof(SceneUBO)};
-    VkDescriptorBufferInfo light_ubo_info{light_ubo_buf_, 0, sizeof(LightUBO)};
+    VkDescriptorBufferInfo scene_ubo_info{ubo_buf_.get(), 0, sizeof(SceneUBO)};
+    VkDescriptorBufferInfo light_ubo_info{light_ubo_buf_.get(), 0, sizeof(LightUBO)};
     VkDescriptorImageInfo  tex_info{};
     tex_info.sampler     = texture.sampler();
     tex_info.imageView   = texture.image_view();
@@ -705,19 +724,9 @@ VkShaderModule SceneRenderer::create_shader_module(const uint32_t* code, size_t 
     return mod;
 }
 
-uint32_t SceneRenderer::find_memory_type(uint32_t filter, VkMemoryPropertyFlags props) {
-    VkPhysicalDeviceMemoryProperties mem;
-    vkGetPhysicalDeviceMemoryProperties(phys_device_, &mem);
-    for (uint32_t i = 0; i < mem.memoryTypeCount; i++) {
-        if ((filter & (1u << i)) && (mem.memoryTypes[i].propertyFlags & props) == props)
-            return i;
-    }
-    throw std::runtime_error("SceneRenderer: failed to find suitable memory type");
-}
-
 void SceneRenderer::create_image(uint32_t w, uint32_t h, VkFormat format,
                                  VkSampleCountFlagBits samples, VkImageUsageFlags usage,
-                                 VkImage& image, VkDeviceMemory& memory) {
+                                 VkUniqueImage& image, VkUniqueDeviceMemory& memory) {
     VkImageCreateInfo ci{};
     ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     ci.imageType     = VK_IMAGE_TYPE_2D;
@@ -730,21 +739,26 @@ void SceneRenderer::create_image(uint32_t w, uint32_t h, VkFormat format,
     ci.usage         = usage;
     ci.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;
     ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    VK_CHECK(vkCreateImage(device_, &ci, nullptr, &image));
+    VkImage raw;
+    VK_CHECK(vkCreateImage(device_, &ci, nullptr, &raw));
 
     VkMemoryRequirements req;
-    vkGetImageMemoryRequirements(device_, image, &req);
+    vkGetImageMemoryRequirements(device_, raw, &req);
     VkMemoryAllocateInfo ai{};
     ai.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     ai.allocationSize  = req.size;
-    ai.memoryTypeIndex = find_memory_type(req.memoryTypeBits,
-                                          VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    VK_CHECK(vkAllocateMemory(device_, &ai, nullptr, &memory));
-    VK_CHECK(vkBindImageMemory(device_, image, memory, 0));
+    ai.memoryTypeIndex = vultorch::find_memory_type(phys_device_, req.memoryTypeBits,
+                                                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    VkDeviceMemory raw_mem;
+    VK_CHECK(vkAllocateMemory(device_, &ai, nullptr, &raw_mem));
+    VK_CHECK(vkBindImageMemory(device_, raw, raw_mem, 0));
+
+    image.reset(device_, raw);
+    memory.reset(device_, raw_mem);
 }
 
 void SceneRenderer::create_image_view(VkImage image, VkFormat format,
-                                      VkImageAspectFlags aspect, VkImageView& view) {
+                                      VkImageAspectFlags aspect, VkUniqueImageView& view) {
     VkImageViewCreateInfo ci{};
     ci.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     ci.image    = image;
@@ -753,7 +767,9 @@ void SceneRenderer::create_image_view(VkImage image, VkFormat format,
     ci.subresourceRange.aspectMask = aspect;
     ci.subresourceRange.levelCount = 1;
     ci.subresourceRange.layerCount = 1;
-    VK_CHECK(vkCreateImageView(device_, &ci, nullptr, &view));
+    VkImageView raw;
+    VK_CHECK(vkCreateImageView(device_, &ci, nullptr, &raw));
+    view.reset(device_, raw);
 }
 
 } // namespace vultorch

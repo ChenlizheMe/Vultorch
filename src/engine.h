@@ -32,7 +32,7 @@ public:
     Engine() = default;
     ~Engine();
 
-    void init(const char* title, int width, int height);
+    void init(const char* title, int width, int height, bool vsync = true);
     void destroy();
 
     /// Process window events. Returns false when the window should close.
@@ -66,6 +66,9 @@ public:
     /// Query max supported MSAA sample count.
     VkSampleCountFlagBits max_msaa_samples() const;
 
+    /// Wait for all inflight frame fences (lighter than vkDeviceWaitIdle).
+    void wait_gpu();
+
 private:
     // ---- SDL ----
     SDL_Window* window_ = nullptr;
@@ -82,6 +85,7 @@ private:
     VkSwapchainKHR              swapchain_        = VK_NULL_HANDLE;
     VkFormat                    swapchain_format_  = VK_FORMAT_B8G8R8A8_UNORM;
     VkExtent2D                  swapchain_extent_  = {};
+    VkPresentModeKHR            present_mode_      = VK_PRESENT_MODE_FIFO_KHR;
     std::vector<VkImage>        swapchain_images_;
     std::vector<VkImageView>    swapchain_views_;
     std::vector<VkFramebuffer>  framebuffers_;

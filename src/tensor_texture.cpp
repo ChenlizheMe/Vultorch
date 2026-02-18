@@ -2,14 +2,18 @@
 // See tensor_texture.h for the three usage modes.
 
 #include "tensor_texture.h"
+#include "vk_utils.h"
+#include "log.h"
 #include <imgui.h>
 #include <imgui_impl_vulkan.h>
 #include <stdexcept>
 #include <string>
 #include <cstring>
 #include <vector>
-#include <iostream>
 #include <algorithm>
+
+// Embedded SPIR-V for float32→R8G8B8A8_UNORM compute shader
+#include "float_to_unorm_spv.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -17,29 +21,7 @@
 
 namespace vultorch {
 
-// ── Error-check macros ────────────────────────────────────────────────
-#define VK_CHECK(x)                                                           \
-    do {                                                                      \
-        VkResult _r = (x);                                                    \
-        if (_r != VK_SUCCESS)                                                 \
-            throw std::runtime_error(                                         \
-                std::string("Vulkan error ") + std::to_string((int)_r) +      \
-                " at " + __FILE__ + ":" + std::to_string(__LINE__));          \
-    } while (0)
-
 #ifdef VULTORCH_HAS_CUDA
-#define CU_CHECK(x)                                                           \
-    do {                                                                      \
-        CUresult _r = (x);                                                    \
-        if (_r != CUDA_SUCCESS) {                                             \
-            const char* msg = nullptr;                                        \
-            cuGetErrorString(_r, &msg);                                       \
-            throw std::runtime_error(                                         \
-                std::string("CUDA error: ") + (msg ? msg : "unknown") +       \
-                " at " + __FILE__ + ":" + std::to_string(__LINE__));          \
-        }                                                                     \
-    } while (0)
-
 static bool s_cuda_initialized = false;
 static void ensure_cuda_init() {
     if (!s_cuda_initialized) {
@@ -54,7 +36,8 @@ TensorTexture::~TensorTexture() { destroy(); }
 
 void TensorTexture::init(VkInstance instance, VkPhysicalDevice physDevice,
                          VkDevice device, VkQueue queue, uint32_t queueFamily,
-                         VkDescriptorPool imguiPool) {
+                         VkDescriptorPool imguiPool,
+                         VkCommandPool external_pool) {
     instance_     = instance;
     phys_device_  = physDevice;
     device_       = device;
@@ -62,12 +45,18 @@ void TensorTexture::init(VkInstance instance, VkPhysicalDevice physDevice,
     queue_family_ = queueFamily;
     imgui_pool_   = imguiPool;
 
-    // Command pool
-    VkCommandPoolCreateInfo ci{};
-    ci.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    ci.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    ci.queueFamilyIndex = queueFamily;
-    VK_CHECK(vkCreateCommandPool(device_, &ci, nullptr, &cmd_pool_));
+    // Use external pool if provided, otherwise create our own
+    if (external_pool != VK_NULL_HANDLE) {
+        cmd_pool_  = external_pool;
+        owns_pool_ = false;
+    } else {
+        VkCommandPoolCreateInfo ci{};
+        ci.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        ci.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        ci.queueFamilyIndex = queueFamily;
+        VK_CHECK(vkCreateCommandPool(device_, &ci, nullptr, &cmd_pool_));
+        owns_pool_ = true;
+    }
 
     VkCommandBufferAllocateInfo ai{};
     ai.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -86,10 +75,18 @@ void TensorTexture::init(VkInstance instance, VkPhysicalDevice physDevice,
 
 void TensorTexture::destroy() {
     if (!device_) return;
-    vkDeviceWaitIdle(device_);
+    wait_for_copy();  // wait for our own pending copy fence (no full GPU stall)
     free_resources();
     if (copy_fence_) { vkDestroyFence(device_, copy_fence_, nullptr); copy_fence_ = VK_NULL_HANDLE; }
-    if (cmd_pool_)   { vkDestroyCommandPool(device_, cmd_pool_, nullptr); cmd_pool_ = VK_NULL_HANDLE; }
+    if (cmd_buf_ && cmd_pool_) {
+        vkFreeCommandBuffers(device_, cmd_pool_, 1, &cmd_buf_);
+        cmd_buf_ = VK_NULL_HANDLE;
+    }
+    if (cmd_pool_ && owns_pool_) {
+        vkDestroyCommandPool(device_, cmd_pool_, nullptr);
+    }
+    cmd_pool_ = VK_NULL_HANDLE;
+    owns_pool_ = false;
     device_ = VK_NULL_HANDLE;
 }
 
@@ -113,6 +110,7 @@ uintptr_t TensorTexture::allocate_shared(uint32_t width, uint32_t height,
     allocate_image(width, height);
     allocate_staging_external(width, height, channels, cuda_device);
     recreate_sampler();
+    create_compute_descriptor();
 
     shared_cuda_ptr_ = static_cast<uintptr_t>(cuda_staging_ptr_);
     return shared_cuda_ptr_;
@@ -136,6 +134,7 @@ void TensorTexture::upload(uintptr_t data_ptr, uint32_t width, uint32_t height,
         allocate_image(width, height);
         allocate_staging_external(width, height, channels, cuda_device);
         recreate_sampler();
+        create_compute_descriptor();
     }
 
     // If the data_ptr IS our shared pointer, skip GPU-GPU memcpy
@@ -194,7 +193,7 @@ void TensorTexture::allocate_staging_external(uint32_t w, uint32_t h,
     VkBufferCreateInfo bci{};
     bci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bci.size  = buf_size;
-    bci.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    bci.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 
     // External memory export info
     VkExternalMemoryBufferCreateInfo ext_buf_ci{};
@@ -202,15 +201,17 @@ void TensorTexture::allocate_staging_external(uint32_t w, uint32_t h,
     ext_buf_ci.handleTypes = kExternalMemHandleType;
     bci.pNext = &ext_buf_ci;
 
-    VK_CHECK(vkCreateBuffer(device_, &bci, nullptr, &staging_buf_));
+    VkBuffer raw_buf;
+    VK_CHECK(vkCreateBuffer(device_, &bci, nullptr, &raw_buf));
+    staging_buf_.reset(device_, raw_buf);
 
     VkMemoryRequirements memReq;
-    vkGetBufferMemoryRequirements(device_, staging_buf_, &memReq);
+    vkGetBufferMemoryRequirements(device_, raw_buf, &memReq);
 
     // Dedicated allocation for external memory
     VkMemoryDedicatedAllocateInfo dedicated{};
     dedicated.sType  = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO;
-    dedicated.buffer = staging_buf_;
+    dedicated.buffer = raw_buf;
 
     // Export info
     VkExportMemoryAllocateInfo export_ai{};
@@ -221,18 +222,20 @@ void TensorTexture::allocate_staging_external(uint32_t w, uint32_t h,
     VkMemoryAllocateInfo mai{};
     mai.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     mai.allocationSize  = memReq.size;
-    mai.memoryTypeIndex = find_memory_type(memReq.memoryTypeBits,
-                                           VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    mai.memoryTypeIndex = vultorch::find_memory_type(phys_device_, memReq.memoryTypeBits,
+                                                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     mai.pNext = &export_ai;
 
-    VK_CHECK(vkAllocateMemory(device_, &mai, nullptr, &staging_mem_));
-    VK_CHECK(vkBindBufferMemory(device_, staging_buf_, staging_mem_, 0));
+    VkDeviceMemory raw_mem;
+    VK_CHECK(vkAllocateMemory(device_, &mai, nullptr, &raw_mem));
+    staging_mem_.reset(device_, raw_mem);
+    VK_CHECK(vkBindBufferMemory(device_, raw_buf, raw_mem, 0));
 
     // ── Export handle ─────────────────────────────────────────────
 #ifdef _WIN32
     VkMemoryGetWin32HandleInfoKHR handle_info{};
     handle_info.sType      = VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR;
-    handle_info.memory     = staging_mem_;
+    handle_info.memory     = raw_mem;
     handle_info.handleType = kExternalMemHandleType;
 
     auto vkGetMemoryWin32HandleKHR_ =
@@ -245,7 +248,7 @@ void TensorTexture::allocate_staging_external(uint32_t w, uint32_t h,
 #else
     VkMemoryGetFdInfoKHR fd_info{};
     fd_info.sType      = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;
-    fd_info.memory     = staging_mem_;
+    fd_info.memory     = raw_mem;
     fd_info.handleType = kExternalMemHandleType;
 
     auto vkGetMemoryFdKHR_ =
@@ -282,9 +285,9 @@ void TensorTexture::allocate_staging_external(uint32_t w, uint32_t h,
     CU_CHECK(cuExternalMemoryGetMappedBuffer(&cuda_staging_ptr_, cuda_ext_mem_, &buf_desc));
 
     allocated_ = true;
-    std::cout << "[vultorch] TensorTexture: " << w << "x" << h << "x" << ch
+    VT_INFO("TensorTexture: " << w << "x" << h << "x" << ch
               << " shared GPU memory allocated ("
-              << (buf_size / 1024) << " KB)\n";
+              << (buf_size / 1024) << " KB)");
 }
 #endif // VULTORCH_HAS_CUDA
 
@@ -306,6 +309,7 @@ void TensorTexture::upload_cpu(const void* data, uint32_t width, uint32_t height
         allocate_image(width, height);
         allocate_staging_host(width, height, channels);
         recreate_sampler();
+        create_compute_descriptor();
     }
 
     // CPU memcpy to host-visible staging buffer (persistently mapped)
@@ -330,27 +334,32 @@ void TensorTexture::allocate_staging_host(uint32_t w, uint32_t h, uint32_t ch) {
     VkBufferCreateInfo bci{};
     bci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bci.size  = buf_size;
-    bci.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-    VK_CHECK(vkCreateBuffer(device_, &bci, nullptr, &staging_buf_));
+    bci.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    VkBuffer raw_buf;
+    VK_CHECK(vkCreateBuffer(device_, &bci, nullptr, &raw_buf));
 
     VkMemoryRequirements memReq;
-    vkGetBufferMemoryRequirements(device_, staging_buf_, &memReq);
+    vkGetBufferMemoryRequirements(device_, raw_buf, &memReq);
 
     VkMemoryAllocateInfo mai{};
     mai.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     mai.allocationSize  = memReq.size;
-    mai.memoryTypeIndex = find_memory_type(memReq.memoryTypeBits,
+    mai.memoryTypeIndex = vultorch::find_memory_type(phys_device_, memReq.memoryTypeBits,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    VK_CHECK(vkAllocateMemory(device_, &mai, nullptr, &staging_mem_));
-    VK_CHECK(vkBindBufferMemory(device_, staging_buf_, staging_mem_, 0));
+    VkDeviceMemory raw_mem;
+    VK_CHECK(vkAllocateMemory(device_, &mai, nullptr, &raw_mem));
+    VK_CHECK(vkBindBufferMemory(device_, raw_buf, raw_mem, 0));
 
     // Persistently map for fast repeated uploads
-    VK_CHECK(vkMapMemory(device_, staging_mem_, 0, buf_size, 0, &staging_mapped_));
+    VK_CHECK(vkMapMemory(device_, raw_mem, 0, buf_size, 0, &staging_mapped_));
+
+    staging_buf_.reset(device_, raw_buf);
+    staging_mem_.reset(device_, raw_mem);
 
     allocated_ = true;
-    std::cout << "[vultorch] TensorTexture: " << w << "x" << h << "x" << ch
+    VT_INFO("TensorTexture: " << w << "x" << h << "x" << ch
               << " host staging allocated ("
-              << (buf_size / 1024) << " KB)\n";
+              << (buf_size / 1024) << " KB)");
 }
 
 // ======================================================================
@@ -363,13 +372,14 @@ void TensorTexture::set_filter(FilterMode mode) {
 }
 
 // ======================================================================
-//  allocate_image — VkImage + VkImageView (RGBA float32, optimal tiling)
+//  allocate_image — VkImage + VkImageView (R8G8B8A8_UNORM, optimal tiling)
+//  Uses compute shader to convert float32 staging → uint8 image (75% VRAM saving)
 // ======================================================================
 void TensorTexture::allocate_image(uint32_t w, uint32_t h) {
     width_  = w;
     height_ = h;
 
-    VkFormat format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
 
     VkImageCreateInfo ici{};
     ici.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -380,31 +390,43 @@ void TensorTexture::allocate_image(uint32_t w, uint32_t h) {
     ici.arrayLayers   = 1;
     ici.samples       = VK_SAMPLE_COUNT_1_BIT;
     ici.tiling        = VK_IMAGE_TILING_OPTIMAL;
-    ici.usage         = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    ici.usage         = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     ici.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;
     ici.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    VK_CHECK(vkCreateImage(device_, &ici, nullptr, &image_));
+    VkImage raw_img;
+    VK_CHECK(vkCreateImage(device_, &ici, nullptr, &raw_img));
 
     VkMemoryRequirements memReq;
-    vkGetImageMemoryRequirements(device_, image_, &memReq);
+    vkGetImageMemoryRequirements(device_, raw_img, &memReq);
 
     VkMemoryAllocateInfo mai{};
     mai.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     mai.allocationSize  = memReq.size;
-    mai.memoryTypeIndex = find_memory_type(memReq.memoryTypeBits,
-                                           VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    VK_CHECK(vkAllocateMemory(device_, &mai, nullptr, &image_mem_));
-    VK_CHECK(vkBindImageMemory(device_, image_, image_mem_, 0));
+    mai.memoryTypeIndex = vultorch::find_memory_type(phys_device_, memReq.memoryTypeBits,
+                                                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    VkDeviceMemory raw_mem;
+    VK_CHECK(vkAllocateMemory(device_, &mai, nullptr, &raw_mem));
+    VK_CHECK(vkBindImageMemory(device_, raw_img, raw_mem, 0));
+
+    image_.reset(device_, raw_img);
+    image_mem_.reset(device_, raw_mem);
 
     VkImageViewCreateInfo vci{};
     vci.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    vci.image    = image_;
+    vci.image    = raw_img;
     vci.viewType = VK_IMAGE_VIEW_TYPE_2D;
     vci.format   = format;
     vci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     vci.subresourceRange.levelCount = 1;
     vci.subresourceRange.layerCount = 1;
-    VK_CHECK(vkCreateImageView(device_, &vci, nullptr, &view_));
+    VkImageView raw_view;
+    VK_CHECK(vkCreateImageView(device_, &vci, nullptr, &raw_view));
+    view_.reset(device_, raw_view);
+
+    // Create compute pipeline (reusable across re-allocations)
+    create_compute_pipeline();
+    // Note: compute descriptor is created after staging buffer allocation
+    // (needs both image view and staging buffer)
 }
 
 // ======================================================================
@@ -417,8 +439,7 @@ void TensorTexture::recreate_sampler() {
             ImGui_ImplVulkan_RemoveTexture(descriptor_set_);
             descriptor_set_ = VK_NULL_HANDLE;
         }
-        vkDestroySampler(device_, sampler_, nullptr);
-        sampler_ = VK_NULL_HANDLE;
+        sampler_.reset();
     }
 
     VkFilter vk_filter = (filter_ == FilterMode::Nearest)
@@ -432,53 +453,172 @@ void TensorTexture::recreate_sampler() {
     si.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     si.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     si.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    VK_CHECK(vkCreateSampler(device_, &si, nullptr, &sampler_));
+    VkSampler raw;
+    VK_CHECK(vkCreateSampler(device_, &si, nullptr, &raw));
+    sampler_.reset(device_, raw);
 
     // Register with ImGui
     descriptor_set_ = ImGui_ImplVulkan_AddTexture(
-        sampler_, view_, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        sampler_.get(), view_.get(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 // ======================================================================
-//  record_copy_commands — barrier + copy + barrier (records into any cmd buf)
+//  Compute pipeline for float32 → R8G8B8A8_UNORM conversion
+// ======================================================================
+void TensorTexture::create_compute_pipeline() {
+    if (compute_pipeline_) return;  // already created
+
+    // Shader module from embedded SPIR-V (RAII — auto-destroyed at scope exit)
+    VkShaderModuleCreateInfo smi{};
+    smi.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    smi.codeSize = float_to_unorm_spv_size;
+    smi.pCode    = float_to_unorm_spv;
+    VkShaderModule raw_shader;
+    VK_CHECK(vkCreateShaderModule(device_, &smi, nullptr, &raw_shader));
+    VkUniqueShaderModule shader(device_, raw_shader);
+
+    // Descriptor set layout: binding 0 = storage buffer, binding 1 = storage image
+    VkDescriptorSetLayoutBinding bindings[2]{};
+    bindings[0].binding         = 0;
+    bindings[0].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    bindings[0].descriptorCount = 1;
+    bindings[0].stageFlags      = VK_SHADER_STAGE_COMPUTE_BIT;
+
+    bindings[1].binding         = 1;
+    bindings[1].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    bindings[1].descriptorCount = 1;
+    bindings[1].stageFlags      = VK_SHADER_STAGE_COMPUTE_BIT;
+
+    VkDescriptorSetLayoutCreateInfo dsl{};
+    dsl.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    dsl.bindingCount = 2;
+    dsl.pBindings    = bindings;
+    VkDescriptorSetLayout raw_dsl;
+    VK_CHECK(vkCreateDescriptorSetLayout(device_, &dsl, nullptr, &raw_dsl));
+    compute_desc_layout_.reset(device_, raw_dsl);
+
+    // Push constant range: {width, height}
+    VkPushConstantRange pcr{};
+    pcr.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+    pcr.offset     = 0;
+    pcr.size       = sizeof(uint32_t) * 2;
+
+    VkPipelineLayoutCreateInfo pli{};
+    pli.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pli.setLayoutCount         = 1;
+    pli.pSetLayouts            = compute_desc_layout_.ptr();
+    pli.pushConstantRangeCount = 1;
+    pli.pPushConstantRanges    = &pcr;
+    VkPipelineLayout raw_pl;
+    VK_CHECK(vkCreatePipelineLayout(device_, &pli, nullptr, &raw_pl));
+    compute_layout_.reset(device_, raw_pl);
+
+    // Compute pipeline
+    VkComputePipelineCreateInfo cpi{};
+    cpi.sType  = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+    cpi.stage.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    cpi.stage.stage  = VK_SHADER_STAGE_COMPUTE_BIT;
+    cpi.stage.module = shader;
+    cpi.stage.pName  = "main";
+    cpi.layout = compute_layout_;
+    VkPipeline raw_pipe;
+    VK_CHECK(vkCreateComputePipelines(device_, VK_NULL_HANDLE, 1, &cpi, nullptr, &raw_pipe));
+    compute_pipeline_.reset(device_, raw_pipe);
+
+    // shader auto-destroyed by VkUniqueShaderModule
+}
+
+void TensorTexture::create_compute_descriptor() {
+    // Recreate pool + set each time image/staging changes
+    if (compute_desc_) {
+        // Pool reset frees all sets allocated from it
+        vkResetDescriptorPool(device_, compute_pool_.get(), 0);
+        compute_desc_ = VK_NULL_HANDLE;
+    }
+    if (!compute_pool_) {
+        VkDescriptorPoolSize sizes[2]{};
+        sizes[0] = {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1};
+        sizes[1] = {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,  1};
+
+        VkDescriptorPoolCreateInfo pi{};
+        pi.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        pi.maxSets       = 1;
+        pi.poolSizeCount = 2;
+        pi.pPoolSizes    = sizes;
+        VkDescriptorPool raw_pool;
+        VK_CHECK(vkCreateDescriptorPool(device_, &pi, nullptr, &raw_pool));
+        compute_pool_.reset(device_, raw_pool);
+    }
+
+    VkDescriptorSetAllocateInfo ai{};
+    ai.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    ai.descriptorPool     = compute_pool_.get();
+    ai.descriptorSetCount = 1;
+    ai.pSetLayouts        = compute_desc_layout_.ptr();
+    VK_CHECK(vkAllocateDescriptorSets(device_, &ai, &compute_desc_));
+
+    // Update: binding 0 = staging buffer, binding 1 = destination image
+    VkDescriptorBufferInfo buf_info{staging_buf_.get(), 0, staging_size_};
+    VkDescriptorImageInfo  img_info{VK_NULL_HANDLE, view_.get(), VK_IMAGE_LAYOUT_GENERAL};
+
+    VkWriteDescriptorSet writes[2]{};
+    writes[0].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writes[0].dstSet          = compute_desc_;
+    writes[0].dstBinding      = 0;
+    writes[0].descriptorCount = 1;
+    writes[0].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    writes[0].pBufferInfo     = &buf_info;
+
+    writes[1].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writes[1].dstSet          = compute_desc_;
+    writes[1].dstBinding      = 1;
+    writes[1].descriptorCount = 1;
+    writes[1].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    writes[1].pImageInfo      = &img_info;
+
+    vkUpdateDescriptorSets(device_, 2, writes, 0, nullptr);
+}
+
+// ======================================================================
+//  record_copy_commands — compute dispatch: float32 staging → R8G8B8A8 image
 // ======================================================================
 void TensorTexture::record_copy_commands(VkCommandBuffer cmd) {
-    // ── Barrier: UNDEFINED → TRANSFER_DST ────────────────────────
+    // ── Barrier: image UNDEFINED → GENERAL (for compute imageStore) ──
     VkImageMemoryBarrier b1{};
     b1.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     b1.oldLayout           = VK_IMAGE_LAYOUT_UNDEFINED;
-    b1.newLayout           = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    b1.newLayout           = VK_IMAGE_LAYOUT_GENERAL;
     b1.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     b1.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     b1.image               = image_;
     b1.subresourceRange    = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
     b1.srcAccessMask       = 0;
-    b1.dstAccessMask       = VK_ACCESS_TRANSFER_WRITE_BIT;
+    b1.dstAccessMask       = VK_ACCESS_SHADER_WRITE_BIT;
     vkCmdPipelineBarrier(cmd,
-        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
         0, 0, nullptr, 0, nullptr, 1, &b1);
 
-    // ── Copy buffer → image ──────────────────────────────────────
-    VkBufferImageCopy region{};
-    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    region.imageSubresource.layerCount = 1;
-    region.imageExtent = {width_, height_, 1};
-    vkCmdCopyBufferToImage(cmd, staging_buf_, image_,
-                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+    // ── Dispatch compute shader ──────────────────────────────────
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, compute_pipeline_);
+    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
+                            compute_layout_, 0, 1, &compute_desc_, 0, nullptr);
+    uint32_t pc[2] = {width_, height_};
+    vkCmdPushConstants(cmd, compute_layout_, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(pc), pc);
+    vkCmdDispatch(cmd, (width_ + 15) / 16, (height_ + 15) / 16, 1);
 
-    // ── Barrier: TRANSFER_DST → SHADER_READ_ONLY ─────────────────
+    // ── Barrier: image GENERAL → SHADER_READ_ONLY ────────────────
     VkImageMemoryBarrier b2{};
     b2.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    b2.oldLayout           = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    b2.oldLayout           = VK_IMAGE_LAYOUT_GENERAL;
     b2.newLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     b2.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     b2.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     b2.image               = image_;
     b2.subresourceRange    = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-    b2.srcAccessMask       = VK_ACCESS_TRANSFER_WRITE_BIT;
+    b2.srcAccessMask       = VK_ACCESS_SHADER_WRITE_BIT;
     b2.dstAccessMask       = VK_ACCESS_SHADER_READ_BIT;
     vkCmdPipelineBarrier(cmd,
-        VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
         0, 0, nullptr, 0, nullptr, 1, &b2);
 }
 
@@ -553,7 +693,7 @@ void TensorTexture::flush() {
 // ======================================================================
 void TensorTexture::free_resources() {
     if (!allocated_) return;
-    vkDeviceWaitIdle(device_);
+    wait_for_copy();  // wait for our own pending copy fence (no full GPU stall)
     fence_pending_ = false;
     needs_copy_ = false;
 
@@ -566,41 +706,35 @@ void TensorTexture::free_resources() {
 
     // Unmap host staging if mapped
     if (staging_mapped_) {
-        vkUnmapMemory(device_, staging_mem_);
+        vkUnmapMemory(device_, staging_mem_.get());
         staging_mapped_ = nullptr;
     }
 
-    // ImGui descriptor
+    // ImGui descriptor (managed by ImGui, not RAII)
     if (descriptor_set_) {
         ImGui_ImplVulkan_RemoveTexture(descriptor_set_);
         descriptor_set_ = VK_NULL_HANDLE;
     }
 
     // Staging
-    if (staging_buf_) { vkDestroyBuffer(device_, staging_buf_, nullptr); staging_buf_ = VK_NULL_HANDLE; }
-    if (staging_mem_) { vkFreeMemory(device_, staging_mem_, nullptr);    staging_mem_ = VK_NULL_HANDLE; }
+    staging_buf_.reset();
+    staging_mem_.reset();
 
     // Image
-    if (sampler_)   { vkDestroySampler(device_, sampler_, nullptr);     sampler_   = VK_NULL_HANDLE; }
-    if (view_)      { vkDestroyImageView(device_, view_, nullptr);      view_      = VK_NULL_HANDLE; }
-    if (image_)     { vkDestroyImage(device_, image_, nullptr);         image_     = VK_NULL_HANDLE; }
-    if (image_mem_) { vkFreeMemory(device_, image_mem_, nullptr);       image_mem_ = VK_NULL_HANDLE; }
+    sampler_.reset();
+    view_.reset();
+    image_.reset();
+    image_mem_.reset();
+
+    // Compute pipeline resources
+    compute_desc_ = VK_NULL_HANDLE;  // freed with pool
+    compute_pool_.reset();
+    compute_pipeline_.reset();
+    compute_layout_.reset();
+    compute_desc_layout_.reset();
 
     staging_is_host_ = false;
     allocated_ = false;
-}
-
-// ======================================================================
-//  Helpers
-// ======================================================================
-uint32_t TensorTexture::find_memory_type(uint32_t filter, VkMemoryPropertyFlags props) {
-    VkPhysicalDeviceMemoryProperties mem;
-    vkGetPhysicalDeviceMemoryProperties(phys_device_, &mem);
-    for (uint32_t i = 0; i < mem.memoryTypeCount; i++) {
-        if ((filter & (1u << i)) && (mem.memoryTypes[i].propertyFlags & props) == props)
-            return i;
-    }
-    throw std::runtime_error("TensorTexture: failed to find suitable memory type");
 }
 
 } // namespace vultorch

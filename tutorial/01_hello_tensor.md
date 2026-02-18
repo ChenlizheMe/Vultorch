@@ -10,7 +10,17 @@ no CPU round-trips, no `plt.pause(0.001)` nonsense.
 
 ## The mental model
 
-There are exactly four objects you need to know:
+If you've ever used matplotlib, you know this pattern: figure → axes → plot.
+Vultorch is the same idea, but for GPU tensors:
+
+```
+View          ← the OS window (like plt.figure)
+ └─ Panel     ← a named region inside it (like plt.subplot)
+     └─ Canvas  ← a display slot that shows a tensor (like ax.imshow)
+         └─ bind(tensor)  ← connects data to the slot
+```
+
+Four objects, that's it:
 
 | Object | What it is | One-liner |
 |--------|------------|-----------|
@@ -20,6 +30,13 @@ There are exactly four objects you need to know:
 | **bind()** | Connects a tensor to a Canvas | `canvas.bind(t)` |
 
 Chain them together, call `run()`, done.
+
+!!! info "What's a Panel, exactly?"
+    A Panel is a movable, resizable sub-window inside your main window.
+    Think of it like a floating sticky note that you can drag around,
+    snap to the edges, or stack with other panels.  You don't need to
+    manage any of this — Vultorch auto-arranges them for you.  You'll
+    see more of this in the next chapter.
 
 ## Full code
 
@@ -53,12 +70,23 @@ That's it. No event loop boilerplate, no `begin_frame()` / `end_frame()`.
    It handles RGBA expansion for you.
 
 2. **Object tree** — `View` → `Panel` → `Canvas` → `bind(tensor)`.
-   The canvas auto-fills its panel by default (`fit=True`).
+   The canvas auto-fills its panel by default (`fit=True`), meaning
+   it stretches to use all available space — like a single `imshow`
+   that fills the whole figure.
 
-3. **Run** — `view.run()` enters a blocking event loop. Every frame the
-   canvas re-uploads the bound tensor and renders it. Close the window
-   to exit.
+3. **Run** — `view.run()` is a **blocking loop** (like `plt.show()`).
+   It keeps the window open, re-draws the tensor every frame (~60 times
+   per second), and handles OS events (resize, close, etc.) for you.
+   Close the window to exit — your Python script resumes after `run()`
+   returns.
 
 !!! tip
     The four setup lines collapse into a one-liner if you're feeling fancy:
     `view.panel("Viewer").canvas("gradient").bind(t)`
+
+!!! info "Why not just use `plt.imshow`?"
+    matplotlib copies your tensor to CPU, converts it to a numpy array,
+    renders it on the CPU via Agg, then blits it to a window.  Vultorch
+    keeps everything on the GPU — the tensor goes straight from CUDA
+    memory to your screen via Vulkan.  That's why it can refresh at
+    60 FPS even for large images.

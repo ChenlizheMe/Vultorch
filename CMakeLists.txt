@@ -114,9 +114,29 @@ if(GLSLC)
         COMMENT "[vultorch] Embedding plane_frag.spv → C header"
     )
 
+    # float_to_unorm.comp → float_to_unorm.spv → float_to_unorm_spv.h
+    add_custom_command(
+        OUTPUT  "${SPV_DIR}/float_to_unorm.spv"
+        COMMAND ${GLSLC} "${SHADER_DIR}/float_to_unorm.comp" -o "${SPV_DIR}/float_to_unorm.spv"
+        DEPENDS "${SHADER_DIR}/float_to_unorm.comp"
+        COMMENT "[vultorch] Compiling float_to_unorm.comp → SPIR-V"
+    )
+    add_custom_command(
+        OUTPUT  "${SPV_DIR}/float_to_unorm_spv.h"
+        COMMAND ${Python3_EXECUTABLE}
+                "${CMAKE_CURRENT_SOURCE_DIR}/tools/spv_to_header.py"
+                "${SPV_DIR}/float_to_unorm.spv"
+                "${SPV_DIR}/float_to_unorm_spv.h"
+                "float_to_unorm_spv"
+        DEPENDS "${SPV_DIR}/float_to_unorm.spv"
+                "${CMAKE_CURRENT_SOURCE_DIR}/tools/spv_to_header.py"
+        COMMENT "[vultorch] Embedding float_to_unorm.spv → C header"
+    )
+
     add_custom_target(vultorch_shaders DEPENDS
         "${SPV_DIR}/plane_vert_spv.h"
         "${SPV_DIR}/plane_frag_spv.h"
+        "${SPV_DIR}/float_to_unorm_spv.h"
     )
     add_dependencies(_vultorch vultorch_shaders)
     target_include_directories(_vultorch PRIVATE "${SPV_DIR}")

@@ -75,7 +75,6 @@ private:
     void allocate_resources(uint32_t w, uint32_t h, uint32_t ch);
     void free_resources();
 
-    uint32_t find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags props);
     void transition_image_layout(VkImage image, VkImageLayout oldL, VkImageLayout newL);
     void copy_buffer_to_image(VkBuffer buf, VkImage img, uint32_t w, uint32_t h);
 };

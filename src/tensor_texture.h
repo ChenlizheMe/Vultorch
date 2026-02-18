@@ -24,6 +24,7 @@
 #endif
 
 #include <vulkan/vulkan.h>
+#include "vk_raii.h"
 #include <cstdint>
 
 #ifdef VULTORCH_HAS_CUDA
@@ -40,9 +41,12 @@ public:
     ~TensorTexture();
 
     /// Initialise with existing Vulkan handles.
+    /// If external_pool is provided, it will be used for command buffer
+    /// allocation instead of creating a per-instance pool.
     void init(VkInstance instance, VkPhysicalDevice physDevice,
               VkDevice device, VkQueue queue, uint32_t queueFamily,
-              VkDescriptorPool imguiPool);
+              VkDescriptorPool imguiPool,
+              VkCommandPool external_pool = VK_NULL_HANDLE);
 
 #ifdef VULTORCH_HAS_CUDA
     /// Allocate a Vulkan buffer with external-memory export, import into CUDA,
@@ -117,16 +121,16 @@ private:
     VkDescriptorPool imgui_pool_    = VK_NULL_HANDLE;
 
     // VkImage (optimal tiling, destination of buffer copies)
-    VkImage          image_         = VK_NULL_HANDLE;
-    VkDeviceMemory   image_mem_     = VK_NULL_HANDLE;
-    VkImageView      view_          = VK_NULL_HANDLE;
-    VkSampler        sampler_       = VK_NULL_HANDLE;
-    VkDescriptorSet  descriptor_set_ = VK_NULL_HANDLE;
+    VkUniqueImage        image_;
+    VkUniqueDeviceMemory image_mem_;
+    VkUniqueImageView    view_;
+    VkUniqueSampler      sampler_;
+    VkDescriptorSet      descriptor_set_ = VK_NULL_HANDLE;  // managed by ImGui
 
     // Staging buffer (used for BOTH CUDA external-memory AND CPU host paths).
     // Only one mode is active at a time, tracked by staging_is_host_.
-    VkBuffer         staging_buf_   = VK_NULL_HANDLE;
-    VkDeviceMemory   staging_mem_   = VK_NULL_HANDLE;
+    VkUniqueBuffer       staging_buf_;
+    VkUniqueDeviceMemory staging_mem_;
     VkDeviceSize     staging_size_  = 0;
     void*            staging_mapped_ = nullptr;  // non-null when host-visible staging
     bool             staging_is_host_ = false;   // true = host-visible, false = external memory
@@ -143,10 +147,18 @@ private:
     // Command buffer for layout transitions & copies
     VkCommandPool    cmd_pool_      = VK_NULL_HANDLE;
     VkCommandBuffer  cmd_buf_       = VK_NULL_HANDLE;
+    bool             owns_pool_     = false;  // true if we created the pool ourselves
 
     // Fence for standalone copy submit (replaces vkQueueWaitIdle)
     VkFence          copy_fence_    = VK_NULL_HANDLE;
     bool             fence_pending_ = false;
+
+    // Compute pipeline for float32 → R8G8B8A8_UNORM conversion
+    VkUniquePipeline            compute_pipeline_;
+    VkUniquePipelineLayout      compute_layout_;
+    VkUniqueDescriptorSetLayout compute_desc_layout_;
+    VkUniqueDescriptorPool      compute_pool_;
+    VkDescriptorSet             compute_desc_          = VK_NULL_HANDLE;  // owned by pool
 
     // Deferred copy flag — set by upload()/sync()/upload_cpu(), cleared by record_copy()/flush()
     bool             needs_copy_    = false;
@@ -167,9 +179,10 @@ private:
 #endif
     void free_resources();
     void recreate_sampler();
-    void record_copy_commands(VkCommandBuffer cmd);  // barrier + copy + barrier
+    void record_copy_commands(VkCommandBuffer cmd);  // compute dispatch + barrier
     void copy_staging_to_image();                     // standalone submit with fence
-    uint32_t find_memory_type(uint32_t filter, VkMemoryPropertyFlags props);
+    void create_compute_pipeline();
+    void create_compute_descriptor();
 
     // Platform-specific external memory helpers (CUDA path only)
 #ifdef VULTORCH_HAS_CUDA

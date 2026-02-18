@@ -26,11 +26,12 @@ Loss 曲线，训练可视化 —— 前面太正经了。
 
 | 新东西 | 干什么用 | 为什么重要 |
 |--------|----------|-----------|
-| `filter="nearest"` | 像素级精确显示，无插值 | 格子边界不会糊掉 |
-| `side="left"` 侧边栏 | 把面板停靠到左边 | 干净的控制面板布局 |
-| `Panel.on_frame` | 面板级控件回调 | 控件自动在面板窗口内绘制 |
-| `panel.button`、`panel.row()` | 同一行放多个按钮 | 紧凑布局，不需要原始 `ui.*` 调用 |
-| `panel.color_picker` | 颜色选择器 | 自定义存活/死亡颜色 |
+| `filter="nearest"` | 每个像素显示为清晰的方块，不做模糊 | 没有它的话双线性插值会把格子边界糊掉。跟 `plt.imshow(data, interpolation='nearest')` 一个道理 |
+| `side="left"` 侧边栏 | 把面板放到左边，占窗口 22% | 给你一个永久的控制条 |
+| `@panel.on_frame` | 面板级控件回调 | 按钮、滑条、颜色选择器都放这里 |
+| `panel.button(标签)` | 一个可点击的按钮 | 被点击的那一帧返回 `True` |
+| `with panel.row():` | 把接下来的控件放在**同一行** | 默认控件是一行一个的（跟 `print()` 一样）。用 `with panel.row():` 可以把两个按钮并排。就是个 Python `with` 块 —— 块里的东西都放同一行 |
+| `panel.color_picker` | RGB 颜色选择器 | 点色块打开调色板 |
 | 循环 padding + conv2d | GPU 并行数邻居 | 整个模拟就是一次卷积 |
 
 ## 模拟的核心技巧
@@ -223,16 +224,20 @@ view.run()
 
 2. **`filter="nearest"`** — 像素画 / 网格模拟的必选项。
    没有它的话双线性插值会把格子边界糊成一坨。
+   跟 `plt.imshow(data, interpolation='nearest')` 一个意思 ——
+   你想看到真实的像素。
 
 3. **卷积 = 数邻居** — 一个小技巧，用一个 GPU kernel 替代嵌套 Python 循环。
    即使网格很大，游戏也能跑到几百 FPS。
 
-4. **面板控件** — `@panel.on_frame` + `panel.button()`、
-   `panel.slider_int()`、`panel.color_picker()` 把所有 UI 代码放在
-   面板窗口上下文里。不用手动写 `ui.begin/end`。
+4. **面板控件** — 在 `@panel.on_frame` 里调用
+   `panel.button()`、`panel.slider_int()`、`panel.color_picker()`。
+   每个调用创建一个控件，自上而下排列，跟 `print()` 输出一样。
+   不需要写任何定位代码。
 
-5. **`panel.row()`** — 上下文管理器，把子控件并排放。
-   比手动调 `ui.same_line()` 更干净。
+5. **`with panel.row():`** — 默认控件每行一个。
+   把几个控件调用包在 `with panel.row():` 里，它们就会并排在同一行。
+   就是个 Python `with` 块，没什么复杂的。
 
 6. **经典图案** — Glider、Pulsar、Gosper Gun 按钮展示了怎么通过
    直接往 grid tensor 里写值来设初始条件。
