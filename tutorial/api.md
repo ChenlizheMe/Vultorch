@@ -100,6 +100,86 @@ Allocate a Vulkan-shared CUDA tensor for true zero-copy display.
 
 ---
 
+### `vultorch.imread()`
+
+```python
+def imread(
+    path: str,
+    *,
+    channels: int = 4,
+    size: tuple[int, int] | None = None,
+    device: str = "cuda",
+    shared: bool = False,
+    name: str = "tensor",
+    window: Window | None = None,
+) -> torch.Tensor
+```
+
+Load an image file into a `float32` tensor. Uses stb_image internally — no PIL or numpy needed.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `path` | `str` | *(required)* | File path (PNG, JPG, BMP, TGA, HDR, …). |
+| `channels` | `int` | `4` | Desired channels: 1 (gray), 3 (RGB), or 4 (RGBA). |
+| `size` | `tuple[int, int] \| None` | `None` | Optional `(height, width)` to resize with bilinear interpolation. |
+| `device` | `str` | `"cuda"` | Target device (`"cuda"` or `"cpu"`). |
+| `shared` | `bool` | `False` | If `True`, allocate via `create_tensor` for zero-copy display. |
+| `name` | `str` | `"tensor"` | Texture slot name (only used when `shared=True`). |
+| `window` | `Window \| None` | `None` | Target window (only used when `shared=True`). |
+
+**Returns:** `torch.Tensor` of shape `(H, W, C)` with values in `[0, 1]`.
+
+**Example:**
+
+```python
+import vultorch
+gt = vultorch.imread("photo.png", channels=3, size=(256, 256), device="cuda")
+```
+
+---
+
+### `vultorch.imwrite()`
+
+```python
+def imwrite(
+    path: str,
+    tensor: torch.Tensor,
+    *,
+    channels: int = 0,
+    size: tuple[int, int] | None = None,
+    quality: int = 95,
+) -> None
+```
+
+Save a tensor to an image file. Format is inferred from the extension.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `path` | `str` | *(required)* | Output file path. Extension selects format: `.png`, `.jpg`, `.bmp`, `.tga`, `.hdr`. |
+| `tensor` | `torch.Tensor` | *(required)* | `(H, W)`, `(H, W, 1)`, `(H, W, 3)`, or `(H, W, 4)` tensor. |
+| `channels` | `int` | `0` | Override output channels. `0` = use tensor's channel count. |
+| `size` | `tuple[int, int] \| None` | `None` | Optional `(height, width)` to resize before saving. |
+| `quality` | `int` | `95` | JPEG quality (1–100). Ignored for other formats. |
+
+**Behavior:**
+
+- `.hdr` writes 32-bit float data; all other formats quantize to 8-bit.
+- If the tensor has more channels than `channels`, extras are dropped. If fewer, missing channels are filled (alpha → 1.0).
+- Tensor is moved to CPU and converted to `float32` before writing.
+
+**Example:**
+
+```python
+vultorch.imwrite("output.png", pred_tensor, channels=3)
+vultorch.imwrite("output.jpg", pred_tensor, quality=90)
+```
+
+---
+
 ## Classes
 
 ### `vultorch.Window`
@@ -242,7 +322,7 @@ Top-level window with automatic docking layout.
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `panel(name, *, side, width)` | `→ Panel` | Create or retrieve a dockable panel. `side`: `"left"` / `"right"` / `None`. |
+| `panel(name, *, side, width)` | `→ Panel` | Create or retrieve a dockable panel. `side`: `"left"` / `"right"` / `"bottom"` / `"top"` / `None`. |
 | `on_frame(fn)` | `→ fn` | Decorator — register a per-frame callback. |
 | `run()` | `→ None` | Blocking event loop. |
 | `step()` | `→ bool` | Non-blocking: process one frame. Returns `False` on close. |
@@ -302,6 +382,12 @@ A dockable panel containing canvases and widgets.
 |--------|-----------|-------------|
 | `canvas(name, *, filter, fit)` | `→ Canvas` | Create a named canvas. `filter`: `"linear"` / `"nearest"`. `fit`: auto-fill panel space. |
 
+#### Per-Panel Callback
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `on_frame(fn)` | `→ fn` | Decorator — register a per-frame callback that runs inside the panel's ImGui window. |
+
 #### Layout
 
 | Method | Description |
@@ -318,7 +404,7 @@ All widget methods manage state automatically across frames.
 | `text_colored(r, g, b, a, text)` | `→ None` | Colored text. |
 | `text_wrapped(text)` | `→ None` | Auto-wrapping text. |
 | `separator()` | `→ None` | Horizontal separator line. |
-| `button(label)` | `→ bool` | Button. Returns `True` when clicked. |
+| `button(label, width, height)` | `→ bool` | Button. Returns `True` when clicked. `width`/`height` default to `0` (auto-size). |
 | `checkbox(label, *, default)` | `→ bool` | Checkbox with stateful toggle. |
 | `slider(label, min, max, *, default)` | `→ float` | Float slider. |
 | `slider_int(label, min, max, *, default)` | `→ int` | Integer slider. |
@@ -345,6 +431,7 @@ A display surface that renders a bound tensor as an ImGui image.
 |--------|-----------|-------------|
 | `bind(tensor)` | `→ Canvas` | Bind a tensor for display. Returns `self` for chaining. |
 | `alloc(height, width, channels, device)` | `→ torch.Tensor` | Allocate Vulkan-shared memory and auto-bind. Returns the tensor. |
+| `save(path, *, channels, size, quality)` | `→ None` | Save the bound tensor to an image file via `imwrite()`. |
 
 #### Properties
 

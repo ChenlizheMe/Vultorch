@@ -4,6 +4,8 @@ High-level API:
     vultorch.show(tensor)        — display a tensor in ImGui (CUDA or CPU)
     vultorch.create_tensor(...)  — allocate a shared tensor (zero-copy on CUDA)
     vultorch.SceneView(...)      — 3D plane viewer with MSAA, lighting, orbit camera
+    vultorch.imread(path)        — load an image file as a torch.Tensor
+    vultorch.imwrite(path, t)    — save a torch.Tensor to an image file
 """
 
 from ._vultorch import Engine
@@ -494,6 +496,126 @@ class SceneView:
             win = Window._current
             if win:
                 win._engine.scene_set_msaa(value)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  imread / imwrite — image I/O via stb_image (no PIL dependency)
+# ═══════════════════════════════════════════════════════════════════════
+def imread(path: str, *, channels: int = 4,
+           size: "tuple[int, int] | None" = None,
+           device: str = "cuda", shared: bool = False,
+           name: str = "tensor",
+           window: "Window | None" = None):
+    """Load an image from disk as a ``torch.Tensor``.
+
+    Uses stb_image internally — supports PNG, JPEG, BMP, TGA, HDR, PSD,
+    and GIF (first frame).
+
+    Args:
+        path:     File path (str or ``pathlib.Path``).
+        channels: Desired output channels (1 grey, 3 RGB, 4 RGBA, 0 = auto).
+        size:     Optional ``(height, width)`` to resize the loaded image
+                  using bilinear interpolation.  ``None`` keeps original size.
+        device:   ``"cuda"`` / ``"cuda:N"`` / ``"cpu"``.
+        shared:   If ``True`` and channels == 4, allocate via Vulkan shared
+                  memory for zero-copy display (calls ``create_tensor``).
+        name:     Texture slot name (only relevant when *shared* is True).
+        window:   Target window (only relevant when *shared* is True).
+
+    Returns:
+        ``torch.Tensor`` of shape ``(H, W, C)`` with dtype ``float32``,
+        values in [0, 1].
+    """
+    import torch
+    import torch.nn.functional as F
+    from ._vultorch import _imread
+
+    raw_bytes, w, h, c = _imread(str(path), channels)
+
+    # Build a CPU tensor from the raw buffer
+    cpu_tensor = torch.frombuffer(bytearray(raw_bytes), dtype=torch.float32)
+    cpu_tensor = cpu_tensor.reshape(h, w, c)
+
+    # Resize if requested
+    if size is not None:
+        # F.interpolate expects (N, C, H, W)
+        cpu_tensor = F.interpolate(
+            cpu_tensor.permute(2, 0, 1).unsqueeze(0),
+            size=size, mode="bilinear", align_corners=False,
+        ).squeeze(0).permute(1, 2, 0).contiguous()
+        h, w = size
+
+    if shared and c == 4:
+        t = create_tensor(h, w, c, device, name=name, window=window)
+        t.copy_(cpu_tensor.to(t.device))
+        return t
+
+    if device == "cpu":
+        return cpu_tensor.clone()  # clone to own memory
+
+    return cpu_tensor.to(device)
+
+
+def imwrite(path: str, tensor, *, channels: int = 0,
+            size: "tuple[int, int] | None" = None,
+            quality: int = 95) -> None:
+    """Save a ``torch.Tensor`` to an image file on disk.
+
+    Uses stb_image_write — supports PNG, JPEG, BMP, TGA, HDR.
+
+    Args:
+        path:     Output file path (str or ``pathlib.Path``).
+        tensor:   ``torch.Tensor`` (CUDA or CPU), float32/float16/uint8,
+                  shape ``(H, W)`` or ``(H, W, C)`` with C = 1, 3, or 4.
+        channels: Number of channels to write (0 = same as tensor).
+                  When *channels* < tensor channels, extra channels are
+                  dropped.  When *channels* > tensor channels, the tensor
+                  is expanded (grey → RGB, RGB → RGBA with alpha = 1).
+        size:     Optional ``(height, width)`` to resize before saving.
+                  ``None`` keeps original size.
+        quality:  JPEG quality (1–100, default 95).
+    """
+    import torch
+    import torch.nn.functional as F
+    from ._vultorch import _imwrite
+
+    # Normalize to float32 CPU contiguous (H, W, C)
+    tensor, h, w, c = _normalize_tensor(tensor)
+
+    if tensor.is_cuda:
+        tensor = tensor.cpu()
+    if tensor.ndim == 2:
+        tensor = tensor.unsqueeze(-1)
+    if not tensor.is_contiguous():
+        tensor = tensor.contiguous()
+
+    # Resize if requested
+    if size is not None:
+        tensor = F.interpolate(
+            tensor.permute(2, 0, 1).unsqueeze(0),
+            size=size, mode="bilinear", align_corners=False,
+        ).squeeze(0).permute(1, 2, 0).contiguous()
+        h, w = size
+
+    out_channels = channels if channels > 0 else c
+
+    # Channel adaptation
+    if out_channels != c:
+        if out_channels > c:
+            # Expand: 1→3 (replicate), 3→4 (add alpha)
+            if c == 1 and out_channels >= 3:
+                tensor = tensor.expand(h, w, 3).contiguous()
+                c = 3
+            if c == 3 and out_channels == 4:
+                alpha = torch.ones(h, w, 1, dtype=torch.float32)
+                tensor = torch.cat([tensor, alpha], dim=-1).contiguous()
+                c = 4
+        else:
+            # Drop extra channels
+            tensor = tensor[:, :, :out_channels].contiguous()
+            c = out_channels
+
+    _imwrite(str(path), tensor.data_ptr(), w, h, c, quality)
 
 
 # ═══════════════════════════════════════════════════════════════════════

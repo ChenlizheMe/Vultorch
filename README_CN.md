@@ -80,6 +80,7 @@ scene.render()  # 轨道相机，Blinn-Phong 光照
 | [`01_hello_tensor.py`](examples/01_hello_tensor.py) | 最简张量显示 |
 | [`02_imgui_controls.py`](examples/02_imgui_controls.py) | 多面板停靠布局 |
 | [`03_training_test.py`](examples/03_training_test.py) | 轻量网络实时训练（GT vs 预测 + 下方面板信息） |
+| [`04_conway.py`](examples/04_conway.py) | 交互式康威生命游戏（GPU 零拷贝、按钮、颜色选择器） |
 
 ```bash
 python examples/01_hello_tensor.py

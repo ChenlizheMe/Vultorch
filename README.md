@@ -80,6 +80,7 @@ scene.render()  # orbit camera, Blinn-Phong lighting
 | [`01_hello_tensor.py`](examples/01_hello_tensor.py) | Minimal tensor display |
 | [`02_imgui_controls.py`](examples/02_imgui_controls.py) | Multi-panel layout with docking |
 | [`03_training_test.py`](examples/03_training_test.py) | Tiny network live training (GT vs prediction + bottom info panel) |
+| [`04_conway.py`](examples/04_conway.py) | Interactive Conway's Game of Life on the GPU (zero-copy, buttons, color pickers) |
 
 ```bash
 python examples/01_hello_tensor.py

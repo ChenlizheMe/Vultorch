@@ -45,11 +45,12 @@ pybind11_add_module(_vultorch
     src/bind_imgui_widgets.cpp
     src/bind_imgui_layout.cpp
     src/bind_imgui_draw.cpp
+    src/bind_io.cpp
     src/tensor_texture.cpp
     src/scene_renderer.cpp
 )
 target_include_directories(_vultorch PRIVATE src)
-target_link_libraries(_vultorch PRIVATE imgui Vulkan::Vulkan SDL3-static)
+target_link_libraries(_vultorch PRIVATE imgui Vulkan::Vulkan SDL3-static stb)
 
 # ── CUDA support ────────────────────────────────────────────────────────
 if(VULTORCH_HAS_CUDA)

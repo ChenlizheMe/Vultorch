@@ -44,3 +44,7 @@ target_compile_definitions(imgui PUBLIC
     SDL_TRUE=true
 )
 target_link_libraries(imgui PUBLIC Vulkan::Vulkan SDL3-static)
+
+# ---- stb (header-only image I/O) ------------------------------------------
+add_library(stb INTERFACE)
+target_include_directories(stb INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/stb")

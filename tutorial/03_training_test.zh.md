@@ -24,31 +24,28 @@
 ## 新朋友
 
 前两章都是静态数据 —— `bind()` + `run()`，完事。
-这次我们要引入两个新东西：
+这次我们要引入三个新东西：
 
 | 新东西 | 干什么用 | 写法 |
 |--------|----------|------|
 | **on_frame** | 每帧回调，训练 + 更新在这里搞 | `@view.on_frame` |
+| **Panel.on_frame** | 面板回调，控件放这里 | `@info_panel.on_frame` |
 | **create_tensor** | 创建 GPU 共享显存 tensor | `vultorch.create_tensor(H, W, ...)` |
+| **vultorch.imread** | 加载图片，零依赖 | `vultorch.imread(path, channels=3)` |
+| **side="bottom"** | 把面板停靠到窗口底部 | `view.panel("Info", side="bottom")` |
 
-回调函数里随便写 PyTorch 代码，Vultorch 每帧帮你把 tensor 搬上屏幕。
+View 回调里写 PyTorch 代码，Panel 回调里画控件，
+Vultorch 每帧帮你把 tensor 搬上屏幕。
 
 ## 完整代码
 
 ```python
 from pathlib import Path
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import vultorch
-ui = vultorch.ui
-
-try:
-    from PIL import Image
-except ImportError as exc:
-    raise RuntimeError("Please install pillow: pip install pillow") from exc
 
 
 class TinyMLP(nn.Module):
@@ -72,23 +69,23 @@ if not torch.cuda.is_available():
 
 device = "cuda"
 
-# 加载目标图
 img_path = Path(__file__).resolve().parents[1] / "docs" / "images" / "pytorch_logo.png"
-img = Image.open(img_path).convert("RGB").resize((256, 256), Image.BILINEAR)
-gt = torch.from_numpy(np.asarray(img, dtype=np.float32) / 255.0).to(device)
+gt = vultorch.imread(img_path, channels=3, size=(256, 256), device=device)
 
 H, W = gt.shape[0], gt.shape[1]
 ys = torch.linspace(-1.0, 1.0, H, device=device)
 xs = torch.linspace(-1.0, 1.0, W, device=device)
 yy, xx = torch.meshgrid(ys, xs, indexing="ij")
-coords = torch.stack([xx, yy], dim=-1).reshape(-1, 2)  # (H*W, 2)
-target = gt.reshape(-1, 3)                               # (H*W, 3)
+coords = torch.stack([xx, yy], dim=-1).reshape(-1, 2)
+target = gt.reshape(-1, 3)
 
 model = TinyMLP().to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=2e-3)
 
+# -- 视图 + 面板（高层声明式 API）------------------------------------
 view = vultorch.View("03 - Training Test", 1280, 760)
-gt_panel = view.panel("GT")
+info_panel = view.panel("Info", side="bottom", width=0.28)
+gt_panel = view.panel("GT", side="left", width=0.5)
 pred_panel = view.panel("Prediction")
 
 gt_panel.canvas("gt").bind(gt)
@@ -104,29 +101,11 @@ state = {
     "loss": 1.0,
     "ema": 1.0,
     "steps_per_frame": 6,
-    "layout_done": False,
 }
 
 
 @view.on_frame
-def train_and_render():
-    # ---- 首帧手动布局：上面左右分，下面放 Info ----
-    if not state["layout_done"]:
-        dockspace_id = ui.dock_space_over_viewport(flags=8)
-        ui.dock_builder_remove_node(dockspace_id)
-        ui.dock_builder_add_node(dockspace_id, 1 << 10)
-        ui.dock_builder_set_node_size(dockspace_id, 1280.0, 760.0)
-
-        info_node, top_node = ui.dock_builder_split_node(dockspace_id, 3, 0.28)
-        left_node, right_node = ui.dock_builder_split_node(top_node, 0, 0.5)
-
-        ui.dock_builder_dock_window("GT", left_node)
-        ui.dock_builder_dock_window("Prediction", right_node)
-        ui.dock_builder_dock_window("Info", info_node)
-        ui.dock_builder_finish(dockspace_id)
-        state["layout_done"] = True
-
-    # ---- 训练几步 ----
+def train():
     for _ in range(state["steps_per_frame"]):
         optimizer.zero_grad(set_to_none=True)
         out = model(coords)
@@ -138,27 +117,27 @@ def train_and_render():
         state["loss"] = loss.item()
         state["ema"] = state["ema"] * 0.98 + state["loss"] * 0.02
 
-    # ---- 把预测写进显示 tensor ----
     with torch.no_grad():
         pred = model(coords).reshape(H, W, 3).clamp_(0, 1)
         pred_rgba[:, :, :3] = pred
 
-    # ---- Info 面板 ----
-    ui.begin("Info", True, 0)
-    ui.text(f"FPS: {view.fps:.1f}")
-    ui.text(f"Iteration: {state['iter']}")
-    ui.text(f"Loss (MSE): {state['loss']:.6f}")
-    ui.text(f"EMA Loss: {state['ema']:.6f}")
 
-    state["steps_per_frame"] = ui.slider_int(
-        "Steps / Frame", state["steps_per_frame"], 1, 32
+@info_panel.on_frame
+def draw_info():
+    info_panel.text(f"FPS: {view.fps:.1f}")
+    info_panel.text(f"Iteration: {state['iter']}")
+    info_panel.text(f"Loss (MSE): {state['loss']:.6f}")
+    info_panel.text(f"EMA Loss: {state['ema']:.6f}")
+
+    state["steps_per_frame"] = info_panel.slider_int(
+        "Steps / Frame", 1, 32, default=6
     )
     progress = min(1.0, state["iter"] / 3000.0)
-    ui.progress_bar(progress, overlay=f"Training progress {progress * 100:.1f}%")
-    ui.text_wrapped(
+    info_panel.progress(progress,
+                        overlay=f"Training progress {progress * 100:.1f}%")
+    info_panel.text_wrapped(
         "左边是 GT，右边是预测。想更快收敛就提高 Steps / Frame。"
     )
-    ui.end()
 
 
 view.run()
@@ -168,17 +147,19 @@ view.run()
 
 ## 刚才发生了什么？
 
-1. **数据** — PIL 读图，转成 float32 CUDA tensor 当 GT。
+1. **数据** — `vultorch.imread` 直接把图片读成 float32 CUDA tensor（不需要 PIL，不需要 numpy）。
    坐标用 `meshgrid` 展成 `(H*W, 2)`，每个像素的 `(x, y)` 归一化到 `[-1, 1]`。
 
 2. **模型** — 两层 64 宽的 MLP，输入 `(x, y)`，输出 `(r, g, b)`。
    这个网络小到可以跑在回调里不掉帧。
 
-3. **on_frame 回调** — 每帧调用一次。里面做了三件事：
-   首帧搞定布局，然后跑 N 步训练，最后把预测写回 `pred_rgba`。
+3. **布局** — `side="bottom"` 把 Info 停靠到底部 28%。
+   `side="left"` 把 GT 放到剩余空间的左半边。
+   Prediction 自动填满剩下的区域。不需要手写任何 docking 代码。
 
-4. **Info 面板** — 用 ImGui 的 `ui.begin()` / `ui.end()` 手动画了第三个面板。
-   可以放文字、滑条、进度条 —— 什么 widget 都行。
+4. **两个回调** — `@view.on_frame` 跑训练。
+   `@info_panel.on_frame` 在 Info 面板里画控件（文字、滑条、进度条）。
+   Vultorch 帮你管 ImGui 的 begin / end，不用自己操心。
 
 ## 要点
 
@@ -188,10 +169,13 @@ view.run()
 2. **`create_tensor`** — 跟普通 `torch.zeros` 一样用，
    但底层是 Vulkan/CUDA 共享显存，显示的时候零拷贝。
 
-3. **手动布局** — `dock_builder_split_node` 可以把窗口切成任意你想要的样子。
-   方向：`0=左, 1=右, 2=上, 3=下`，比例用 float。
+3. **声明式布局** — `side="left"` / `"right"` / `"bottom"` / `"top"`
+   切窗口，不需要手动写 dock_builder 代码。
 
-4. **不刷终端** — 所有状态信息都在 Info 面板里，
+4. **面板控件** — `@panel.on_frame` 在面板窗口内部运行。
+   用 `panel.text()`、`panel.slider_int()`、`panel.progress()` 代替原始 `ui.*` 调用。
+
+5. **不刷终端** — 所有状态信息都在 Info 面板里，
    你的终端可以留着看 warning 和 traceback，干净多了。
 
 !!! tip "提示"

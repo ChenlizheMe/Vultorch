@@ -16,8 +16,11 @@ Usage — with controls::
 
     @view.on_frame
     def update():
-        speed = controls.slider("Speed", 0, 10)
         t[:,:,0] = (x + view.time * speed).sin()
+
+    @controls.on_frame
+    def draw_controls():
+        speed = controls.slider("Speed", 0, 10)
 
     view.run()
 
@@ -113,6 +116,25 @@ class Canvas:
     def fit(self, value: bool):
         self._fit = value
 
+    def save(self, path: str, *, channels: int = 0,
+             size: "tuple[int, int] | None" = None,
+             quality: int = 95) -> None:
+        """Save the currently bound tensor to an image file.
+
+        Convenience wrapper around ``vultorch.imwrite()``.
+
+        Args:
+            path:     Output file path.
+            channels: Output channels (0 = same as tensor).
+            size:     Optional ``(height, width)`` to resize before saving.
+            quality:  JPEG quality (1–100).
+        """
+        if self._tensor is None:
+            raise RuntimeError(f"Canvas '{self._name}' has no tensor bound")
+        from . import imwrite
+        imwrite(path, self._tensor, channels=channels, size=size,
+                quality=quality)
+
     def _render(self, *, fit_height: float = 0.0):
         """Internal: upload and render the bound tensor.
 
@@ -149,11 +171,12 @@ class Panel:
                  side: Optional[str] = None, width: float = 0.0):
         self._name = name
         self._view = view
-        self._side = side          # "left" / "right" / None
+        self._side = side          # "left" / "right" / "bottom" / "top" / None
         self._width = width        # ratio for sidebar
         self._canvases: list[Canvas] = []
         self._state: dict[str, Any] = {}
         self._row_stack: list[bool] = []
+        self._frame_fn: Any = None
 
     # ── Canvas factory ──────────────────────────────────────────────
 
@@ -172,6 +195,18 @@ class Panel:
         c._fit = fit
         self._canvases.append(c)
         return c
+
+    # ── Per-panel frame callback ──────────────────────────────────
+
+    def on_frame(self, fn):
+        """Decorator — register a per-frame callback for this panel.
+
+        The callback runs inside the panel's ImGui window context,
+        after canvases are rendered.  Use panel widget methods
+        (``text``, ``button``, ``slider``, …) inside the callback.
+        """
+        self._frame_fn = fn
+        return fn
 
     # ── Row context manager ─────────────────────────────────────────
 
@@ -197,9 +232,9 @@ class Panel:
     def separator(self):
         ui.separator()
 
-    def button(self, label: str) -> bool:
+    def button(self, label: str, width: float = 0, height: float = 0) -> bool:
         self._before_widget()
-        return ui.button(label)
+        return ui.button(label, width, height)
 
     def checkbox(self, label: str, *, default: bool = False) -> bool:
         key = "_cb:" + label
@@ -351,8 +386,8 @@ class View:
 
         Args:
             name:   Panel title (shown in the tab/title bar).
-            side:   ``"left"`` or ``"right"`` to dock as a sidebar.
-            width:  Sidebar width ratio (e.g. 0.22).  Ignored if *side* is None.
+            side:   ``"left"``, ``"right"``, ``"bottom"``, or ``"top"``.
+            width:  Sidebar split ratio (e.g. 0.22).  Ignored if *side* is None.
         """
         if name in self._panel_map:
             return self._panel_map[name]
@@ -447,10 +482,12 @@ class View:
     # ── Internal ────────────────────────────────────────────────────
 
     def _render_all(self):
-        """Render every panel: open ImGui window, draw canvases."""
+        """Render every panel: open ImGui window, draw canvases, run panel callback."""
         for p in self._panels:
             ui.begin(p._name, True, 0)
             p._render_canvases()
+            if p._frame_fn is not None:
+                p._frame_fn()
             ui.end()
 
     def _setup_layout(self, dockspace_id: int):
@@ -466,8 +503,10 @@ class View:
         sidebars = [p for p in self._panels if p._side]
         mains = [p for p in self._panels if not p._side]
 
+        _side_dir = {"left": _DIR_LEFT, "right": _DIR_RIGHT,
+                     "top": _DIR_UP, "bottom": _DIR_DOWN}
         for p in sidebars:
-            direction = _DIR_LEFT if p._side == "left" else _DIR_RIGHT
+            direction = _side_dir.get(p._side, _DIR_LEFT)
             ratio = p._width if p._width > 0 else 0.2
             id_side, remaining = ui.dock_builder_split_node(
                 remaining, direction, ratio)

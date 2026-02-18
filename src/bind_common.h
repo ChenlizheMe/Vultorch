@@ -23,3 +23,6 @@ void bind_imgui_layout(py::module_& ig);
 /// ImGui drawing primitives (DrawList), input-state queries (mouse, keyboard,
 /// item hover), and utility functions (framerate, time, demo windows).
 void bind_imgui_draw(py::module_& ig);
+
+/// Image I/O (imread / imwrite) via stb_image.
+void bind_io(py::module_& m);

@@ -21,6 +21,9 @@ PYBIND11_MODULE(_vultorch, m) {
         false;
 #endif
 
+    // ── Image I/O (stb_image) ─────────────────────────────────────
+    bind_io(m);
+
     // ── ImGui sub-module ───────────────────────────────────────────
     auto ig = m.def_submodule("ui", "Dear ImGui bindings for Python");
     bind_imgui_widgets(ig);

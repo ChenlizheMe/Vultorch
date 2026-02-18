@@ -7,21 +7,23 @@ Layout:
 - Left panel : GT image
 - Right panel: prediction
 - Bottom panel: runtime stats (FPS, loss, iteration)
+
+Key concepts
+------------
+- on_frame           : Per-frame callback for training logic
+- Panel.on_frame     : Per-panel callback for widgets (runs inside the panel)
+- create_tensor      : Zero-copy shared GPU memory
+- vultorch.imread    : Load image without PIL dependency
+- side="bottom"      : Dock a panel to the bottom
+- side="left"        : Dock a panel to the left
 """
 
 from pathlib import Path
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import vultorch
-ui = vultorch.ui
-
-try:
-    from PIL import Image
-except ImportError as exc:
-    raise RuntimeError("Please install pillow: pip install pillow") from exc
 
 
 class TinyMLP(nn.Module):
@@ -46,8 +48,7 @@ if not torch.cuda.is_available():
 device = "cuda"
 
 img_path = Path(__file__).resolve().parents[1] / "docs" / "images" / "pytorch_logo.png"
-img = Image.open(img_path).convert("RGB").resize((256, 256), Image.BILINEAR)
-gt = torch.from_numpy(np.asarray(img, dtype=np.float32) / 255.0).to(device)
+gt = vultorch.imread(img_path, channels=3, size=(256, 256), device=device)
 
 H, W = gt.shape[0], gt.shape[1]
 ys = torch.linspace(-1.0, 1.0, H, device=device)
@@ -59,8 +60,10 @@ target = gt.reshape(-1, 3)
 model = TinyMLP().to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=2e-3)
 
+# -- View + panels (high-level declarative API) -------------------------
 view = vultorch.View("03 - Training Test", 1280, 760)
-gt_panel = view.panel("GT")
+info_panel = view.panel("Info", side="bottom", width=0.28)
+gt_panel = view.panel("GT", side="left", width=0.5)
 pred_panel = view.panel("Prediction")
 
 gt_panel.canvas("gt").bind(gt)
@@ -75,27 +78,11 @@ state = {
     "loss": 1.0,
     "ema": 1.0,
     "steps_per_frame": 6,
-    "layout_done": False,
 }
 
 
 @view.on_frame
-def train_and_render():
-    if not state["layout_done"]:
-        dockspace_id = ui.dock_space_over_viewport(flags=8)
-        ui.dock_builder_remove_node(dockspace_id)
-        ui.dock_builder_add_node(dockspace_id, 1 << 10)
-        ui.dock_builder_set_node_size(dockspace_id, 1280.0, 760.0)
-
-        info_node, top_node = ui.dock_builder_split_node(dockspace_id, 3, 0.28)
-        left_node, right_node = ui.dock_builder_split_node(top_node, 0, 0.5)
-
-        ui.dock_builder_dock_window("GT", left_node)
-        ui.dock_builder_dock_window("Prediction", right_node)
-        ui.dock_builder_dock_window("Info", info_node)
-        ui.dock_builder_finish(dockspace_id)
-        state["layout_done"] = True
-
+def train():
     for _ in range(state["steps_per_frame"]):
         optimizer.zero_grad(set_to_none=True)
         out = model(coords)
@@ -111,16 +98,24 @@ def train_and_render():
         pred = model(coords).reshape(H, W, 3).clamp_(0, 1)
         pred_rgba[:, :, :3] = pred
 
-    ui.begin("Info", True, 0)
-    ui.text(f"FPS: {view.fps:.1f}")
-    ui.text(f"Iteration: {state['iter']}")
-    ui.text(f"Loss (MSE): {state['loss']:.6f}")
-    ui.text(f"EMA Loss: {state['ema']:.6f}")
 
-    state["steps_per_frame"] = ui.slider_int(
-        "Steps / Frame", state["steps_per_frame"], 1, 32
+@info_panel.on_frame
+def draw_info():
+    info_panel.text(f"FPS: {view.fps:.1f}")
+    info_panel.text(f"Iteration: {state['iter']}")
+    info_panel.text(f"Loss (MSE): {state['loss']:.6f}")
+    info_panel.text(f"EMA Loss: {state['ema']:.6f}")
+
+    state["steps_per_frame"] = info_panel.slider_int(
+        "Steps / Frame", 1, 32, default=6
     )
-    ui.end()
+    progress = min(1.0, state["iter"] / 3000.0)
+    info_panel.progress(progress,
+                        overlay=f"Training progress {progress * 100:.1f}%")
+    info_panel.text_wrapped(
+        "Left is GT, right is prediction. "
+        "Increase 'Steps / Frame' for faster fitting."
+    )
 
 
 view.run()

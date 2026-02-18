@@ -100,6 +100,86 @@ def create_tensor(
 
 ---
 
+### `vultorch.imread()`
+
+```python
+def imread(
+    path: str,
+    *,
+    channels: int = 4,
+    size: tuple[int, int] | None = None,
+    device: str = "cuda",
+    shared: bool = False,
+    name: str = "tensor",
+    window: Window | None = None,
+) -> torch.Tensor
+```
+
+将图片文件加载为 `float32` 张量。内部使用 stb_image —— 不需要 PIL 或 numpy。
+
+**参数：**
+
+| 参数 | 类型 | 默认值 | 描述 |
+|------|------|--------|------|
+| `path` | `str` | *（必需）* | 文件路径（PNG、JPG、BMP、TGA、HDR 等）。|
+| `channels` | `int` | `4` | 期望通道数：1（灰度）、3（RGB）或4（RGBA）。|
+| `size` | `tuple[int, int] \| None` | `None` | 可选 `(高度, 宽度)`，使用双线性插值缩放。|
+| `device` | `str` | `"cuda"` | 目标设备（`"cuda"` 或 `"cpu"`）。|
+| `shared` | `bool` | `False` | 为 `True` 时通过 `create_tensor` 分配，实现零拷贝显示。|
+| `name` | `str` | `"tensor"` | 纹理槽名称（仅在 `shared=True` 时使用）。|
+| `window` | `Window \| None` | `None` | 目标窗口（仅在 `shared=True` 时使用）。|
+
+**返回：** 形状为 `(H, W, C)` 的 `torch.Tensor`，值范围 `[0, 1]`。
+
+**示例：**
+
+```python
+import vultorch
+gt = vultorch.imread("photo.png", channels=3, device="cuda")
+```
+
+---
+
+### `vultorch.imwrite()`
+
+```python
+def imwrite(
+    path: str,
+    tensor: torch.Tensor,
+    *,
+    channels: int = 0,
+    size: tuple[int, int] | None = None,
+    quality: int = 95,
+) -> None
+```
+
+将张量保存为图片文件。格式由扩展名推断。
+
+**参数：**
+
+| 参数 | 类型 | 默认值 | 描述 |
+|------|------|--------|------|
+| `path` | `str` | *（必需）* | 输出文件路径。扩展名选择格式：`.png`、`.jpg`、`.bmp`、`.tga`、`.hdr`。|
+| `tensor` | `torch.Tensor` | *（必需）* | `(H, W)`、`(H, W, 1)`、`(H, W, 3)` 或 `(H, W, 4)` 张量。|
+| `channels` | `int` | `0` | 覆盖输出通道数。`0` = 使用张量自身的通道数。|
+| `size` | `tuple[int, int] \| None` | `None` | 可选 `(高度, 宽度)`，保存前缩放。|
+| `quality` | `int` | `95` | JPEG 质量（1–100）。其他格式忽略此参数。|
+
+**行为：**
+
+- `.hdr` 写入 32 位浮点数据；其他格式量化为 8 位。
+- 如果张量通道数多于 `channels`，多余通道被丢弃。如果少于，缺少的通道会被填充（alpha → 1.0）。
+- 张量会被移到 CPU 并转换为 `float32` 后再写入。
+
+**示例：**
+
+```python
+vultorch.imwrite("output.png", pred_tensor, channels=3)
+vultorch.imwrite("output.jpg", pred_tensor, quality=90)
+```
+
+---
+
 ## 类
 
 ### `vultorch.Window`
@@ -242,7 +322,7 @@ class View:
 
 | 方法 | 签名 | 描述 |
 |------|------|------|
-| `panel(name, *, side, width)` | `→ Panel` | 创建或获取可停靠面板。`side`：`"left"` / `"right"` / `None`。|
+| `panel(name, *, side, width)` | `→ Panel` | 创建或获取可停靠面板。`side`：`"left"` / `"right"` / `"bottom"` / `"top"` / `None`。|
 | `on_frame(fn)` | `→ fn` | 装饰器 — 注册每帧回调函数。|
 | `run()` | `→ None` | 阻塞式事件循环。|
 | `step()` | `→ bool` | 非阻塞：处理一帧。关闭时返回 `False`。|
@@ -302,6 +382,12 @@ class Panel:
 |------|------|------|
 | `canvas(name, *, filter, fit)` | `→ Canvas` | 创建命名画布。`filter`：`"linear"` / `"nearest"`。`fit`：自动填充面板空间。|
 
+#### 面板回调
+
+| 方法 | 签名 | 描述 |
+|------|------|------|
+| `on_frame(fn)` | `→ fn` | 装饰器 — 注册在面板 ImGui 窗口内运行的每帧回调。|
+
 #### 布局
 
 | 方法 | 描述 |
@@ -318,7 +404,7 @@ class Panel:
 | `text_colored(r, g, b, a, text)` | `→ None` | 有颜色的文本。|
 | `text_wrapped(text)` | `→ None` | 自动换行文本。|
 | `separator()` | `→ None` | 水平分隔线。|
-| `button(label)` | `→ bool` | 按钮。点击时返回 `True`。|
+| `button(label, width, height)` | `→ bool` | 按钮。点击时返回 `True`。`width`/`height` 默认 `0`（自动大小）。|
 | `checkbox(label, *, default)` | `→ bool` | 带状态切换的复选框。|
 | `slider(label, min, max, *, default)` | `→ float` | 浮点滑块。|
 | `slider_int(label, min, max, *, default)` | `→ int` | 整数滑块。|
@@ -345,6 +431,7 @@ class Canvas:
 |------|------|------|
 | `bind(tensor)` | `→ Canvas` | 绑定张量用于显示。返回 `self` 以支持链式调用。|
 | `alloc(height, width, channels, device)` | `→ torch.Tensor` | 分配 Vulkan 共享内存并自动绑定。返回张量。|
+| `save(path, *, channels, size, quality)` | `→ None` | 通过 `imwrite()` 将绑定的张量保存为图片文件。|
 
 #### 属性
 
