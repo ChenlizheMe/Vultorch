@@ -773,8 +773,23 @@ that renders photorealistic scenes at 100+ fps.</p>
   toggle.className = 'vt-lang-toggle';
 
   links.forEach(function(link) {
+    var rawHref = link.getAttribute('href');
+
+    /* Fix absolute paths (only happens on home pages).
+       Subpages already have correct relative hrefs like
+       ../zh/page/ or ../../page/ — leave those alone. */
+    if (rawHref.charAt(0) === '/') {
+      if (link.hreflang === lang) {
+        rawHref = './';                       /* self */
+      } else if (link.hreflang === 'zh') {
+        rawHref = 'zh/';                      /* EN home → ZH home */
+      } else {
+        rawHref = '../';                      /* ZH home → EN home */
+      }
+    }
+
     var a = document.createElement('a');
-    a.href = link.href;
+    a.href = rawHref;
     a.className = 'vt-lang-btn';
     if (link.hreflang === lang) a.classList.add('active');
     a.textContent = link.hreflang === 'en' ? 'EN' : '中文';
