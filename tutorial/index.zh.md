@@ -16,3 +16,4 @@
 | [10 — 二维高斯泼溅](10_gaussian2d.zh.md) | 可微分二维高斯渲染 | nn.Parameter, alpha 合成, cumprod 透射率 |
 | [11 — 3D 表面检查器](11_3d_inspector.zh.md) | 带 Blinn-Phong 光照的轨道相机 | SceneView, Camera, Light, MSAA, 程序化纹理 |
 | [12 — 神经渲染工作站](12_neural_workstation.zh.md) | 压轴：双头 MLP 六面板工作站 | 双头 MLP, 六面板, 暂停/恢复, 快照, 优化器热切换 |
+| [13 — 贪吃蛇 RL](13_snake_rl.zh.md) | DQN 学习玩贪吃蛇 | RL 可视化, DQN, ε-贪心, Q 值热力图, 手动模式 |

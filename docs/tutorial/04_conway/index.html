@@ -67,7 +67,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -88,7 +88,9 @@
     
       
 
-<header class="md-header" data-md-component="header">
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="Vultorch Tutorial" class="md-header__button md-logo" aria-label="Vultorch Tutorial" data-md-component="logo">
       
@@ -198,150 +200,6 @@
       
         
           
-            
-<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
-  <div class="md-grid">
-    <ul class="md-tabs__list">
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
-        
-  
-  
-    
-  
-  Home
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../01_hello_tensor/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  01 — Hello Tensor
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../02_multi_panel/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  02 — Multi-Panel
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../03_training_test/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  03 — Training Test
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-    
-  
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
-        
-  
-  
-    
-  
-  04 — Conway's Game of Life
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../05_image_viewer/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  05 — Image Viewer
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../api/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  API Reference
-
-      </a>
-    </li>
-  
-
-      
-    </ul>
-  </div>
-</nav>
-          
         
       
       <main class="md-main" data-md-component="main">
@@ -355,10 +213,8 @@
                     
 
 
-  
 
-
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="Vultorch Tutorial" class="md-nav__button md-logo" aria-label="Vultorch Tutorial" data-md-component="logo">
       
@@ -606,6 +462,182 @@
   
   
     <li class="md-nav__item">
+      <a href="../06_pixel_canvas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    06 — Pixel Canvas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07_multichannel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    07 — Multi-Channel Viewer
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08_gt_vs_pred/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    08 — GT vs Prediction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09_live_tuning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    09 — Live Hyperparameter Tuning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10_gaussian2d/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    10 — 2D Gaussian Splatting
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11_3d_inspector/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    11 — 3D Surface Inspector
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../12_neural_workstation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    12 — Neural Rendering Workstation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../13_snake_rl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    13 — Snake RL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../api/" class="md-nav__link">
         
   
@@ -763,28 +795,33 @@ zero-copy — the grid never touches the CPU.</p>
 <tbody>
 <tr>
 <td><code>filter="nearest"</code></td>
-<td>Pixel-perfect display, no interpolation</td>
-<td>Cell boundaries stay sharp</td>
+<td>Shows each pixel as a sharp square, no blurring</td>
+<td>Without it, bilinear interpolation smudges cell boundaries</td>
 </tr>
 <tr>
 <td><code>side="left"</code> sidebar</td>
-<td>Dock a panel to the left</td>
-<td>Clean control-panel layout</td>
+<td>Places a panel on the left, taking 22% of the window</td>
+<td>Gives you a permanent control strip next to your visualization</td>
 </tr>
 <tr>
-<td><code>Panel.on_frame</code></td>
+<td><code>@panel.on_frame</code></td>
 <td>Per-panel widget callback</td>
-<td>Widgets stay inside their panel</td>
+<td>Widget calls (<code>button</code>, <code>slider</code>, <code>color_picker</code>) go inside here</td>
 </tr>
 <tr>
-<td><code>panel.button</code>, <code>panel.row()</code></td>
-<td>Buttons on the same row</td>
-<td>Compact UI without raw <code>ui.*</code> calls</td>
+<td><code>panel.button(label)</code></td>
+<td>A clickable button</td>
+<td>Returns <code>True</code> on the frame it was clicked</td>
+</tr>
+<tr>
+<td><code>with panel.row():</code></td>
+<td>Puts the next widgets on the <strong>same line</strong></td>
+<td>Without it, widgets stack vertically (one per line).  Use <code>row()</code> to put two buttons side-by-side. It's a Python <code>with</code> block — everything inside the block goes on one line</td>
 </tr>
 <tr>
 <td><code>panel.color_picker</code></td>
-<td>Color picker</td>
-<td>Customize alive/dead colors</td>
+<td>An RGB color picker widget</td>
+<td>Click the colored square to open a palette</td>
 </tr>
 <tr>
 <td>Circular padding + conv2d</td>
@@ -980,7 +1017,9 @@ side and reappear on the other.</p>
 </li>
 <li>
 <p><strong><code>filter="nearest"</code></strong> — crucial for pixel-art / grid simulations.
-   Without it, bilinear interpolation blurs cell boundaries into mush.</p>
+   Without it, bilinear interpolation blurs cell boundaries.  Think of
+   it like <code>plt.imshow(data, interpolation='nearest')</code> — same idea,
+   you want to see the actual pixels.</p>
 </li>
 <li>
 <p><strong>Convolution = neighbour counting</strong> — a cute trick that replaces
@@ -988,13 +1027,17 @@ side and reappear on the other.</p>
    hundreds of FPS even at large grid sizes.</p>
 </li>
 <li>
-<p><strong>Panel widgets</strong> — <code>@panel.on_frame</code> + <code>panel.button()</code>,
-   <code>panel.slider_int()</code>, <code>panel.color_picker()</code> keep all UI code inside
-   the panel's window context.  No manual <code>ui.begin/end</code> needed.</p>
+<p><strong>Panel widgets</strong> — inside <code>@panel.on_frame</code> you call
+   <code>panel.button()</code>, <code>panel.slider_int()</code>, <code>panel.color_picker()</code>.
+   Each call creates one interactive element.  They stack top-to-bottom
+   automatically, like lines of <code>print()</code> output.  No positioning
+   code needed.</p>
 </li>
 <li>
-<p><strong><code>panel.row()</code></strong> — context manager that places child widgets
-   side-by-side.  Cleaner than calling <code>ui.same_line()</code> by hand.</p>
+<p><strong><code>with panel.row():</code></strong> — by default widgets go one-per-line.
+   Wrap several widget calls in <code>with panel.row():</code> to put them on
+   the <strong>same line</strong> instead.  It's just a Python <code>with</code> block —
+   nothing exotic.</p>
 </li>
 <li>
 <p><strong>Pattern presets</strong> — the Glider, Pulsar, and Gosper Gun buttons
@@ -1066,11 +1109,35 @@ Gliders that fly off the right edge reappear on the left.</p>
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "content.code.copy", "toc.follow"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "toc.follow"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
+
       <script src="../assets/javascripts/bundle.92b07e13.min.js"></script>
       
     
+<script>
+/* ── Custom language toggle matching main page ── */
+(function() {
+  var links = document.querySelectorAll('.md-select__link[hreflang]');
+  if (links.length < 2) return;
+
+  var lang = document.documentElement.lang || 'en';
+  var toggle = document.createElement('div');
+  toggle.className = 'vt-lang-toggle';
+
+  links.forEach(function(link) {
+    var a = document.createElement('a');
+    a.href = link.href;
+    a.className = 'vt-lang-btn';
+    if (link.hreflang === lang) a.classList.add('active');
+    a.textContent = link.hreflang === 'en' ? 'EN' : '中文';
+    toggle.appendChild(a);
+  });
+
+  document.body.appendChild(toggle);
+})();
+</script>
+
   </body>
 </html>

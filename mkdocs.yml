@@ -8,16 +8,17 @@ site_dir: docs/tutorial
 theme:
   name: material
   language: en
+  custom_dir: tutorial/overrides
   palette:
     scheme: slate
-    primary: indigo
-    accent: deep purple
+    primary: custom
+    accent: custom
   font:
     text: Inter
     code: JetBrains Mono
   features:
-    - navigation.tabs
     - navigation.sections
+    - navigation.expand
     - navigation.top
     - content.code.copy
     - toc.follow
@@ -70,4 +71,5 @@ nav:
   - 10 — 2D Gaussian Splatting: 10_gaussian2d.md
   - 11 — 3D Surface Inspector: 11_3d_inspector.md
   - 12 — Neural Rendering Workstation: 12_neural_workstation.md
+  - 13 — Snake RL: 13_snake_rl.md
   - API Reference: api.md

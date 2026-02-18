@@ -43,6 +43,62 @@
         <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/05_image_viewer/"/>
     </url>
     <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/06_pixel_canvas/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/06_pixel_canvas/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/06_pixel_canvas/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/07_multichannel/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/07_multichannel/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/07_multichannel/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/08_gt_vs_pred/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/08_gt_vs_pred/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/08_gt_vs_pred/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/09_live_tuning/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/09_live_tuning/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/09_live_tuning/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/10_gaussian2d/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/10_gaussian2d/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/10_gaussian2d/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/11_3d_inspector/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/11_3d_inspector/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/11_3d_inspector/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/12_neural_workstation/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/12_neural_workstation/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/12_neural_workstation/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/13_snake_rl/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/13_snake_rl/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/13_snake_rl/"/>
+    </url>
+    <url>
         <loc>https://chenlizheme.github.io/Vultorch/tutorial/api/</loc>
         <lastmod>2026-02-18</lastmod>
         <changefreq>daily</changefreq>
@@ -90,6 +146,62 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/05_image_viewer/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/05_image_viewer/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/06_pixel_canvas/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/06_pixel_canvas/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/06_pixel_canvas/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/07_multichannel/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/07_multichannel/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/07_multichannel/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/08_gt_vs_pred/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/08_gt_vs_pred/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/08_gt_vs_pred/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/09_live_tuning/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/09_live_tuning/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/09_live_tuning/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/10_gaussian2d/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/10_gaussian2d/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/10_gaussian2d/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/11_3d_inspector/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/11_3d_inspector/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/11_3d_inspector/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/12_neural_workstation/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/12_neural_workstation/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/12_neural_workstation/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/13_snake_rl/</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/13_snake_rl/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/13_snake_rl/"/>
     </url>
     <url>
         <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/api/</loc>

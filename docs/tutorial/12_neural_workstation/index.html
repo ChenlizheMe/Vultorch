@@ -1,0 +1,1178 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Step-by-step guide to Vultorch">
+      
+      
+      
+        <link rel="canonical" href="https://chenlizheme.github.io/Vultorch/tutorial/12_neural_workstation/">
+      
+      
+        <link rel="prev" href="../11_3d_inspector/">
+      
+      
+        <link rel="next" href="../13_snake_rl/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.17">
+    
+    
+      
+        <title>12 — Neural Rendering Workstation - Vultorch Tutorial</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.7e37652d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#12-neural-rendering-workstation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Vultorch Tutorial" class="md-header__button md-logo" aria-label="Vultorch Tutorial" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18s-.41-.06-.57-.18l-7.9-4.44A.99.99 0 0 1 3 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18s.41.06.57.18l7.9 4.44c.32.17.53.5.53.88zM12 4.15 6.04 7.5 12 10.85l5.96-3.35zM5 15.91l6 3.38v-6.71L5 9.21zm14 0v-6.7l-6 3.37v6.71z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Vultorch Tutorial
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              12 — Neural Rendering Workstation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../zh/12_neural_workstation/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Vultorch Tutorial" class="md-nav__button md-logo" aria-label="Vultorch Tutorial" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18s-.41-.06-.57-.18l-7.9-4.44A.99.99 0 0 1 3 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18s.41.06.57.18l7.9 4.44c.32.17.53.5.53.88zM12 4.15 6.04 7.5 12 10.85l5.96-3.35zM5 15.91l6 3.38v-6.71L5 9.21zm14 0v-6.7l-6 3.37v6.71z"/></svg>
+
+    </a>
+    Vultorch Tutorial
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_hello_tensor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    01 — Hello Tensor
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02_multi_panel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    02 — Multi-Panel
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03_training_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    03 — Training Test
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04_conway/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    04 — Conway's Game of Life
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05_image_viewer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    05 — Image Viewer
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06_pixel_canvas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    06 — Pixel Canvas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07_multichannel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    07 — Multi-Channel Viewer
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08_gt_vs_pred/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    08 — GT vs Prediction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09_live_tuning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    09 — Live Hyperparameter Tuning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10_gaussian2d/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    10 — 2D Gaussian Splatting
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11_3d_inspector/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    11 — 3D Surface Inspector
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    12 — Neural Rendering Workstation
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    12 — Neural Rendering Workstation
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#new-friends-in-this-chapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      New friends in this chapter
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-no-depth-head" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why no depth head?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#positional-encoding-the-nerf-trick" class="md-nav__link">
+    <span class="md-ellipsis">
+      Positional encoding — the NeRF trick
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opening-images-from-your-os" class="md-nav__link">
+    <span class="md-ellipsis">
+      Opening images from your OS
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#live-architecture-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Live architecture tuning
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-heatmap-with-adjustable-gain" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error heatmap with adjustable gain
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pause-snapshot-speed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pause, snapshot, speed
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metrics-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      Metrics panel
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#full-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Full code
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-just-happened" class="md-nav__link">
+    <span class="md-ellipsis">
+      What just happened?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-takeaways" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key takeaways
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../13_snake_rl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    13 — Snake RL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#new-friends-in-this-chapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      New friends in this chapter
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-no-depth-head" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why no depth head?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#positional-encoding-the-nerf-trick" class="md-nav__link">
+    <span class="md-ellipsis">
+      Positional encoding — the NeRF trick
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opening-images-from-your-os" class="md-nav__link">
+    <span class="md-ellipsis">
+      Opening images from your OS
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#live-architecture-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Live architecture tuning
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-heatmap-with-adjustable-gain" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error heatmap with adjustable gain
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pause-snapshot-speed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pause, snapshot, speed
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metrics-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      Metrics panel
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#full-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Full code
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-just-happened" class="md-nav__link">
+    <span class="md-ellipsis">
+      What just happened?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-takeaways" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key takeaways
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="12-neural-rendering-workstation">12 — Neural Rendering Workstation<a class="headerlink" href="#12-neural-rendering-workstation" title="Permanent link">&para;</a></h1>
+<div class="admonition tip">
+<p class="admonition-title">The capstone</p>
+<p>This is the final example — a fully-featured neural rendering IDE
+in a single Python script.  Use it as a template for publishing
+polished, interactive demos of your own research.</p>
+</div>
+<h2 id="new-friends-in-this-chapter">New friends in this chapter<a class="headerlink" href="#new-friends-in-this-chapter" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>What it does</th>
+<th>Analogy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Open Image</strong></td>
+<td>OS file dialog loads any PNG/JPEG/BMP into training</td>
+<td><code>plt.imread()</code> + re-training, but one button</td>
+</tr>
+<tr>
+<td><strong>Positional encoding</strong></td>
+<td>Fourier features $[\sin(2^l \pi x), \cos(2^l \pi x)]$</td>
+<td>The NeRF trick for learning high-frequency detail</td>
+</tr>
+<tr>
+<td><strong>Architecture sliders</strong></td>
+<td>Change hidden width, depth, PE levels at runtime</td>
+<td>Editing your model config without restarting</td>
+</tr>
+<tr>
+<td><strong>Error gain</strong></td>
+<td>Amplify the error heatmap to see subtle differences</td>
+<td>Cranking contrast on an image</td>
+</tr>
+<tr>
+<td><strong>Pause / resume</strong></td>
+<td>Stop training while the UI stays alive</td>
+<td><code>Ctrl-C</code> without killing the process</td>
+</tr>
+<tr>
+<td><strong>Save snapshots</strong></td>
+<td><code>Canvas.save()</code> dumps current GPU tensor to PNG</td>
+<td><code>plt.savefig()</code> for live GPU data</td>
+</tr>
+<tr>
+<td><strong>Training speed</strong></td>
+<td>Iterations/sec counter</td>
+<td>Like <code>tqdm</code> but built-in</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="why-no-depth-head">Why no depth head?<a class="headerlink" href="#why-no-depth-head" title="Permanent link">&para;</a></h2>
+<p>Previous versions had a dual-head MLP with RGB + depth.  But this
+example reconstructs a 2D image — there's no meaningful depth to
+predict.  So we keep it clean: one head, three outputs (RGB), direct
+MSE against the target image.  When you build a real NeRF, you'd add
+the density/depth head back to your own model.</p>
+<hr />
+<h2 id="positional-encoding-the-nerf-trick">Positional encoding — the NeRF trick<a class="headerlink" href="#positional-encoding-the-nerf-trick" title="Permanent link">&para;</a></h2>
+<p>Raw <code>(x, y)</code> coordinates can only represent low-frequency functions.
+Positional encoding lifts them into a higher-dimensional space:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">positional_encoding</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">L</span><span class="p">):</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="k">if</span> <span class="n">L</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        <span class="k">return</span> <span class="n">x</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">freqs</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">**</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">xf</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">freqs</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">xf</span><span class="o">.</span><span class="n">sin</span><span class="p">(),</span> <span class="n">xf</span><span class="o">.</span><span class="n">cos</span><span class="p">()],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</span></code></pre></div>
+<p>With $L = 6$, a 2D input becomes $2 + 2 \times 6 \times 2 = 26$
+dimensions.  This lets the MLP learn sharp edges and fine textures.
+The <strong>PE Levels</strong> slider lets you see the difference live — set it to 0
+and watch the prediction turn blurry.</p>
+<hr />
+<h2 id="opening-images-from-your-os">Opening images from your OS<a class="headerlink" href="#opening-images-from-your-os" title="Permanent link">&para;</a></h2>
+<p>Click <strong>Open Image...</strong> and a native file dialog appears (via
+<code>tkinter.filedialog</code>).  The dialog runs in a background thread so the
+render loop never blocks:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">open_file_dialog</span><span class="p">():</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">tkinter</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tk</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">tkinter</span><span class="w"> </span><span class="kn">import</span> <span class="n">filedialog</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">root</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Tk</span><span class="p">()</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">root</span><span class="o">.</span><span class="n">withdraw</span><span class="p">()</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">root</span><span class="o">.</span><span class="n">attributes</span><span class="p">(</span><span class="s2">&quot;-topmost&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">path</span> <span class="o">=</span> <span class="n">filedialog</span><span class="o">.</span><span class="n">askopenfilename</span><span class="p">(</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Select an image&quot;</span><span class="p">,</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="n">filetypes</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;Images&quot;</span><span class="p">,</span> <span class="s2">&quot;*.png *.jpg *.jpeg *.bmp *.tga *.hdr&quot;</span><span class="p">),</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>                   <span class="p">(</span><span class="s2">&quot;All files&quot;</span><span class="p">,</span> <span class="s2">&quot;*.*&quot;</span><span class="p">)])</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">root</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="k">return</span> <span class="n">path</span> <span class="k">if</span> <span class="n">path</span> <span class="k">else</span> <span class="kc">None</span>
+</span></code></pre></div>
+<p>When the dialog returns a path, the main loop picks it up:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">if</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;pending_image&quot;</span><span class="p">]:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">gt</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">S</span><span class="p">[</span><span class="s2">&quot;pending_image&quot;</span><span class="p">],</span> <span class="n">RES</span><span class="p">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">S</span><span class="p">[</span><span class="s2">&quot;img_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">S</span><span class="p">[</span><span class="s2">&quot;pending_image&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">name</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="c1"># Recreate display tensors and reset model...</span>
+</span></code></pre></div>
+<p>This is a pattern you can reuse in any Vultorch demo: thread the
+blocking OS call, pass the result back through a shared variable.</p>
+<hr />
+<h2 id="live-architecture-tuning">Live architecture tuning<a class="headerlink" href="#live-architecture-tuning" title="Permanent link">&para;</a></h2>
+<p>Three sliders control the network structure:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">new_h</span>  <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">slider_int</span><span class="p">(</span><span class="s2">&quot;Hidden&quot;</span><span class="p">,</span>    <span class="mi">32</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">new_l</span>  <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">slider_int</span><span class="p">(</span><span class="s2">&quot;Layers&quot;</span><span class="p">,</span>     <span class="mi">2</span><span class="p">,</span>   <span class="mi">8</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">new_pe</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">slider_int</span><span class="p">(</span><span class="s2">&quot;PE Levels&quot;</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">10</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Changing any slider sets <code>arch_dirty = True</code> and shows a yellow
+warning.  You then click <strong>Apply &amp; Reset</strong> to rebuild the model:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">if</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;arch_dirty&quot;</span><span class="p">]:</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">ctrl</span><span class="o">.</span><span class="n">text_colored</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;  Architecture changed!&quot;</span><span class="p">)</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="k">if</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">button</span><span class="p">(</span><span class="s2">&quot;Apply &amp; Reset&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">170</span><span class="p">):</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>        <span class="n">model</span> <span class="o">=</span> <span class="n">make_model</span><span class="p">(</span><span class="n">S</span><span class="p">[</span><span class="s2">&quot;hidden&quot;</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;layers&quot;</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;pe&quot;</span><span class="p">])</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">make_optimizer</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</span></code></pre></div>
+<p>This two-step pattern (slider → confirm button) prevents the model
+from being destroyed on every frame while you're dragging the slider.</p>
+<hr />
+<h2 id="error-heatmap-with-adjustable-gain">Error heatmap with adjustable gain<a class="headerlink" href="#error-heatmap-with-adjustable-gain" title="Permanent link">&para;</a></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">err</span> <span class="o">=</span> <span class="p">(</span><span class="n">gt</span> <span class="o">-</span> <span class="n">pr</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>       <span class="c1"># per-pixel L1</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">err_t</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">apply_turbo</span><span class="p">(</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="p">(</span><span class="n">err</span> <span class="o">*</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;err_gain&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+</span></code></pre></div>
+<p>The <strong>Error Gain</strong> slider (1–20×) amplifies subtle errors.  At gain 1
+most pixels look blue; at gain 15 you'll see exactly where the model
+is still struggling.</p>
+<hr />
+<h2 id="pause-snapshot-speed">Pause, snapshot, speed<a class="headerlink" href="#pause-snapshot-speed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>How it works</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Pause</strong></td>
+<td><code>if not S["paused"]:</code> skips the training loop; the window, controls, and display keep running</td>
+</tr>
+<tr>
+<td><strong>Save Snapshots</strong></td>
+<td><code>rgb_cv.save("snapshot_pred.png")</code> writes the canvas's GPU tensor to disk via stb_image_write</td>
+</tr>
+<tr>
+<td><strong>Speed counter</strong></td>
+<td><code>(iters_now - iters_then) / elapsed</code> measured every 0.5 seconds</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="metrics-panel">Metrics panel<a class="headerlink" href="#metrics-panel" title="Permanent link">&para;</a></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nd">@met_pan</span><span class="o">.</span><span class="n">on_frame</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">draw_met</span><span class="p">():</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">met_pan</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loss: </span><span class="si">{</span><span class="n">S</span><span class="p">[</span><span class="s1">&#39;loss&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">   PSNR: </span><span class="si">{</span><span class="n">S</span><span class="p">[</span><span class="s1">&#39;psnr&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> dB   &quot;</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>                 <span class="sa">f</span><span class="s2">&quot;Speed: </span><span class="si">{</span><span class="n">S</span><span class="p">[</span><span class="s1">&#39;its_sec&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> it/s&quot;</span><span class="p">)</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">met_pan</span><span class="o">.</span><span class="n">separator</span><span class="p">()</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="k">if</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;loss_h&quot;</span><span class="p">]:</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="n">met_pan</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">S</span><span class="p">[</span><span class="s2">&quot;loss_h&quot;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;##loss&quot;</span><span class="p">,</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>                     <span class="n">overlay</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;loss </span><span class="si">{</span><span class="n">S</span><span class="p">[</span><span class="s1">&#39;loss&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">70</span><span class="p">)</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="k">if</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;psnr_h&quot;</span><span class="p">]:</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>        <span class="n">met_pan</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">S</span><span class="p">[</span><span class="s2">&quot;psnr_h&quot;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;##psnr&quot;</span><span class="p">,</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>                     <span class="n">overlay</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;PSNR </span><span class="si">{</span><span class="n">S</span><span class="p">[</span><span class="s1">&#39;psnr&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> dB&quot;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">70</span><span class="p">)</span>
+</span></code></pre></div>
+<p><code>panel.plot()</code> renders a sparkline from a Python list.  The last 500
+values are kept, giving you a scrolling live chart — your TensorBoard,
+built into the training window.</p>
+<hr />
+<h2 id="full-code">Full code<a class="headerlink" href="#full-code" title="Permanent link">&para;</a></h2>
+<div class="language-python highlight"><span class="filename">examples/12_neural_workstation.py</span><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="o">--</span><span class="mi">8</span><span class="o">&lt;--</span> <span class="s2">&quot;examples/12_neural_workstation.py&quot;</span>
+</span></code></pre></div>
+<hr />
+<h2 id="what-just-happened">What just happened?<a class="headerlink" href="#what-just-happened" title="Permanent link">&para;</a></h2>
+<p>In one Python file you built a complete, publishable demo:</p>
+<ol>
+<li><strong>Open any image</strong> from your operating system via file dialog</li>
+<li><strong>Positional encoding</strong> with adjustable frequency levels</li>
+<li><strong>Live architecture tuning</strong> — change hidden size, depth, PE levels</li>
+<li><strong>Three loss functions</strong> — MSE, L1, Huber — switchable at runtime</li>
+<li><strong>Three optimizers</strong> — Adam, SGD, AdamW — hot-swappable</li>
+<li><strong>Error heatmap</strong> with turbo colormap and adjustable gain</li>
+<li><strong>Pause / resume</strong> without killing the process</li>
+<li><strong>Save snapshots</strong> of prediction and error to PNG</li>
+<li><strong>Training speed</strong> counter (iterations/sec)</li>
+<li><strong>Loss &amp; PSNR curves</strong> — scrolling live charts</li>
+</ol>
+<p>No matplotlib.  No TensorBoard.  No Jupyter.  No web browser.
+One window, one script, and everything synchronized at GPU speed.</p>
+<p><strong>This is what "Vultorch = your neural rendering IDE" looks like.</strong></p>
+<hr />
+<h2 id="key-takeaways">Key takeaways<a class="headerlink" href="#key-takeaways" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Code</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Positional encoding</td>
+<td><code>positional_encoding(x, L)</code></td>
+<td>High-frequency detail via Fourier features</td>
+</tr>
+<tr>
+<td>File dialog</td>
+<td><code>tkinter.filedialog</code> in thread</td>
+<td>Load any image without blocking</td>
+</tr>
+<tr>
+<td>Architecture sliders</td>
+<td><code>slider_int("Hidden", ...)</code></td>
+<td>Live topology tuning</td>
+</tr>
+<tr>
+<td>Error gain</td>
+<td><code>(err * gain).clamp_(0, 1)</code></td>
+<td>Amplify subtle reconstruction errors</td>
+</tr>
+<tr>
+<td>Pause</td>
+<td><code>checkbox("Pause Training")</code></td>
+<td>Freeze training, UI stays live</td>
+</tr>
+<tr>
+<td>Snapshot</td>
+<td><code>canvas.save("file.png")</code></td>
+<td>Dump GPU tensor to disk</td>
+</tr>
+<tr>
+<td>Speed</td>
+<td><code>(it - it_last) / dt</code></td>
+<td>Iterations/sec counter</td>
+</tr>
+<tr>
+<td>step()/end_step()</td>
+<td>Training-loop-owned rendering</td>
+<td>You control the outer loop</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition success">
+<p class="admonition-title">Congratulations!</p>
+<p>You've completed all 12 Vultorch tutorials.  You now have every
+tool you need to build real-time, GPU-accelerated visualization
+into your neural rendering research workflow — and to publish
+polished interactive demos of your work.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "toc.follow"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+
+      <script src="../assets/javascripts/bundle.92b07e13.min.js"></script>
+      
+    
+<script>
+/* ── Custom language toggle matching main page ── */
+(function() {
+  var links = document.querySelectorAll('.md-select__link[hreflang]');
+  if (links.length < 2) return;
+
+  var lang = document.documentElement.lang || 'en';
+  var toggle = document.createElement('div');
+  toggle.className = 'vt-lang-toggle';
+
+  links.forEach(function(link) {
+    var a = document.createElement('a');
+    a.href = link.href;
+    a.className = 'vt-lang-btn';
+    if (link.hreflang === lang) a.classList.add('active');
+    a.textContent = link.hreflang === 'en' ? 'EN' : '中文';
+    toggle.appendChild(a);
+  });
+
+  document.body.appendChild(toggle);
+})();
+</script>
+
+  </body>
+</html>

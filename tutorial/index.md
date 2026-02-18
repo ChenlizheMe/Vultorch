@@ -17,3 +17,4 @@ Each chapter maps to a runnable script in the `examples/` folder.
 | [10 — 2D Gaussian Splatting](10_gaussian2d.md) | Differentiable 2D Gaussian rendering | nn.Parameter, alpha compositing, cumprod transmittance |
 | [11 — 3D Surface Inspector](11_3d_inspector.md) | Orbit camera with Blinn-Phong lighting | SceneView, Camera, Light, MSAA, procedural textures |
 | [12 — Neural Rendering Workstation](12_neural_workstation.md) | Capstone: 6-panel workstation with dual-head MLP | Two-head MLP, six panels, pause/resume, snapshot, optimizer hot-swap |
+| [13 — Snake RL](13_snake_rl.md) | DQN learns to play Snake | RL visualization, DQN, ε-greedy, Q-value heatmap, manual mode |

@@ -1,16 +1,17 @@
 <div align="center">
 
-# 🔥 Vultorch
+# VULTORCH
 
-**Real-time Torch Visualization Window · Vulkan Zero-Copy**
+**GPU-Native Tensor Visualization for PyTorch**
 
 Visualize CUDA tensors at GPU speed — zero CPU readback, zero staging buffers.
+Neural rendering, reinforcement learning, physics — if it's in a tensor, Vultorch can display it.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
 [![Vulkan](https://img.shields.io/badge/Vulkan-1.2-red.svg)](https://vulkan.org)
 
-**[🇨🇳 中文](README_CN.md) · [🌐 Website](https://ChenlizheMe.github.io/Vultorch/)**
+**[🇨🇳 中文](README_CN.md) · [🌐 Website](https://ChenlizheMe.github.io/Vultorch/) · [📖 Tutorial](https://ChenlizheMe.github.io/Vultorch/tutorial/)**
 
 <br>
 
@@ -26,8 +27,8 @@ Vultorch displays CUDA tensors in a native window — data never leaves the GPU.
 `show()` performs a fast GPU-GPU copy; `create_tensor()` eliminates even that via Vulkan shared memory.
 
 ```python
-vultorch.show(tensor)           # GPU-only, no CPU readback
-tensor = vultorch.create_tensor(...)  # true zero-copy, no memcpy at all
+vultorch.show(tensor)                     # GPU-only, no CPU readback
+tensor = vultorch.create_tensor(...)      # true zero-copy, no memcpy at all
 ```
 
 ## Key Features
@@ -38,6 +39,7 @@ tensor = vultorch.create_tensor(...)  # true zero-copy, no memcpy at all
 - **Built-in ImGui** — Sliders, buttons, color pickers, plots, docking layout — all from Python
 - **3D scene view** — Map textures onto lit 3D planes with orbit camera, MSAA, Blinn-Phong shading
 - **Docking windows** — Drag-and-drop window arrangement (ImGui docking branch)
+- **Not just rendering** — RL environments, cellular automata, signal processing — anything tensor-based
 
 ## Quick Start
 
@@ -48,10 +50,9 @@ pip install vultorch
 ```python
 import torch, vultorch
 
-# Your neural texture output (or any CUDA tensor)
 texture = torch.rand(512, 512, 4, device="cuda")
 
-view = vultorch.View("Neural Texture Viewer", 800, 600)
+view = vultorch.View("Viewer", 800, 600)
 panel = view.panel("Output")
 panel.canvas("main").bind(texture)
 view.run()
@@ -65,6 +66,21 @@ tensor = vultorch.create_tensor(512, 512, channels=4)
 tensor[:] = model(input)   # write directly, no copy needed
 ```
 
+### Interactive Training Loop
+
+```python
+view = vultorch.View("Training", 1000, 700)
+ctrl = view.panel("Controls", side="left", width=0.25)
+output = view.panel("Output")
+out_canvas = output.canvas("render")
+
+while view.step():
+    lr = 10 ** ctrl.slider("log LR", -5.0, -1.0, default=-2.0)
+    loss = train_one_step(lr)
+    out_canvas.bind(output_tensor)
+    view.end_step()
+```
+
 ### 3D Scene
 
 ```python
@@ -75,12 +91,21 @@ scene.render()  # orbit camera, Blinn-Phong lighting
 
 ## Examples
 
-| Example | Description |
-|---------|-------------|
-| [`01_hello_tensor.py`](examples/01_hello_tensor.py) | Minimal tensor display |
-| [`02_imgui_controls.py`](examples/02_imgui_controls.py) | Multi-panel layout with docking |
-| [`03_training_test.py`](examples/03_training_test.py) | Tiny network live training (GT vs prediction + bottom info panel) |
-| [`04_conway.py`](examples/04_conway.py) | Interactive Conway's Game of Life on the GPU (zero-copy, buttons, color pickers) |
+| # | Example | Description |
+|---|---------|-------------|
+| 01 | [`hello_tensor`](examples/01_hello_tensor.py) | Minimal CUDA tensor display |
+| 02 | [`imgui_controls`](examples/02_imgui_controls.py) | Multi-panel layout with ImGui widgets |
+| 03 | [`training_test`](examples/03_training_test.py) | Live network training with GT comparison |
+| 04 | [`conway`](examples/04_conway.py) | Conway's Game of Life on GPU |
+| 05 | `image_viewer` | Load, transform & save images |
+| 06 | `pixel_canvas` | Interactive pixel-level drawing |
+| 07 | `multichannel` | RGB + depth + normal + alpha viewer |
+| 08 | `gt_vs_pred` | Training comparison with error heatmap |
+| 09 | `live_tuning` | Runtime hyperparameter adjustment |
+| 10 | `gaussian2d` | Differentiable 2D Gaussian splatting |
+| 11 | `3d_inspector` | Orbit camera with Blinn-Phong lighting |
+| 12 | `neural_workstation` | Full neural rendering workstation |
+| 13 | `snake_rl` | DQN learns Snake — RL visualization |
 
 ```bash
 python examples/01_hello_tensor.py
@@ -112,8 +137,6 @@ cd Vultorch
 
 ### Step 2 — Configure
 
-Choose the preset matching your platform:
-
 ```bash
 # Windows (MSVC)
 cmake --preset release-windows
@@ -121,8 +144,6 @@ cmake --preset release-windows
 # Linux / WSL2 (GCC + Make)
 cmake --preset release-linux
 ```
-
-CMake automatically detects your **active Python interpreter** and **CUDA toolkit** (if installed).
 
 ### Step 3 — Build
 
@@ -150,13 +171,9 @@ python -c "import vultorch; print(vultorch.__version__, 'CUDA:', vultorch.HAS_CU
 
 ### WSL2 Quick Setup
 
-A one-command setup script for Ubuntu WSL2:
-
 ```bash
 sudo bash scripts/setup_wsl2.sh
 ```
-
-This installs all system dependencies (CMake, Vulkan headers, SDL2 dev libs, Python dev).
 
 ---
 
@@ -164,140 +181,47 @@ This installs all system dependencies (CMake, Vulkan headers, SDL2 dev libs, Pyt
 
 ### Single Wheel
 
-The build already produces a wheel in `dist/`. You can also manually run:
-
 ```bash
 python tools/make_wheel.py
 ```
 
-This reads the compiled `_vultorch.*.pyd` / `.so` from `vultorch/`, bundles it with the Python package files, and outputs a platform-specific `.whl` to `dist/`.
-
 ### Multi-Version Wheels
 
-Build wheels for multiple Python versions (requires conda):
-
 ```bash
-# All default versions (3.8 – 3.12)
-python scripts/build_wheels.py
-
-# Specific versions
-python scripts/build_wheels.py 3.10 3.11 3.12
+python scripts/build_wheels.py            # all defaults (3.8 – 3.12)
+python scripts/build_wheels.py 3.10 3.11  # specific versions
 ```
-
-Each version gets a separate conda environment; CMake is re-configured and rebuilt for each.
 
 ### Upload to PyPI
 
 ```bash
-# Interactive token prompt
 python scripts/upload_wheels.py
-
-# Pass token directly
-python scripts/upload_wheels.py --token pypi-YOUR_TOKEN
 ```
-
-Requires `twine` (auto-installed if missing).
 
 ---
 
 ## Testing
 
-Tests use **pytest** with two custom markers:
+```bash
+pytest                  # all tests
+pytest -m "not gpu"     # pure Python only
+pytest -m gpu           # GPU tests only
+```
 
 | Marker | Description |
 |--------|-------------|
-| `gpu` | Requires a Vulkan-capable GPU with CUDA |
+| `gpu` | Requires Vulkan-capable GPU with CUDA |
 | `slow` | Long-running tests |
-
-### Run All Tests
-
-```bash
-pytest
-```
-
-### Run Only Non-GPU (Pure Python) Tests
-
-```bash
-pytest -m "not gpu"
-```
-
-### Run GPU Tests Only
-
-```bash
-pytest -m gpu
-```
-
-### Run with Verbose Output
-
-```bash
-pytest -ra -v
-```
-
-### Test Structure
-
-| File | Scope |
-|------|-------|
-| `tests/conftest.py` | Shared fixtures + skip decorators |
-| `tests/test_import.py` | Package import, version, module structure |
-| `tests/test_camera_light.py` | Camera / Light data classes |
-| `tests/test_normalize_tensor.py` | `_normalize_tensor()` dtype, shape, contiguity |
-| `tests/test_show.py` | `show()` / `create_tensor()` error paths |
-| `tests/test_declarative_api.py` | Canvas / Panel / View / RowContext (non-GPU) |
-| `tests/test_edge_cases.py` | Edge-case and error-path coverage |
-| `tests/test_ui_bindings.py` | All `vultorch.ui.*` functions exist |
-| `tests/test_project_structure.py` | Type stubs, configs, examples, tutorials |
-| `tests/test_tools_spv_to_header.py` | `tools/spv_to_header.py` |
-| `tests/test_tools_make_wheel.py` | `tools/make_wheel.py` |
-| `tests/test_scripts.py` | `scripts/build_wheels.py` + `upload_wheels.py` |
-| `tests/test_gpu_integration.py` | GPU: Window, show(), create_tensor(), SceneView, ImGui |
-| `tests/test_engine_bindings.py` | GPU: C++ Engine class bindings |
-| `tests/test_panel_widgets_gpu.py` | GPU: Panel widgets + Canvas in real render loop |
 
 ---
 
 ## Documentation
 
-### Tutorial & API Reference
-
-Documentation is built with **MkDocs Material** and the **i18n** plugin (English + Chinese).
-Source files live in `tutorial/`:
-
-```
-tutorial/
-├── index.md / index.zh.md          # Home page
-├── 01_hello_tensor.md / .zh.md     # Tutorial: Hello Tensor
-├── 02_multi_panel.md / .zh.md      # Tutorial: Multi-Panel
-├── 03_training_test.md / .zh.md    # Tutorial: Training Test
-└── api.md / api.zh.md              # API Reference
-```
-
-### When Are Docs Generated?
-
-Docs are built **automatically** as the last build target (after `package_wheel`), provided:
-
-1. `mkdocs` is installed: `pip install mkdocs-material mkdocs-static-i18n`
-2. `VULTORCH_BUILD_DOCS=ON` (default)
-
-The generated site lands in `docs/tutorial/` (served via GitHub Pages).
-
-### Build Docs Manually
+Tutorial and API reference are built with **MkDocs Material** + **i18n** (English + Chinese).
 
 ```bash
-mkdocs build --clean
-```
-
-### Preview Docs Locally
-
-```bash
-mkdocs serve
-```
-
-Opens at `http://127.0.0.1:8000/`.
-
-### Disable Doc Build
-
-```bash
-cmake --preset release-windows -DVULTORCH_BUILD_DOCS=OFF
+mkdocs build --clean    # build
+mkdocs serve            # preview at http://127.0.0.1:8000
 ```
 
 ---
@@ -306,36 +230,22 @@ cmake --preset release-windows -DVULTORCH_BUILD_DOCS=OFF
 
 ```
 Vultorch/
-├── CMakeLists.txt          # Build system (compile + wheel + docs)
-├── CMakePresets.json        # Cross-platform build presets
-├── pyproject.toml           # Python package metadata
-├── src/                     # C++ core
+├── src/                     # C++ core (Vulkan + CUDA + ImGui)
 │   ├── engine.cpp/h         # Vulkan + SDL3 + ImGui engine
 │   ├── tensor_texture.*     # CUDA ↔ Vulkan zero-copy interop
-│   ├── scene_renderer.*     # Offscreen 3D renderer (MSAA, Blinn-Phong)
-│   ├── bindings.cpp         # pybind11 Python bindings
-│   └── shaders/             # GLSL shaders → SPIR-V
+│   ├── scene_renderer.*     # 3D renderer (MSAA, Blinn-Phong)
+│   ├── bindings.cpp         # pybind11 bindings
+│   └── shaders/             # GLSL → SPIR-V
 ├── vultorch/                # Python package
-│   ├── __init__.py          # High-level API (Window, show, SceneView)
+│   ├── __init__.py          # High-level API
 │   ├── app.py               # Declarative API (View, Panel, Canvas)
-│   ├── __init__.pyi         # Type stubs
-│   ├── ui.pyi               # ImGui binding stubs
-│   └── py.typed             # PEP 561 marker
-├── external/                # Git submodules
-│   ├── pybind11/            # C++ ↔ Python binding
-│   ├── SDL/                 # Window / input (SDL3)
-│   └── imgui/               # Dear ImGui (docking branch)
-├── examples/                # Ready-to-run demos
-├── tests/                   # pytest tests (GPU + non-GPU)
-├── tools/                   # Build-time utilities
-│   ├── make_wheel.py        # Wheel packaging
-│   └── spv_to_header.py     # SPIR-V → C header
-├── scripts/                 # Developer scripts
-│   ├── build_wheels.py      # Multi-Python wheel builder
-│   ├── upload_wheels.py     # PyPI upload via twine
-│   └── setup_wsl2.sh        # WSL2 environment setup
-├── tutorial/                # MkDocs source (Markdown, EN + ZH)
-└── docs/                    # Generated website (GitHub Pages)
+│   └── *.pyi                # Type stubs
+├── examples/                # 13 runnable demos
+├── tutorial/                # MkDocs source (EN + ZH)
+├── tests/                   # pytest (GPU + non-GPU)
+├── external/                # pybind11, SDL3, imgui
+├── tools/                   # make_wheel.py, spv_to_header.py
+└── scripts/                 # build_wheels.py, upload_wheels.py
 ```
 
 ## License
@@ -346,6 +256,6 @@ Vultorch/
 
 <div align="center">
 
-**[Examples](examples/) · [API Docs](https://ChenlizheMe.github.io/Vultorch/tutorial/api/) · [Website](https://ChenlizheMe.github.io/Vultorch/) · [中文文档](README_CN.md)**
+**[Examples](examples/) · [Tutorial](https://ChenlizheMe.github.io/Vultorch/tutorial/) · [Website](https://ChenlizheMe.github.io/Vultorch/) · [中文文档](README_CN.md)**
 
 </div>

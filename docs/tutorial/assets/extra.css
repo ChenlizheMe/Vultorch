@@ -1,30 +1,456 @@
-/* Extra styles to better match the Vultorch landing page palette */
+/* ═══════════════════════════════════════════════════════
+   VULTORCH TUTORIAL — CASSETTE FUTURISM THEME
+   Unified with docs/index.html visual language
+   ═══════════════════════════════════════════════════════ */
 
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
+/* ── Root palette — synced with main page ──────── */
 :root,
 [data-md-color-scheme="slate"] {
-  --md-primary-fg-color: #6e8eff;
-  --md-accent-fg-color:  #a78bfa;
-  --md-default-bg-color: #08090d;
-  --md-code-bg-color:    #151821;
+  --md-primary-fg-color:        #6e8eff;
+  --md-primary-fg-color--light: #8ba3ff;
+  --md-primary-fg-color--dark:  #4a6bdd;
+  --md-accent-fg-color:         #a78bfa;
+  --md-default-bg-color:        #06080e;
+  --md-default-fg-color:        #c8d0e2;
+  --md-default-fg-color--light: #6b7a96;
+  --md-code-bg-color:           #0a0c15;
+  --md-code-fg-color:           #c8d0e2;
+  --md-code-hl-color:           rgba(110,142,255,0.1);
+  --md-typeset-a-color:         #6e8eff;
+  --md-footer-bg-color:         #06080e;
+  --md-footer-bg-color--dark:   #040610;
+  --md-footer-fg-color:         #6b7a96;
+  --md-footer-fg-color--light:  #c8d0e2;
+
+  /* Sidebar */
+  --md-sidebar-bg-color:        #0a0c14;
+
+  /* Custom vars */
+  --vt-border:      #151b2e;
+  --vt-border-lit:  #1e2844;
+  --vt-text-bright: #e0e8f5;
+  --vt-accent-glow: rgba(110,142,255,0.08);
+  --vt-accent-dim:  #2a3768;
+  --vt-grad-start:  #6e8eff;
+  --vt-grad-end:    #a78bfa;
 }
 
-/* Slightly muted body text for comfort */
+/* ── Global background ─────────────────────────── */
+body {
+  background: #06080e !important;
+}
+
+/* Grid background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(110,142,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(110,142,255,0.02) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+/* Scanlines — subtle */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(110,142,255,0.008) 3px,
+    rgba(110,142,255,0.008) 6px
+  );
+  mix-blend-mode: overlay;
+}
+
+/* ── Header bar ────────────────────────────────── */
+.md-header {
+  background: rgba(6,8,14,0.95) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--vt-border) !important;
+  box-shadow: 0 2px 24px rgba(0,0,0,0.4) !important;
+}
+
+.md-header__title {
+  font-family: 'Orbitron', 'Inter', sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  font-size: 16px !important;
+}
+
+/* Hide default mkdocs language selector — replaced by custom toggle */
+.md-header__option {
+  display: none !important;
+}
+
+/* ── Custom language toggle (injected by JS) ───── */
+.vt-lang-toggle {
+  position: fixed;
+  top: 16px;
+  right: 24px;
+  z-index: 10000;
+  display: flex;
+  gap: 0;
+  background: rgba(12,14,24,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--vt-border-lit);
+  border-radius: 8px;
+  padding: 3px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+.vt-lang-btn {
+  background: none;
+  border: none;
+  color: #6b7a96 !important;
+  padding: 6px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all .25s;
+  text-decoration: none !important;
+  display: inline-block;
+  line-height: 1.4;
+}
+
+.vt-lang-btn.active {
+  background: linear-gradient(135deg, var(--vt-grad-start), var(--vt-grad-end)) !important;
+  color: #fff !important;
+  box-shadow: 0 0 16px rgba(110,142,255,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+  text-shadow: 0 0 8px rgba(255,255,255,0.3);
+}
+
+.vt-lang-btn:hover:not(.active) {
+  color: #6e8eff !important;
+  background: var(--vt-accent-glow);
+  text-shadow: none;
+}
+
+/* ── Navigation sidebar ────────────────────────── */
+.md-sidebar {
+  background: var(--md-sidebar-bg-color) !important;
+  border-right: 1px solid var(--vt-border);
+}
+
+.md-nav__link {
+  font-size: 16px !important;
+  border-radius: 4px !important;
+  transition: all .2s !important;
+}
+
+.md-nav__link:hover {
+  background: var(--vt-accent-glow) !important;
+  color: #6e8eff !important;
+}
+
+.md-nav__link--active,
+.md-nav__item--active > .md-nav__link {
+  color: #6e8eff !important;
+  font-weight: 600 !important;
+  background: var(--vt-accent-glow) !important;
+  border-left: 3px solid #6e8eff !important;
+  padding-left: 9px !important;
+}
+
+/* Section labels in nav */
+.md-nav--primary .md-nav__title {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.72rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.12em !important;
+  color: var(--md-default-fg-color--light) !important;
+}
+
+/* ── Typography — use rem to prevent compounding ── */
 .md-typeset {
-  color: #c4cde0;
+  color: #c8d0e2;
+  font-size: 16px !important;
+  line-height: 1.75;
 }
 
-/* Code block border */
+.md-typeset h1 {
+  font-family: 'Orbitron', 'Inter', sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 32px !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  color: var(--vt-text-bright) !important;
+  border-bottom: none !important;
+  margin-bottom: 16px !important;
+}
+
+.md-typeset h2 {
+  font-family: 'Orbitron', 'Inter', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 28px !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  color: var(--vt-text-bright) !important;
+  border-bottom: 1px solid var(--vt-border) !important;
+  padding-bottom: 8px !important;
+  margin-top: 2em !important;
+}
+
+.md-typeset h3 {
+  color: var(--vt-text-bright) !important;
+  font-weight: 600 !important;
+  font-size: 24px !important;
+  letter-spacing: 0.02em;
+}
+
+/* ── Links ─────────────────────────────────────── */
+.md-typeset a {
+  color: #6e8eff !important;
+  transition: color .2s, text-shadow .2s !important;
+}
+
+.md-typeset a:hover {
+  color: #a78bfa !important;
+  text-shadow: 0 0 8px rgba(167,139,250,0.3) !important;
+}
+
+/* ── Code blocks ───────────────────────────────── */
 .md-typeset pre > code {
-  border: 1px solid #1e2332;
-  border-radius: 10px;
+  background: #0a0c15 !important;
+  border: 1px solid var(--vt-border) !important;
+  border-radius: 8px !important;
+  border-left: 3px solid #6e8eff !important;
+  font-size: 16px !important;
 }
 
-/* Admonition accent */
+.md-typeset code {
+  background: #0a0c15 !important;
+  border: 1px solid var(--vt-border) !important;
+  border-radius: 4px !important;
+  padding: 2px 8px !important;
+  color: #34d399 !important;
+  font-size: 16px !important;
+}
+
+.md-typeset pre > code {
+  color: #c8d0e2 !important;
+}
+
+/* Copy button */
+.md-clipboard {
+  color: #6b7a96 !important;
+}
+.md-clipboard:hover {
+  color: #6e8eff !important;
+}
+
+/* ── Tables ────────────────────────────────────── */
+.md-typeset table:not([class]) {
+  border: 1px solid var(--vt-border) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  font-size: 16px;
+}
+
+.md-typeset table:not([class]) th {
+  background: #0c0e18 !important;
+  color: var(--vt-text-bright) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 16px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-bottom: 1px solid var(--vt-border-lit) !important;
+}
+
+.md-typeset table:not([class]) td {
+  border-color: var(--vt-border) !important;
+  font-size: 16px;
+}
+
+.md-typeset table:not([class]) tr:hover {
+  background: var(--vt-accent-glow) !important;
+}
+
+/* ── Admonitions ───────────────────────────────── */
+.md-typeset .admonition,
+.md-typeset details {
+  background: #0c0e18 !important;
+  border-color: var(--vt-border-lit) !important;
+  border-radius: 8px !important;
+  border-width: 1px !important;
+  border-left-width: 4px !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2) !important;
+  font-size: 16px;
+}
+
 .md-typeset .admonition.tip,
 .md-typeset details.tip {
-  border-color: #6e8eff;
+  border-left-color: #6e8eff !important;
 }
+
 .md-typeset .admonition.note,
 .md-typeset details.note {
-  border-color: #a78bfa;
+  border-left-color: #a78bfa !important;
+}
+
+.md-typeset .admonition.success,
+.md-typeset details.success {
+  border-left-color: #34d399 !important;
+}
+
+.md-typeset .admonition.warning,
+.md-typeset details.warning {
+  border-left-color: #fbbf24 !important;
+}
+
+/* ── Content area ──────────────────────────────── */
+.md-content {
+  background: transparent !important;
+}
+
+.md-main {
+  background: transparent !important;
+}
+
+/* ── Footer ────────────────────────────────────── */
+.md-footer {
+  background: #040610 !important;
+  border-top: 1px solid var(--vt-border) !important;
+}
+
+.md-footer-meta {
+  background: #040610 !important;
+}
+
+/* ── Search ────────────────────────────────────── */
+.md-search__input {
+  background: #0c0e18 !important;
+  border: 1px solid var(--vt-border) !important;
+  border-radius: 6px !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 16px !important;
+}
+
+.md-search__input::placeholder {
+  color: #6b7a96 !important;
+}
+
+/* ── Scrollbar ─────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #06080e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vt-border-lit);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2a3768;
+}
+
+/* ── TOC sidebar (right) ───────────────────────── */
+.md-sidebar--secondary .md-nav__link {
+  font-size: 16px !important;
+  color: #6b7a96 !important;
+}
+
+.md-sidebar--secondary .md-nav__link--active {
+  color: #6e8eff !important;
+  border-left: 2px solid #6e8eff !important;
+}
+
+/* ── HR dividers ───────────────────────────────── */
+.md-typeset hr {
+  border-color: var(--vt-border) !important;
+}
+
+/* ── "Back to top" button ──────────────────────── */
+.md-top {
+  background: rgba(12,14,24,0.9) !important;
+  border: 1px solid var(--vt-border) !important;
+  color: #6e8eff !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 16px !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+/* ── Tabs (code tabs) ──────────────────────────── */
+.md-typeset .tabbed-labels > label {
+  color: #6b7a96 !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 16px !important;
+}
+
+.md-typeset .tabbed-labels > label--active,
+.md-typeset .tabbed-labels > .tabbed-control--active {
+  color: #6e8eff !important;
+  border-color: #6e8eff !important;
+}
+
+/* ── Announcement bar (if used) ────────────────── */
+.md-banner {
+  background: rgba(110,142,255,0.06) !important;
+  border-bottom: 1px solid var(--vt-border) !important;
+  color: #6b7a96 !important;
+}
+
+/* ── Custom home link in header ────────────────── */
+.vt-logo-text {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.vt-sep {
+  color: #1e2844;
+  margin: 0 8px;
+}
+
+.vt-home-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 24px;
+  color: #6b7a96 !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color .2s;
+}
+
+.vt-home-link:hover {
+  color: #6e8eff !important;
+  text-shadow: none !important;
+}
+
+/* ── Responsive ────────────────────────────────── */
+@media (max-width: 768px) {
+  .vt-lang-toggle {
+    top: 12px;
+    right: 12px;
+  }
+  .vt-lang-btn {
+    padding: 5px 12px;
+    font-size: 0.72rem;
+  }
+  .md-typeset h1 {
+    font-size: 32px !important;
+  }
 }
