@@ -99,6 +99,20 @@
         <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/13_snake_rl/"/>
     </url>
     <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/14_screen_recorder/</loc>
+        <lastmod>2026-02-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/14_screen_recorder/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/14_screen_recorder/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/15_space_battle/</loc>
+        <lastmod>2026-02-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/15_space_battle/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/15_space_battle/"/>
+    </url>
+    <url>
         <loc>https://chenlizheme.github.io/Vultorch/tutorial/api/</loc>
         <lastmod>2026-02-19</lastmod>
         <changefreq>daily</changefreq>
@@ -202,6 +216,20 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/13_snake_rl/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/13_snake_rl/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/14_screen_recorder/</loc>
+        <lastmod>2026-02-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/14_screen_recorder/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/14_screen_recorder/"/>
+    </url>
+    <url>
+        <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/15_space_battle/</loc>
+        <lastmod>2026-02-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://chenlizheme.github.io/Vultorch/tutorial/zh/15_space_battle/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://chenlizheme.github.io/Vultorch/tutorial/15_space_battle/"/>
     </url>
     <url>
         <loc>https://chenlizheme.github.io/Vultorch/tutorial/zh/api/</loc>

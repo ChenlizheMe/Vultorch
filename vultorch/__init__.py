@@ -1,11 +1,18 @@
 """Vultorch – Vulkan + PyTorch visualization with ImGui.
 
 High-level API:
-    vultorch.show(tensor)        — display a tensor in ImGui (CUDA or CPU)
-    vultorch.create_tensor(...)  — allocate a shared tensor (zero-copy on CUDA)
-    vultorch.SceneView(...)      — 3D plane viewer with MSAA, lighting, orbit camera
-    vultorch.imread(path)        — load an image file as a torch.Tensor
-    vultorch.imwrite(path, t)    — save a torch.Tensor to an image file
+    vultorch.show(tensor)                  — display a tensor in ImGui (CUDA or CPU)
+    vultorch.create_tensor(...)            — allocate a shared tensor (zero-copy on CUDA)
+    vultorch.SceneView(...)                — 3D plane viewer with MSAA, lighting, orbit camera
+    vultorch.imread(path)                  — load an image file as a torch.Tensor
+    vultorch.imwrite(path, t)              — save a torch.Tensor to an image file
+    vultorch.colormap(tensor, cmap=...)    — apply a colormap LUT to a scalar tensor
+    vultorch.open_file_dialog(...)         — open a native file-picker dialog
+
+Recording:
+    canvas.start_recording("out.gif")      — record canvas to GIF
+    canvas.stop_recording()                — finalize and save
+    panel.record_button(canvas, "out.gif") — toggle record/stop button
 """
 
 from ._vultorch import Engine
@@ -624,6 +631,295 @@ def imwrite(path: str, tensor, *, channels: int = 0,
             c = out_channels
 
     _imwrite(str(path), tensor.data_ptr(), w, h, c, quality)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  colormap() — apply a LUT colormap to a scalar tensor
+# ═══════════════════════════════════════════════════════════════════════
+
+# Anchor colors for each colormap (RGB float tuples, evenly spaced from 0→1).
+# These are interpolated to a 256-entry LUT on first use.
+_CMAP_ANCHORS: "dict[str, list[tuple[float,float,float]]]" = {
+    # ── Turbo (Google, 2019) ─────────────────────────────────────────
+    "turbo": [
+        (.190,.072,.232),(.225,.164,.451),(.251,.252,.634),(.268,.338,.784),
+        (.276,.421,.899),(.275,.501,.973),(.259,.580,1.00),(.214,.659,.980),
+        (.158,.736,.923),(.112,.806,.839),(.093,.866,.737),(.120,.912,.624),
+        (.210,.945,.504),(.362,.964,.382),(.539,.967,.265),(.708,.956,.160),
+        (.849,.932,.078),(.946,.890,.022),(.993,.826,.008),(.996,.738,.006),
+        (.977,.644,.040),(.943,.549,.092),(.894,.458,.134),(.836,.374,.160),
+        (.768,.299,.168),(.697,.232,.163),(.622,.174,.148),(.547,.126,.129),
+        (.473,.087,.109),(.402,.058,.090),(.335,.037,.074),(.270,.015,.051),
+    ],
+    # ── Viridis (matplotlib default) ─────────────────────────────────
+    "viridis": [
+        (.267,.005,.329),(.281,.094,.414),(.277,.185,.490),(.254,.272,.530),
+        (.225,.351,.551),(.192,.425,.556),(.163,.492,.557),(.135,.556,.547),
+        (.122,.619,.529),(.155,.683,.499),(.267,.747,.441),(.416,.804,.360),
+        (.569,.852,.263),(.717,.879,.151),(.856,.892,.063),(.993,.906,.144),
+    ],
+    # ── Magma (matplotlib/seaborn) ────────────────────────────────────
+    "magma": [
+        (.001,.000,.014),(.042,.013,.087),(.102,.024,.178),(.175,.034,.272),
+        (.257,.045,.361),(.348,.060,.424),(.440,.079,.444),(.534,.098,.441),
+        (.626,.120,.416),(.715,.149,.373),(.800,.198,.313),(.874,.270,.261),
+        (.929,.373,.267),(.961,.498,.350),(.981,.641,.481),(.993,.798,.656),
+        (.988,.962,.856),
+    ],
+    # ── Plasma (matplotlib) ───────────────────────────────────────────
+    "plasma": [
+        (.050,.030,.528),(.167,.021,.590),(.277,.014,.626),(.381,.018,.629),
+        (.477,.060,.610),(.562,.130,.570),(.637,.198,.516),(.703,.261,.455),
+        (.761,.322,.390),(.816,.384,.326),(.868,.451,.264),(.916,.527,.210),
+        (.955,.614,.176),(.982,.715,.166),(.993,.823,.215),(.975,.942,.329),
+    ],
+    # ── Inferno (matplotlib) ──────────────────────────────────────────
+    "inferno": [
+        (.001,.000,.014),(.040,.012,.094),(.099,.023,.193),(.174,.035,.302),
+        (.261,.051,.403),(.356,.066,.453),(.451,.080,.451),(.546,.099,.428),
+        (.644,.124,.388),(.738,.161,.333),(.822,.222,.279),(.893,.313,.240),
+        (.945,.437,.220),(.977,.582,.228),(.991,.738,.310),(.988,.899,.498),
+        (.988,.998,.645),
+    ],
+    # ── Jet (classic rainbow) ─────────────────────────────────────────
+    "jet": [
+        (.000,.000,.500),(.000,.000,1.00),(.000,.500,1.00),(.000,1.00,1.00),
+        (.500,1.00,.500),(1.00,1.00,.000),(1.00,.500,.000),(1.00,.000,.000),
+        (.500,.000,.000),
+    ],
+    # ── Grayscale ─────────────────────────────────────────────────────
+    "gray":  [(.000,.000,.000),(1.00,1.00,1.00)],
+    "grey":  [(.000,.000,.000),(1.00,1.00,1.00)],
+    # ── Hot (black→red→yellow→white) ──────────────────────────────────
+    "hot":   [(.000,.000,.000),(.500,.000,.000),(1.00,.000,.000),
+              (1.00,.500,.000),(1.00,1.00,.000),(1.00,1.00,.500),(1.00,1.00,1.00)],
+    # ── Cool (cyan→magenta) ───────────────────────────────────────────
+    "cool":  [(.000,1.00,1.00),(1.00,.000,1.00)],
+}
+
+#: All available colormap names.
+COLORMAPS: "tuple[str, ...]" = tuple(sorted(_CMAP_ANCHORS))
+
+# Device-keyed LUT cache: (name, device_str) → (256, 3) float32 tensor
+_cmap_lut_cache: "dict[tuple[str, str], object]" = {}
+
+
+def _get_cmap_lut(name: str, device):
+    """Return a (256, 3) float32 LUT tensor for the given colormap on *device*."""
+    import torch
+    import torch.nn.functional as F
+
+    key = (name, str(device))
+    if key not in _cmap_lut_cache:
+        anchors = _CMAP_ANCHORS[name]
+        k = torch.tensor(anchors, dtype=torch.float32)  # (N, 3)
+        lut = F.interpolate(
+            k.T.unsqueeze(0),          # (1, 3, N)
+            size=256,
+            mode="linear",
+            align_corners=True,
+        )                              # (1, 3, 256)
+        _cmap_lut_cache[key] = lut.squeeze(0).T.contiguous().to(device)  # (256, 3)
+    return _cmap_lut_cache[key]
+
+
+def colormap(tensor, cmap: str = "turbo", *,
+             vmin: "float | None" = None,
+             vmax: "float | None" = None):
+    """Apply a colormap LUT to a scalar tensor.
+
+    Maps single-channel (scalar) data to an RGB color image using one of the
+    built-in perceptually-uniform or classic colormaps.
+
+    Args:
+        tensor: ``torch.Tensor`` of shape ``(H, W)`` or ``(H, W, 1)``.
+                Can be CUDA or CPU, float32/float16/uint8.
+        cmap:   Colormap name.  One of ``vultorch.COLORMAPS``.
+                Defaults to ``'turbo'``.
+        vmin:   Value mapped to the bottom of the colormap.
+                Defaults to ``tensor.min()``.
+        vmax:   Value mapped to the top of the colormap.
+                Defaults to ``tensor.max()``.
+
+    Returns:
+        ``torch.Tensor`` of shape ``(H, W, 3)`` float32, values in [0, 1],
+        on the same device as *tensor*.
+
+    Example::
+
+        depth = model.predict_depth(img)     # (H, W)
+        rgb   = vultorch.colormap(depth, cmap='viridis')
+        panel.canvas("depth").bind(rgb)
+    """
+    import torch
+
+    name = cmap.lower()
+    if name not in _CMAP_ANCHORS:
+        raise ValueError(
+            f"Unknown colormap '{cmap}'. "
+            f"Available: {sorted(_CMAP_ANCHORS)}"
+        )
+
+    # Normalise input dtype
+    t = tensor
+    if t.dtype == torch.uint8:
+        t = t.float().div(255.0)
+    elif t.dtype == torch.float16:
+        t = t.float()
+    elif t.dtype != torch.float32:
+        t = t.float()
+
+    # Accept (H,W,1) → (H,W)
+    if t.ndim == 3:
+        if t.shape[2] != 1:
+            raise ValueError(
+                f"colormap expects a single-channel tensor, got shape {tuple(t.shape)}"
+            )
+        t = t.squeeze(-1)
+    elif t.ndim != 2:
+        raise ValueError(
+            f"colormap expects shape (H,W) or (H,W,1), got {tuple(t.shape)}"
+        )
+
+    # Normalise to [0, 1]
+    if vmin is None:
+        lo = t.min()
+    else:
+        lo = torch.tensor(float(vmin), dtype=torch.float32, device=t.device)
+    if vmax is None:
+        hi = t.max()
+    else:
+        hi = torch.tensor(float(vmax), dtype=torch.float32, device=t.device)
+
+    rng = (hi - lo).clamp(min=1e-8)
+    t = (t - lo) / rng
+
+    lut = _get_cmap_lut(name, t.device)              # (256, 3)
+    indices = (t.clamp(0.0, 1.0) * 255.0).long()     # (H, W) int64
+    return lut[indices]                               # (H, W, 3)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  open_file_dialog() — native file picker (no extra dependencies)
+# ═══════════════════════════════════════════════════════════════════════
+
+def open_file_dialog(
+    title: str = "Open File",
+    filters: "list[tuple[str, str]] | None" = None,
+    initial_dir: "str | None" = None,
+) -> "str | None":
+    """Open a native file-selection dialog and return the chosen path.
+
+    Uses ``tkinter`` from the Python standard library — no extra
+    package is required.  On Linux, ``python3-tk`` must be installed
+    (``sudo apt install python3-tk``).
+
+    .. note::
+
+        Calling this inside an ``@view.on_frame`` or ``@panel.on_frame``
+        callback will briefly pause rendering while the dialog is open.
+        This is expected behaviour.
+
+    Args:
+        title:       Dialog window title.
+        filters:     List of ``(description, glob_pattern)`` tuples, e.g.
+                     ``[("Images", "*.png *.jpg"), ("All files", "*.*")]``.
+                     Defaults to a preset of common image formats.
+        initial_dir: Starting directory.  ``None`` uses the current directory.
+
+    Returns:
+        The selected file path as a ``str``, or ``None`` if the user
+        cancelled the dialog.
+
+    Example::
+
+        @controls.on_frame
+        def draw():
+            if controls.button("Open image…"):
+                path = vultorch.open_file_dialog()
+                if path:
+                    t = vultorch.imread(path, channels=3)
+                    canvas.bind(t)
+    """
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+    except ImportError:
+        raise RuntimeError(
+            "open_file_dialog() requires tkinter (part of Python's standard "
+            "library).  On Linux, install it with:  sudo apt install python3-tk"
+        )
+
+    if filters is None:
+        filters = [
+            ("Image files", "*.png *.jpg *.jpeg *.bmp *.tga *.hdr"),
+            ("PNG",         "*.png"),
+            ("JPEG",        "*.jpg *.jpeg"),
+            ("HDR",         "*.hdr"),
+            ("All files",   "*.*"),
+        ]
+
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes("-topmost", True)
+    path = filedialog.askopenfilename(
+        title=title,
+        filetypes=filters,
+        initialdir=initial_dir,
+    )
+    root.destroy()
+    return path or None
+
+
+def save_file_dialog(
+    title: str = "Save File",
+    filters: "list[tuple[str, str]] | None" = None,
+    initial_dir: "str | None" = None,
+    default_extension: str = ".png",
+) -> "str | None":
+    """Open a native save-file dialog and return the chosen path.
+
+    Uses ``tkinter`` from the Python standard library.
+
+    Args:
+        title:              Dialog window title.
+        filters:            List of ``(description, glob_pattern)`` tuples.
+                            Defaults to common image formats.
+        initial_dir:        Starting directory.  ``None`` uses current directory.
+        default_extension:  Extension appended when the user omits one
+                            (e.g. ``".png"``).
+
+    Returns:
+        The selected file path as a ``str``, or ``None`` if the user cancelled.
+    """
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+    except ImportError:
+        raise RuntimeError(
+            "save_file_dialog() requires tkinter (part of Python's standard "
+            "library).  On Linux, install it with:  sudo apt install python3-tk"
+        )
+
+    if filters is None:
+        filters = [
+            ("PNG",         "*.png"),
+            ("JPEG",        "*.jpg *.jpeg"),
+            ("HDR",         "*.hdr"),
+            ("All files",   "*.*"),
+        ]
+
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes("-topmost", True)
+    path = filedialog.asksaveasfilename(
+        title=title,
+        filetypes=filters,
+        initialdir=initial_dir,
+        defaultextension=default_extension,
+    )
+    root.destroy()
+    return path or None
 
 
 # ═══════════════════════════════════════════════════════════════════════

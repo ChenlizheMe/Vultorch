@@ -32,7 +32,7 @@ Bottom             : Metrics (loss / PSNR curves, stats)
 """
 
 from pathlib import Path
-import math, time, threading
+import math, time
 
 import torch
 import torch.nn as nn
@@ -72,29 +72,6 @@ class CoordMLP(nn.Module):
 def make_model(hidden, layers, pe):
     return CoordMLP(hidden, layers, pe).to(device)
 
-# ── Turbo colormap ────────────────────────────────────────────────
-_turbo = [
-    (.190,.072,.232),(.225,.164,.451),(.251,.252,.634),(.268,.338,.784),
-    (.276,.421,.899),(.275,.501,.973),(.259,.580,1.0),(.214,.659,.980),
-    (.158,.736,.923),(.112,.806,.839),(.093,.866,.737),(.120,.912,.624),
-    (.210,.945,.504),(.362,.964,.382),(.539,.967,.265),(.708,.956,.160),
-    (.849,.932,.078),(.946,.890,.022),(.993,.826,.008),(.996,.738,.006),
-    (.977,.644,.040),(.943,.549,.092),(.894,.458,.134),(.836,.374,.160),
-    (.768,.299,.168),(.697,.232,.163),(.622,.174,.148),(.547,.126,.129),
-    (.473,.087,.109),(.402,.058,.090),(.335,.037,.074),(.270,.015,.051),
-]
-
-def _build_lut(n=256):
-    k = torch.tensor(_turbo, dtype=torch.float32)
-    lut = F.interpolate(k.T.unsqueeze(0), size=n, mode="linear",
-                        align_corners=True)
-    return lut.squeeze(0).T.contiguous().to(device)
-
-TURBO = _build_lut()
-
-def apply_turbo(v):
-    return TURBO[(v.clamp(0, 1) * 255).long()]
-
 # ── Optimizer / loss helpers ──────────────────────────────────────
 OPT_NAMES  = ["Adam", "SGD", "AdamW"]
 LOSS_NAMES = ["MSE", "L1", "Huber"]
@@ -130,24 +107,6 @@ def load_image(path, res):
 img_path = (Path(__file__).resolve().parents[1]
             / "docs" / "images" / "pytorch_logo.png")
 gt, coords, target, H, W = load_image(str(img_path), RES)
-
-# ── OS file dialog (threaded to avoid blocking the render loop) ──
-def open_file_dialog():
-    """Open a native OS file dialog and return the selected path."""
-    try:
-        import tkinter as tk
-        from tkinter import filedialog
-        root = tk.Tk()
-        root.withdraw()
-        root.attributes("-topmost", True)
-        path = filedialog.askopenfilename(
-            title="Select an image",
-            filetypes=[("Images", "*.png *.jpg *.jpeg *.bmp *.tga *.hdr"),
-                       ("All files", "*.*")])
-        root.destroy()
-        return path if path else None
-    except Exception:
-        return None
 
 # ── State ─────────────────────────────────────────────────────────
 S = dict(
@@ -195,12 +154,10 @@ def draw_ctrl():
 
     # ── Image loading ──
     ctrl.text(f"Image: {S['img_name']}")
-    if ctrl.button("Open Image...", width=170):
-        def _bg():
-            p = open_file_dialog()
-            if p:
-                S["pending_image"] = p
-        threading.Thread(target=_bg, daemon=True).start()
+    path = ctrl.file_dialog("Open Image...",
+                            title="Select an image")
+    if path:
+        S["pending_image"] = path
 
     ctrl.separator()
 
@@ -357,8 +314,8 @@ try:
             rgb_t[:, :, :3] = pr
 
             err = (gt - pr).abs().mean(dim=-1)
-            err_t[:, :, :3] = apply_turbo(
-                (err * S["err_gain"]).clamp_(0, 1))
+            err_t[:, :, :3] = vultorch.colormap(
+                err, cmap="turbo", vmin=0.0, vmax=1.0 / S["err_gain"])
 
             mse = F.mse_loss(pr.reshape(-1, 3), target).item()
             S["psnr"] = psnr(mse)
