@@ -86,7 +86,7 @@ body::after {
   font-weight: 700 !important;
   letter-spacing: 0.08em !important;
   text-transform: uppercase !important;
-  font-size: 16px !important;
+  font-size: 0.9rem !important;
 }
 
 /* Hide default mkdocs language selector — replaced by custom toggle */
@@ -118,7 +118,7 @@ body::after {
   padding: 6px 18px;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 0.78rem;
   font-weight: 600;
   font-family: 'JetBrains Mono', monospace;
   letter-spacing: 0.08em;
@@ -149,7 +149,7 @@ body::after {
 }
 
 .md-nav__link {
-  font-size: 16px !important;
+  font-size: 0.82rem !important;
   border-radius: 4px !important;
   transition: all .2s !important;
 }
@@ -180,14 +180,14 @@ body::after {
 /* ── Typography — use rem to prevent compounding ── */
 .md-typeset {
   color: #c8d0e2;
-  font-size: 16px !important;
+  font-size: 0.85rem !important;
   line-height: 1.75;
 }
 
 .md-typeset h1 {
   font-family: 'Orbitron', 'Inter', sans-serif !important;
   font-weight: 800 !important;
-  font-size: 32px !important;
+  font-size: 1.6rem !important;
   letter-spacing: 0.04em !important;
   text-transform: uppercase !important;
   color: var(--vt-text-bright) !important;
@@ -198,7 +198,7 @@ body::after {
 .md-typeset h2 {
   font-family: 'Orbitron', 'Inter', sans-serif !important;
   font-weight: 700 !important;
-  font-size: 28px !important;
+  font-size: 1.15rem !important;
   letter-spacing: 0.04em !important;
   text-transform: uppercase !important;
   color: var(--vt-text-bright) !important;
@@ -210,7 +210,7 @@ body::after {
 .md-typeset h3 {
   color: var(--vt-text-bright) !important;
   font-weight: 600 !important;
-  font-size: 24px !important;
+  font-size: 1rem !important;
   letter-spacing: 0.02em;
 }
 
@@ -231,7 +231,7 @@ body::after {
   border: 1px solid var(--vt-border) !important;
   border-radius: 8px !important;
   border-left: 3px solid #6e8eff !important;
-  font-size: 16px !important;
+  font-size: 0.82rem !important;
 }
 
 .md-typeset code {
@@ -240,7 +240,7 @@ body::after {
   border-radius: 4px !important;
   padding: 2px 8px !important;
   color: #34d399 !important;
-  font-size: 16px !important;
+  font-size: 0.82rem !important;
 }
 
 .md-typeset pre > code {
@@ -260,14 +260,14 @@ body::after {
   border: 1px solid var(--vt-border) !important;
   border-radius: 8px !important;
   overflow: hidden !important;
-  font-size: 16px;
+  font-size: 0.85rem;
 }
 
 .md-typeset table:not([class]) th {
   background: #0c0e18 !important;
   color: var(--vt-text-bright) !important;
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 16px !important;
+  font-size: 0.78rem !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
   border-bottom: 1px solid var(--vt-border-lit) !important;
@@ -275,7 +275,7 @@ body::after {
 
 .md-typeset table:not([class]) td {
   border-color: var(--vt-border) !important;
-  font-size: 16px;
+  font-size: 0.84rem;
 }
 
 .md-typeset table:not([class]) tr:hover {
@@ -291,7 +291,7 @@ body::after {
   border-width: 1px !important;
   border-left-width: 4px !important;
   box-shadow: 0 2px 12px rgba(0,0,0,0.2) !important;
-  font-size: 16px;
+  font-size: 0.84rem;
 }
 
 .md-typeset .admonition.tip,
@@ -339,7 +339,7 @@ body::after {
   border: 1px solid var(--vt-border) !important;
   border-radius: 6px !important;
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 16px !important;
+  font-size: 0.85rem !important;
 }
 
 .md-search__input::placeholder {
@@ -367,7 +367,7 @@ body::after {
 
 /* ── TOC sidebar (right) ───────────────────────── */
 .md-sidebar--secondary .md-nav__link {
-  font-size: 16px !important;
+  font-size: 0.78rem !important;
   color: #6b7a96 !important;
 }
 
@@ -387,7 +387,7 @@ body::after {
   border: 1px solid var(--vt-border) !important;
   color: #6e8eff !important;
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 16px !important;
+  font-size: 0.78rem !important;
   backdrop-filter: blur(12px) !important;
 }
 
@@ -395,7 +395,7 @@ body::after {
 .md-typeset .tabbed-labels > label {
   color: #6b7a96 !important;
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 16px !important;
+  font-size: 0.82rem !important;
 }
 
 .md-typeset .tabbed-labels > label--active,
@@ -415,7 +415,7 @@ body::after {
 .vt-logo-text {
   font-family: 'Orbitron', sans-serif;
   font-weight: 700;
-  font-size: 24px;
+  font-size: 0.9rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -427,7 +427,7 @@ body::after {
 
 .vt-home-link {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 24px;
+  font-size: 0.72rem;
   color: #6b7a96 !important;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -451,6 +451,6 @@ body::after {
     font-size: 0.72rem;
   }
   .md-typeset h1 {
-    font-size: 32px !important;
+    font-size: 1.3rem !important;
   }
 }

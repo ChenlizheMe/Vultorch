@@ -1,6 +1,6 @@
 [project]
 name = "vultorch"
-version = "0.5.0"
+version = "0.5.1"
 description = "Real-time Torch visualization window with Vulkan zero-copy — built for neural textures and GPU-intensive research"
 readme = "README.md"
 license = {text = "MIT"}

@@ -12,7 +12,7 @@ Complete reference for all public classes and functions in the `vultorch` packag
 __version__: str
 ```
 
-Package version string (e.g. `"0.5.0"`).
+Package version string (e.g. `"0.5.1"`).
 
 ### `vultorch.HAS_CUDA`
 

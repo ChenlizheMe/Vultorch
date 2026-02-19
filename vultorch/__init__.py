@@ -25,7 +25,7 @@ except ImportError:
         """Stub for set_log_level when native module unavailable."""
         pass
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 
 
 # ═══════════════════════════════════════════════════════════════════════

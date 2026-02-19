@@ -126,7 +126,7 @@ class TestUploadWheelsMain:
         mod = _load_upload_wheels()
         fake_dist = tmp_path / "dist"
         fake_dist.mkdir()
-        (fake_dist / "vultorch-0.5.0-cp310-cp310-win_amd64.whl").write_bytes(b"fake")
+        (fake_dist / "vultorch-0.5.1-cp310-cp310-win_amd64.whl").write_bytes(b"fake")
         with patch.object(mod, "DIST", fake_dist), \
              patch("subprocess.run") as mock_run, \
              patch("sys.argv", ["upload", "--token", "pypi-SECRET"]):
@@ -145,7 +145,7 @@ class TestUploadWheelsMain:
         mod = _load_upload_wheels()
         fake_dist = tmp_path / "dist"
         fake_dist.mkdir()
-        (fake_dist / "vultorch-0.5.0-cp310-cp310-win_amd64.whl").write_bytes(b"fake")
+        (fake_dist / "vultorch-0.5.1-cp310-cp310-win_amd64.whl").write_bytes(b"fake")
         with patch.object(mod, "DIST", fake_dist), \
              patch("subprocess.run") as mock_run, \
              patch("sys.argv", ["upload"]), \
@@ -163,7 +163,7 @@ class TestUploadWheelsMain:
         mod = _load_upload_wheels()
         fake_dist = tmp_path / "dist"
         fake_dist.mkdir()
-        (fake_dist / "vultorch-0.5.0-cp310-cp310-win_amd64.whl").write_bytes(b"fake")
+        (fake_dist / "vultorch-0.5.1-cp310-cp310-win_amd64.whl").write_bytes(b"fake")
         with patch.object(mod, "DIST", fake_dist), \
              patch("subprocess.run") as mock_run, \
              patch("sys.argv", ["upload"]), \
@@ -180,7 +180,7 @@ class TestUploadWheelsMain:
         mod = _load_upload_wheels()
         fake_dist = tmp_path / "dist"
         fake_dist.mkdir()
-        (fake_dist / "vultorch-0.5.0-cp310-cp310-win_amd64.whl").write_bytes(b"fake")
+        (fake_dist / "vultorch-0.5.1-cp310-cp310-win_amd64.whl").write_bytes(b"fake")
 
         call_count = [0]
         def side_effect(cmd, **kwargs):
